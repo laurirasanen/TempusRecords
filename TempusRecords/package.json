@@ -1,0 +1,25 @@
+{
+  "name": "tempus-records",
+  "version": "0.0.0",
+  "description": "TempusRecords",
+  "main": "app.js",
+  "author": {
+    "name": ""
+  },
+  "dependencies": {
+    "fs": "0.0.1-security",
+    "handbrake-js": "^3.0.8",
+    "http": "0.0.0",
+    "https": "^1.0.0",
+    "lien": "^3.3.0",
+    "net": "^1.0.2",
+    "obs-websocket-js": "^3.0.0",
+    "opn": "^6.0.0",
+    "pretty-bytes": "^5.2.0",
+    "rcon": "^1.0.3",
+    "tempus-api": "0.0.9",
+    "unbzip2-stream": "^1.3.3",
+    "unzip": "^0.1.11",
+    "youtube-api": "^2.0.10"
+  }
+}

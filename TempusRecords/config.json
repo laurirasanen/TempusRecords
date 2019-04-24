@@ -1,0 +1,59 @@
+{
+	"youtube": 
+	{
+		"client_id": "",
+		"client_secret": "",
+		"redirect_url": "http://localhost:5000/oauth2callback",
+		"title": "$NAME on $MAP - $TIME",
+		"description": 
+		[
+			"This video was automatically generated on $DATETIME.", 
+			"https://github.com/laurirasanen/tempusrecords",
+			"",
+			"Player: $NAME",
+			"Map: $MAP",
+			"Class: $CLASS",
+			"Time: $TIME",
+			"Date: $DATE",
+			"",
+			"Map download: $MAP_URL",
+			"Demo download: $DEMO_URL"
+		]
+	},
+	"rcon":
+	{
+		"address": "127.0.0.1",
+		"port": 27015,
+		"password": "bananaman",
+		"listen_address": "127.0.0.1",
+		"listen_port": 3002
+	},
+	"steam": 
+	{
+		"path": "C:/Program Files (x86)/Steam/Steam.exe",
+		"game": 440
+	},
+	"tf2":
+	{
+		"path": "C:/Program Files (x86)/Steam/steamapps/common/Team Fortress 2/tf/",
+		"launch_options": 
+		[
+			"-novid",
+			"-high",
+			"-windowed",
+			"-noborder",
+			"-hijack",
+			"-nocrashdialog",
+			"-w 1920",
+			"-h 1080",
+			"+ip 127.0.0.1",
+			"-usercon",
+			"rcon_password bananaman",
+			"+map itemtest"	
+		]
+	},
+	"obs":
+	{
+		"recording_folder": "E:/TempusRecordings/"
+	}
+}
