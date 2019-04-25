@@ -24,7 +24,7 @@ function getDemoFile(demo, cb)
                 if (err)
                 {
                     console.log('[DL] Failed to close demoFile handle');
-                    console.log(JSON.stringify(err));
+                    console.log(err);
                 }
             });
         }
@@ -39,7 +39,7 @@ function getDemoFile(demo, cb)
             else
             {
                 console.log(`[DL] Error opening file ${dest}!`);
-                console.log(JSON.stringify(err));
+                console.log(err);
                 return cb(null);
             }
         }
@@ -75,7 +75,7 @@ function getDemoFile(demo, cb)
                                         if (err)
                                         {
                                             console.log(`[DEMOTOOLS] Error fixing viewmodels in ${demo.demo_info.filename}`);
-                                            console.log(JSON.stringify(err), log);
+                                            console.log(err);
                                             return cb(true);
                                         }
 
@@ -89,17 +89,39 @@ function getDemoFile(demo, cb)
 
                         }).on('error', (err) =>
                         {
-                            stream.close(() => { });
                             console.log('[DL] Piping to file failed!');
-                            console.log(JSON.stringify(err));
+                            console.log(err);
+
+                            stream.close(() =>
+                            {
+                                fs.unlink(dest, (err) =>
+                                {
+                                    if (err)
+                                        console.log(`Failed to unlink bad demo ${dest}`);
+                                    else
+                                        console.log(`Unlinked bad demo ${dest}`);
+                                });
+                            });
+
                             return cb(null);
                         });
 
                     }).on('error', (err) =>
                     {
-                        stream.close(() => { });
                         console.log(`[DL] unzip failed!`);
-                        console.log(JSON.stringify(err));
+                        console.log(err);
+
+                        stream.close(() =>
+                        {
+                            fs.unlink(dest, (err) =>
+                            {
+                                if (err)
+                                    console.log(`Failed to unlink bad demo ${dest}`);
+                                else
+                                    console.log(`Unlinked bad demo ${dest}`);
+                            });
+                        });
+                        
                         return cb(null);
                     });
             });
@@ -124,7 +146,7 @@ function getMap(mapName, cb)
                 if (err)
                 {
                     console.log('[DL] Failed to close map handle');
-                    console.log(JSON.stringify(err));
+                    console.log(err);
                 }
             });
         }
@@ -139,7 +161,7 @@ function getMap(mapName, cb)
             else
             {
                 console.log(`[DL] Error opening map ${dest}!`);
-                console.log(JSON.stringify(err));
+                console.log(err);
                 return cb(null);
             }
         }
@@ -155,9 +177,20 @@ function getMap(mapName, cb)
                 resp.pipe(bz2()
                     .on('error', (err) =>
                     {
-                        stream.close(() => { });
                         console.log('[TEMPUS] bz2 failed');
-                        console.log(JSON.stringify(err));
+                        console.log(err);
+
+                        stream.close(() =>
+                        {
+                            fs.unlink(dest, (err) =>
+                            {
+                                if (err)
+                                    console.log(`Failed to unlink bad demo ${dest}`);
+                                else
+                                    console.log(`Unlinked bad demo ${dest}`);
+                            });
+                        });
+
                         return;
                     })
                 ).pipe(stream);
@@ -171,9 +204,20 @@ function getMap(mapName, cb)
 
                 }).on('error', (err) =>
                 {
-                    stream.close(() => { });
                     console.log('[DL] Piping to file failed!');
-                    console.log(JSON.stringify(err));
+                    console.log(err);
+
+                    stream.close(() =>
+                    {
+                        fs.unlink(dest, (err) =>
+                        {
+                            if (err)
+                                console.log(`Failed to unlink bad demo ${dest}`);
+                            else
+                                console.log(`Unlinked bad demo ${dest}`);
+                        });
+                    });
+
                     return cb(null);
                 });
             });

@@ -44,12 +44,13 @@
 			"-noborder",
 			"-hijack",
 			"-nocrashdialog",
-			"-w 1920",
-			"-h 1080",
+			"-w 2560",
+			"-h 1440",
 			"+ip 127.0.0.1",
 			"-usercon",
 			"rcon_password bananaman",
-			"+map itemtest"	
+			"+map itemtest",
+			"-dxlevel 98"
 		]
 	},
 	"obs":

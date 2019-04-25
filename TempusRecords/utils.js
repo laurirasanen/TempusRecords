@@ -55,7 +55,7 @@ function secondsToTimeStamp(seconds)
 {
     var hours = Math.floor(seconds / 3600);
     var minutes = Math.floor(seconds % 3600 / 60);
-    var milliseconds = (seconds - Math.floor(seconds)) * 100;
+    var milliseconds = Math.floor((seconds - Math.floor(seconds)) * 1000);
     seconds = Math.floor(seconds % 60);
 
     var timeStamp = "";
@@ -78,12 +78,37 @@ function secondsToTimeStamp(seconds)
         else timeStamp += "0" + seconds + ".";
     }
 
-    if (milliseconds >= 10) timeStamp += milliseconds;
-    else timeStamp += "0" + milliseconds;
+    if (milliseconds >= 100) timeStamp += milliseconds;
+    else if (milliseconds >= 10) timeStamp += "0" + milliseconds;
+    else timeStamp += "00" + milliseconds;
 
     return timeStamp;
+}
+
+function readJson(path, cb)
+{
+    fs.readFile(path, (err, data) =>
+    {
+        if (err)
+            cb(err);
+        else
+            cb(null, JSON.parse(data));
+    });
+}
+
+function writeJson(path, data, cb)
+{
+    fs.writeFile(path, JSON.stringify(data, null, 4), (err) =>
+    {
+        if (err)
+            cb(err);
+        else
+            cb(null);
+    });
 }
 
 module.exports.startTF2 = startTF2;
 module.exports.getLatestFile = getLatestFile;
 module.exports.secondsToTimeStamp = secondsToTimeStamp;
+module.exports.readJson = readJson;
+module.exports.writeJson = writeJson;

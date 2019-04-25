@@ -3,7 +3,7 @@
     rcon = require('./rcon.js'),
     obs = require('./obs.js'),
     fs = require('fs'),
-    last_up = require('./last_uploaded.json'),
+    utils = require('./utils.js'),
     config = require('./config.json');
 
 // Vice changed accounts at some point.
@@ -26,31 +26,41 @@ function init()
         // Sort by date
         runs.sort((a, b) =>
         {
-            if (a.date < b.date) return -1;
-            if (a.date > b.date) return 1;
+            if (a.demo_info.date < b.demo_info.date) return -1;
+            if (a.demo_info.date > b.demo_info.date) return 1;
             return 0;
         });
 
-        // Remove older runs
-        runs.forEach((run, index, arr) =>
+        utils.readJson('./last_uploaded.json', (err, last_up) =>
         {
-            console.log(run.date);
-            if (run.date < last_up.map)
+            if (err !== null)
             {
-                arr.splice(index, 1);
+                console.log('Could not read last_uploaded.json');
+                console.log(err);
+                return;
             }
-        });
 
-        if (runs.length <= 0)
-        {
-            console.log("No new runs.");
-            return;
-        }
+            // Remove older runs
+            for (var i = runs.length - 1; i >= 0; i--)
+            {
+                if (runs[i].demo_info.date <= last_up.map)
+                {
+                    console.log(`Removing run older than last uploaded ${runs[i].demo_info.filename}`);
+                    runs.splice(i, 1);                    
+                }
+            }
 
-        setTimeout(() =>
-        {
-            playDemo(runs[0]);
-        }, 10000);            
+            if (runs.length <= 0)
+            {
+                console.log("No new runs.");
+                return;
+            }
+
+            setTimeout(() =>
+            {
+                playDemo(runs[0]);
+            }, 10000); 
+        });           
     });
 }
 
@@ -58,7 +68,7 @@ function skip()
 {
     for (var i = 0; i < runs.length - 1; i++)
     {
-        if (runs[i] === currentDemo)
+        if (runs[i] === currentDemo || currentDemo === null)
         {
             return playDemo(runs[i + 1]);
         }
@@ -76,7 +86,7 @@ function playDemo(demo)
     }
 
     // Get map file
-    downloader.getMap(demo.demo_info.mapname, (res) =>
+    downloader.getMap(demo.map.name, (res) =>
     {
         if (res !== null)
         {
@@ -86,7 +96,8 @@ function playDemo(demo)
                 if (result === null)
                 {
                     console.log('[DL] Error getting demo');
-                    return cb();
+                    skip();
+                    return;
                 }
                 else if (result === false)
                 {
@@ -125,7 +136,7 @@ function startDemo(demo)
         if (err)
         {
             console.log('[FILE] Could not write tmps_records_spec_player.cfg!',);
-            console.log(JSON.stringify(err));
+            console.log(err);
 
             return;
         }
@@ -182,23 +193,44 @@ function getRuns(cb)
         {
             setTimeout((list, i, runs) =>
             {
+                console.log(`Getting map wrs ${i}/${list.length}`);
                 var map = list[i];
 
                 if (map.name !== null)
                 {
-                    tempus.mapWR(map.name, "s").then(x => x.toRecordOverview().then(wr =>
+                    tempus.mapWR(map.name, "s").then(x =>
                     {
-                        runs.push(wr);
-                    }))
+                        if (x !== undefined)
+                        {
+                            x.toRecordOverview().then(wr =>
+                            {
+                                runs.push(wr);
+                            })
+                            .catch(err =>
+                            {
+                            console.log(err);
+                            });
+                        }                        
+                    })
                     .catch(err =>
                     {
                         console.log(err);
                     });
 
-                    tempus.mapWR(map.name, "d").then(x => x.toRecordOverview().then(wr =>
+                    tempus.mapWR(map.name, "d").then(x =>
                     {
-                        runs.push(wr);
-                    }))
+                        if (x !== undefined)
+                        {
+                            x.toRecordOverview().then(wr =>
+                            {
+                                runs.push(wr);
+                            })
+                            .catch(err =>
+                            {
+                                console.log(err);
+                            });
+                        }
+                    })
                     .catch(err =>
                     {
                         console.log(err);
@@ -210,7 +242,7 @@ function getRuns(cb)
                     return cb(runs);
                 }
 
-            }, i * 50, list, i, runs);
+            }, i * 200, list, i, runs);
         }
     })
     .catch(err =>
@@ -246,7 +278,7 @@ function savePlayCommands(filename, commands, cb)
         if (err)
         {
             console.log('[FILE] Error saving PlayCommands!');
-            console.log(JSON.stringify(err));
+            console.log(err);
             return cb(false);
         }
 

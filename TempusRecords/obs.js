@@ -18,7 +18,7 @@ function connect()
     .catch(err =>
     {
         console.log('[OBS] Connection error! Retrying in 5 seconds.');
-        console.log(JSON.stringify(err));
+        console.log(err);
         connected = false;
     });
 }
@@ -46,7 +46,7 @@ function init()
                 .catch(err =>
                 {
                     console.log('[OBS] Socket error!');
-                    console.log(JSON.stringify(err));
+                    console.log(err);
                 });
         }, 5000);
     })
@@ -61,7 +61,7 @@ function init()
     .on('error', (err) =>
     {
         console.log('[OBS] Socket error!');
-        console.log(JSON.stringify(err));
+        console.log(err);
         });
 }
 
@@ -99,9 +99,10 @@ function stopRecording(filename, demo)
                 // Rename latest recording
             var recording_folder = config.obs.recording_folder;
 
-            obs.send('GetRecordingFolder').then(folder =>
+            obs.send('GetRecordingFolder').then((messageId, status, folder) =>
             {
-                recording_folder = folder;
+                if (status == "ok")
+                    recording_folder = folder;
             })
             .catch(err =>
             {
@@ -109,7 +110,7 @@ function stopRecording(filename, demo)
                 console.log(err);
             });
 
-            utils.getLatestFile(recording_folder, file =>
+            utils.getLatestFile(recording_folder, (file) =>
             {
                 if (file === null)
                 {

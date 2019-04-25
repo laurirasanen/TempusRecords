@@ -7,8 +7,6 @@
     opn = require('opn'),
     utils = require('./utils.js');
 
-var last_up = require('./last_uploaded.json');
-
 let server = new Lien({
     host: "localhost",
     port: "5000"
@@ -52,6 +50,8 @@ function compress(file, cb)
     if (!cb || typeof (cb) !== 'function')
         throw 'callback is not a function';
 
+    console.log(`Compressing ${file}`);
+
     handbrake.spawn(
         {
             input: file,
@@ -88,6 +88,8 @@ function compress(file, cb)
 
 function upload(file, demo)
 {
+    console.log(`Uploading ${file}`);
+
     var description = "";
     var stats = fs.statSync(file);
     var fileSize = stats.size;
@@ -95,16 +97,16 @@ function upload(file, demo)
     config.youtube.description.forEach(line =>
     {
         var d = new Date();
-        var demo_date = new Date(demo.demo_info.date);
+        var demo_date = new Date(demo.demo_info.date * 1000);
         line = line.replace("$MAP_URL", 'https://tempus.xyz/maps/' + demo.map.name)
             .replace("$MAP", demo.map.name)
             .replace("$NAME", demo.player_info.name)
             .replace("$TIME", utils.secondsToTimeStamp(demo.duration))
-            .replace("$CLASS", demo.class)
+            .replace("$CLASS", demo.class === 3 ? "Soldier" : "Demoman")
             .replace("$DATETIME", d.toUTCString())
             .replace("$DATE", demo_date.toUTCString())
             
-            .replace("$DEMO_URL", demo.demo_info.url);
+            .replace("$DEMO_URL", 'https://tempus.xyz/demos/' + demo.demo_info.id);
 
         description += line + "\n";
     });
@@ -120,7 +122,7 @@ function upload(file, demo)
             },
             status:
             {
-                privacyStatus: "private"
+                privacyStatus: "public"
             }
         },
         // This is for the callback function
@@ -134,31 +136,50 @@ function upload(file, demo)
     },
     (err, data) =>
     {
-        console.log("Done.");
+        console.log("Done uploading");
+        clearInterval(interval);
 
         // Update last uploaded timestamp
-        last_up.map = demo.demo_info.date;
-
-        fs.writeFile('./last_uploaded.json', JSON.stringify(last_up, null, 4), function (err)
+        utils.readJson('./last_uploaded.json', (err, last_up) =>
         {
-            if (err) return console.log(err);
-            console.log('Updated last uploaded');
-        });
-
-        // Remove compressed video
-        fs.unlink(file, err =>
-        {
-            if (err)
+            if (err !== null)
             {
-                console.log('Failed to unlink compressed recording');
+                console.log('Failed to read last uploaded');
                 console.log(err);
+                return;
             }
-        });
 
-        process.exit();
+            if (demo.demo_info.date > last_up.map)
+                last_up.map = demo.demo_info.date;
+
+            utils.writeJson('./last_uploaded.json', last_up, (err) =>
+            {
+                if (err !== null)
+                {
+                    console.log('Failed to write last uploaded');
+                    console.log(err);
+                    return;
+                }
+
+                console.log('Updated last uploaded');
+            });
+
+            // Remove compressed video
+            fs.unlink(file, err =>
+            {
+                if (err)
+                {
+                    console.log('Failed to unlink compressed recording');
+                    console.log(err);
+                    return;
+                }
+
+                console.log('Unlinked compressed recording');
+            });
+        });
     });
 
-    setInterval(function ()
+    var interval = setInterval(function ()
     {
         console.log(`${prettyBytes(req.req.connection._bytesDispatched)} (${(100 * req.req.connection._bytesDispatched / fileSize).toFixed(2)}%) uploaded.`);
     }, 1000);
