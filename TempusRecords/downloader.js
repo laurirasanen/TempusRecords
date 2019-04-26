@@ -63,11 +63,24 @@ function getDemoFile(demo, cb)
                                 // jungle inferno date 2017-10-20, 1508544000 = 2017-10-21
                                 // boshy and kaptain are pretty much only people with original wrs before jungle inferno
                                 // un gato has cheval wr with mangler
-                                if (demo.demo_info.date < 1508544000 && demo.class == 3 &&
-                                    ((demo.player_info.steamid == 'STEAM_0:0:43167835' || demo.player_info.steamid == 'STEAM_0:0:36730682') ||
-                                        demo.player_info.steamid == 'STEAM_0:1:53042796' && (demo.demo_info.mapname == 'jump_cheval' || demo.demo_info.mapname == 'jump_arctic_a2')))
+                                if (demo.demo_info.date < 1508544000 && demo.class === 3 &&
+                                    (
+                                        (
+                                            demo.player_info.steamid === 'STEAM_0:0:43167835'
+                                            || demo.player_info.steamid === 'STEAM_0:0:36730682'
+                                        )
+                                        ||
+                                        (
+                                            demo.player_info.steamid === 'STEAM_0:1:53042796'
+                                            &&
+                                            (
+                                                demo.demo_info.mapname === 'jump_cheval'
+                                                || demo.demo_info.mapname === 'jump_arctic_a2'
+                                            )
+                                        )
+                                    )
+                                )
                                 {
-
                                     // return true regardless of the fix being succesful
                                     // playing the demo is more important than having working viewmodels
                                     models.fixModels(dest, dest, (err) =>
@@ -84,7 +97,9 @@ function getDemoFile(demo, cb)
                                     });
                                 }
                                 else
+                                {
                                     return cb(true);
+                                }                                    
                             });
 
                         }).on('error', (err) =>
