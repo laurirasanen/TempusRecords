@@ -140,7 +140,7 @@ function upload(file, demo)
         clearInterval(interval);
 
         // Update last uploaded timestamp
-        utils.readJson('./last_uploaded.json', (err, last_up) =>
+        utils.readJson('./uploaded.json', (err, uploaded) =>
         {
             if (err !== null)
             {
@@ -149,10 +149,10 @@ function upload(file, demo)
                 return;
             }
 
-            if (demo.demo_info.date > last_up.map)
-                last_up.map = demo.demo_info.date;
+            if (!uploaded.maps.includes(demo.id))
+                uploaded.maps.append(demo.id);
 
-            utils.writeJson('./last_uploaded.json', last_up, (err) =>
+            utils.writeJson('./uploaded.json', uploaded, (err) =>
             {
                 if (err !== null)
                 {

@@ -31,21 +31,21 @@ function init()
             return 0;
         });
 
-        utils.readJson('./last_uploaded.json', (err, last_up) =>
+        utils.readJson('./uploaded.json', (err, uploaded) =>
         {
             if (err !== null)
             {
-                console.log('Could not read last_uploaded.json');
+                console.log('Could not read uploaded.json');
                 console.log(err);
                 return;
             }
 
-            // Remove older runs
+            // Remove already uploaded runs
             for (var i = runs.length - 1; i >= 0; i--)
             {
-                if (runs[i].demo_info.date <= last_up.map)
+                if (uploaded.maps.includes(runs[i].id))
                 {
-                    console.log(`Removing run older than last uploaded ${runs[i].demo_info.filename}`);
+                    console.log(`Removing already uploaded ${runs[i].map.name} (${runs[i].player_info.class})`);
                     runs.splice(i, 1);                    
                 }
             }
