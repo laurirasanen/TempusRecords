@@ -4,7 +4,8 @@
     obs = require('./obs.js'),
     fs = require('fs'),
     utils = require('./utils.js'),
-    config = require('./config.json');
+    config = require('./config.json'),
+    nicknames = require('./nicknames.json');
 
 // Vice changed accounts at some point.
 // All records in tempus api have his new steamid but the old demo files themselves don't.
@@ -46,7 +47,18 @@ function init()
                 if (uploaded.maps.includes(runs[i].id))
                 {
                     console.log(`Removing already uploaded ${runs[i].map.name} (${runs[i].class === 3 ? "Soldier" : "Demoman"})`);
-                    runs.splice(i, 1);                    
+                    runs.splice(i, 1);   
+                    continue;
+                }
+
+                // Replace names
+                for (var e = 0; e < nicknames.length; e++)
+                {
+                    if (runs[i].player_info.steamid === nicknames[e].steamid)
+                    {
+                        runs[i].player_info.name = nicknames[e].name;
+                        break;
+                    }
                 }
             }
 
