@@ -18,7 +18,8 @@
 			"",
 			"Map download: $MAP_URL",
 			"Demo download: $DEMO_URL"
-		]
+		],
+		"video_limit": 6
 	},
 	"rcon":
 	{

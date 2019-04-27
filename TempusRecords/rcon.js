@@ -9,7 +9,8 @@ var restarting = false,
     active = false,
     conn,
     demo_loaded = false,
-    demo_playback = false;
+    demo_playback = false,
+    recorded_runs = 0;
 
 // Listen for play commands
 var srv = net.createServer(function (sock)
@@ -63,8 +64,18 @@ var srv = net.createServer(function (sock)
             {
                 demo_playback = false;
                 demo_loaded = false;
-                conn.send('volume 0');                
-                demo.skip();                
+                conn.send('volume 0'); 
+
+                // Limit number of recordings
+                recorded_runs++;
+                if (recorded_runs < config.youtube.video_limit)
+                {
+                    demo.skip();
+                }
+                else
+                {
+                    console.log(`Finished recording ${config.youtube.video_limit} runs`);
+                }                               
             }, 2000);
 
             return;
