@@ -150,7 +150,7 @@ function upload(file, demo)
             }
 
             if (!uploaded.maps.includes(demo.id))
-                uploaded.maps.append(demo.id);
+                uploaded.maps.push(demo.id);
 
             utils.writeJson('./uploaded.json', uploaded, (err) =>
             {
@@ -161,7 +161,7 @@ function upload(file, demo)
                     return;
                 }
 
-                console.log('Updated last uploaded');
+                console.log('Updated uploaded list');
             });
 
             // Remove compressed video

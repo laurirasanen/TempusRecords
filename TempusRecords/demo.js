@@ -45,7 +45,7 @@ function init()
             {
                 if (uploaded.maps.includes(runs[i].id))
                 {
-                    console.log(`Removing already uploaded ${runs[i].map.name} (${runs[i].player_info.class})`);
+                    console.log(`Removing already uploaded ${runs[i].map.name} (${runs[i].class === 3 ? "Soldier" : "Demoman"})`);
                     runs.splice(i, 1);                    
                 }
             }
