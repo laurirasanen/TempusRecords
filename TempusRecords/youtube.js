@@ -54,9 +54,18 @@ function compress(file, cb)
 
     handbrake.spawn(
         {
-            input: file,
-            output: `${file.split(".mp4")[0]}_compressed.mp4`,
-            preset: "Normal"
+            "input": file,
+            "output": `${file.split(".mp4")[0]}_compressed.mp4`,
+            "encoder": "x264",
+            "quality": "22",
+            "encoder-profile": "high",
+            "encoder-level": "4.2",
+            "encoder-preset": "slow",
+            "rate": 60,
+            "width": 2560,
+            "height": 1440,
+            "encopts": "threads=4",
+            "aencoder": "copy:aac"
         })
         .on('error', err =>
         {
