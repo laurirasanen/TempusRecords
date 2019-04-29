@@ -5,7 +5,8 @@
     fs = require('fs'),
     utils = require('./utils.js'),
     config = require('./config.json'),
-    nicknames = require('./nicknames.json');
+    nicknames = require('./nicknames.json'),
+    blacklist = require('./blacklist.json');
 
 // Vice changed accounts at some point.
 // All records in tempus api have his new steamid but the old demo files themselves don't.
@@ -49,6 +50,18 @@ function init()
                     console.log(`Removing already uploaded ${runs[i].map.name} (${runs[i].class === 3 ? "Soldier" : "Demoman"})`);
                     runs.splice(i, 1);   
                     continue;
+                }
+
+                // Remove blacklisted runs
+                for (var e = 0; e < blacklist.length; e++)
+                {
+                    if (blacklist[e].name === runs[i].map.name
+                        && blacklist[e].class === runs[i].class)
+                    {
+                        console.log(`Removing blaclisted ${runs[i].map.name} (${runs[i].class === 3 ? "Soldier" : "Demoman"})`);
+                        runs.splice(i, 1);
+                        continue;
+                    }
                 }
 
                 // Replace names

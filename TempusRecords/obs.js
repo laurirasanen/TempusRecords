@@ -89,7 +89,7 @@ function startRecording()
         });
 }
 
-function stopRecording(filename, demo)
+function stopRecording(filename, demo, cb)
 {
     obs.send('StopRecording', {})
         .then(() =>
@@ -135,6 +135,7 @@ function stopRecording(filename, demo)
                             {
                                 youtube.upload(name, demo);
                             }
+                            return cb();
                         });
                     });
                 }, 5000);                

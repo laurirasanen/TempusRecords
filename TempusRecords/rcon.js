@@ -57,14 +57,11 @@ var srv = net.createServer(function (sock)
             console.log('[DEMO] RUN END');
 
             // End OBS recording
-            obs.stopRecording(currentDemo.demo_info.filename, currentDemo);
-
-            // Wait a bit for obs to stop recording
-            setTimeout(() =>
+            obs.stopRecording(currentDemo.demo_info.filename, currentDemo, () =>
             {
                 demo_playback = false;
                 demo_loaded = false;
-                conn.send('volume 0'); 
+                conn.send('volume 0');
 
                 // Limit number of recordings
                 recorded_runs++;
@@ -75,8 +72,8 @@ var srv = net.createServer(function (sock)
                 else
                 {
                     console.log(`Finished recording ${config.youtube.video_limit} runs`);
-                }                               
-            }, 2000);
+                }     
+            });
 
             return;
         }
