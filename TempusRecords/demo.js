@@ -58,7 +58,7 @@ function init()
                     if (blacklist[e].name === runs[i].map.name
                         && blacklist[e].class === runs[i].class)
                     {
-                        console.log(`Removing blaclisted ${runs[i].map.name} (${runs[i].class === 3 ? "Soldier" : "Demoman"})`);
+                        console.log(`Removing blacklisted ${runs[i].map.name} (${runs[i].class === 3 ? "Soldier" : "Demoman"})`);
                         runs.splice(i, 1);
                         continue;
                     }
