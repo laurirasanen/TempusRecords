@@ -24,7 +24,7 @@ var srv = net.createServer(function (sock)
 
             if (currentDemo === undefined) demo.skip();
 
-            runStartTimeout = 5000 + currentDemo.demo_start_tick / 25;
+            runStartTimeout = 5000 + currentDemo.demo_start_tick / 10;
 
             setTimeout(() =>
             {

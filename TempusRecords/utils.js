@@ -11,7 +11,7 @@ function startTF2()
     for (var i = 0; i < config.tf2.launch_options.length; i++)
     {
         launchCmd += ` ${config.tf2.launch_options[i]}`;
-    }            
+    }
 
     exec(launchCmd, null, { shell: true }, function (err, data)
     {
@@ -19,7 +19,7 @@ function startTF2()
         {
             console.log(err);
         }
-    }); 
+    });
 }
 
 function getLatestFile(directory, cb)
@@ -66,17 +66,11 @@ function secondsToTimeStamp(seconds)
         else timeStamp += "0" + hours + ":";
     }
 
-    if (minutes > 0)
-    {
-        if (minutes >= 10) timeStamp += minutes + ":";
-        else timeStamp += "0" + minutes + ":";
-    }
+    if (minutes >= 10) timeStamp += minutes + ":";
+    else timeStamp += "0" + minutes + ":";
 
-    if (seconds > 0)
-    {
-        if (seconds >= 10) timeStamp += seconds + ".";
-        else timeStamp += "0" + seconds + ".";
-    }
+    if (seconds >= 10) timeStamp += seconds + ".";
+    else timeStamp += "0" + seconds + ".";
 
     if (milliseconds >= 100) timeStamp += milliseconds;
     else if (milliseconds >= 10) timeStamp += "0" + milliseconds;

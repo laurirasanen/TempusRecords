@@ -53,6 +53,7 @@ function init()
                 }
 
                 // Remove blacklisted runs
+                var cont = false;
                 for (var e = 0; e < blacklist.length; e++)
                 {
                     if (blacklist[e].name === runs[i].map.name
@@ -60,9 +61,12 @@ function init()
                     {
                         console.log(`Removing blacklisted ${runs[i].map.name} (${runs[i].class === 3 ? "Soldier" : "Demoman"})`);
                         runs.splice(i, 1);
-                        continue;
+                        cont = true;
+                        break;
                     }
                 }
+
+                if (cont) continue;
 
                 // Replace names
                 for (var e = 0; e < nicknames.length; e++)
