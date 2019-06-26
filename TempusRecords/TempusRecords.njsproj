@@ -28,6 +28,8 @@
     <DebugSymbols>true</DebugSymbols>
   </PropertyGroup>
   <ItemGroup>
+    <Content Include="blacklist.json" />
+    <Content Include="config.json" />
     <Content Include="package.json" />
     <Content Include="README.md" />
   </ItemGroup>

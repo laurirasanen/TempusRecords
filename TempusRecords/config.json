@@ -19,7 +19,7 @@
 			"Map download: $MAP_URL",
 			"Demo download: $DEMO_URL"
 		],
-		"video_limit": 6
+		"video_limit": 65
 	},
 	"rcon":
 	{
@@ -46,7 +46,7 @@
 			"-hijack",
 			"-nocrashdialog",
 			"-w 2560",
-			"-h 1440",
+			"-h 1080",
 			"+ip 127.0.0.1",
 			"-usercon",
 			"rcon_password bananaman",

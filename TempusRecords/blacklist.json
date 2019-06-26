@@ -1,26 +1,30 @@
 [
-	{
-		"name": "jump_twelve_rc1",
-		"class": 3
-	},
-	{
-		"name": "jump_twelve_rc1",
-		"class": 4
-	},
-	{
-		"name": "jump_yucca",
-		"class": 3
-	},
-	{
-		"name": "jump_yucca",
-		"class": 4
-	},
-	{
-		"name": "jump_twix_b4",
-		"class": 3
-	},
-	{
-		"name": "jump_rewind",
-		"class": 3
-	}
+  {
+    "name": "jump_twelve_rc1",
+    "class": 3
+  },
+  {
+    "name": "jump_twelve_rc1",
+    "class": 4
+  },
+  {
+    "name": "jump_yucca",
+    "class": 3
+  },
+  {
+    "name": "jump_yucca",
+    "class": 4
+  },
+  {
+    "name": "jump_twix_b4",
+    "class": 3
+  },
+  {
+    "name": "jump_rewind",
+    "class": 3
+  },
+  {
+    "name": "jump_mad_rc3",
+    "class": 4
+  }
 ]
