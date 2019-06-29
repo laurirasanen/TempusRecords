@@ -26,5 +26,9 @@
   {
     "name": "jump_mad_rc3",
     "class": 4
+  },
+  {
+    "name": "jump_shiver",
+    "class": 4
   }
 ]
