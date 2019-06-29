@@ -40,9 +40,6 @@
     <Compile Include="downloader.js">
       <SubType>Code</SubType>
     </Compile>
-    <Compile Include="obs.js">
-      <SubType>Code</SubType>
-    </Compile>
     <Compile Include="rcon.js">
       <SubType>Code</SubType>
     </Compile>

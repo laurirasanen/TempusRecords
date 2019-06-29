@@ -1,7 +1,6 @@
 ﻿const tempus = require('tempus-api'),
     downloader = require('./downloader.js'),
     rcon = require('./rcon.js'),
-    obs = require('./obs.js'),
     fs = require('fs'),
     utils = require('./utils.js'),
     config = require('./config.json'),
@@ -176,10 +175,10 @@ function startDemo(demo)
         // Commands used to control the demo playback
         // rcon tmps_records_* commands will trigger events in rcon.js
         var commands = [
-            { tick: 33, commands: `sensitivity 0; m_yaw 0; m_pitch 0; unbindall; fog_override 1; fog_enable 0; rcon tmps_records_demo_load; demo_gototick ${demo.demo_start_tick - startPadding}; demo_setendtick ${demo.demo_end_tick + endPadding + 66}` },
-            { tick: demo.demo_start_tick - startPadding, commands: `exec tmps_records_spec_player; spec_mode 4; demo_resume; volume 0.1; rcon tmps_records_run_start` },
+            { tick: 33, commands: `sdr_outputdir ${config.sdr.recording_folder}; sensitivity 0; m_yaw 0; m_pitch 0; unbindall; fog_override 1; fog_enable 0; rcon tmps_records_demo_load; demo_gototick ${demo.demo_start_tick - startPadding}; demo_setendtick ${demo.demo_end_tick + endPadding + 66}` },
+            { tick: demo.demo_start_tick - startPadding, commands: `exec tmps_records_spec_player; spec_mode 4; demo_resume; volume 0.1; rcon tmps_records_run_start; startmovie ${demo.demo_info.filename}.mp4` },
             { tick: demo.demo_start_tick, commands: `exec tmps_records_spec_player; spec_mode 4` }, //in case player dead before start_tick
-            { tick: demo.demo_end_tick + endPadding, commands: 'rcon tmps_records_run_end' }
+            { tick: demo.demo_end_tick + endPadding, commands: 'rcon tmps_records_run_end; endmovie' }
         ];
 
         // Write the play commands

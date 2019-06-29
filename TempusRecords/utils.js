@@ -6,11 +6,11 @@ function startTF2()
 {
     console.log('Launching TF2');
 
-    var launchCmd = `"${config.steam.path}" -applaunch ${config.steam.game}`;
+    var launchCmd = `cd "${config.sdr.path}" && ${config.sdr.cli}`;
 
-    for (var i = 0; i < config.tf2.launch_options.length; i++)
+    for (var i = 0; i < config.sdr.args.length; i++)
     {
-        launchCmd += ` ${config.tf2.launch_options[i]}`;
+        launchCmd += ` ${config.sdr.args[i]["arg"]} "${config.sdr.args[i]["value"]}"`;
     }
 
     exec(launchCmd, null, { shell: true }, function (err, data)

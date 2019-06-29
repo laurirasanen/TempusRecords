@@ -64,7 +64,7 @@ function compress(file, cb)
             "encoder-tune": "film",
             "rate": 60,
             "width": 2560,
-            "height": 1080,
+            "height": 1440,
             "aencoder": "copy:aac"
         })
         .on('error', err =>

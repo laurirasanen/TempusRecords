@@ -1,8 +1,8 @@
 ﻿const rcon = require('rcon'),
     net = require('net'),
     demo = require('./demo.js'),
-    obs = require('./obs.js'),
     utils = require('./utils.js'),
+    youtube = require('./youtube.js'),
     config = require('./config.json');
 
 var restarting = false,
@@ -46,9 +46,6 @@ var srv = net.createServer(function (sock)
             console.log('[DEMO] RUN START');
             demo_playback = true;
 
-            // Start OBS recording
-            obs.startRecording();
-
             return;
         }
 
@@ -56,23 +53,31 @@ var srv = net.createServer(function (sock)
         {
             console.log('[DEMO] RUN END');
 
-            // End OBS recording
-            obs.stopRecording(currentDemo.demo_info.filename, currentDemo, () =>
-            {
-                demo_playback = false;
-                demo_loaded = false;
-                conn.send('volume 0');
+            demo_playback = false;
+            demo_loaded = false;
+            conn.send('volume 0');
 
-                // Limit number of recordings
-                recorded_runs++;
-                if (recorded_runs < config.youtube.video_limit)
+            // Limit number of recordings
+            recorded_runs++;
+            if (recorded_runs < config.youtube.video_limit)
+            {
+                demo.skip();
+            }
+            else
+            {
+                console.log(`Finished recording ${config.youtube.video_limit} runs`);
+            }
+
+            // Compress
+            var filename = `${config.sdr.recording_folder}/${currentDemo.demo_info.filename}.mp4`;
+            youtube.compress(filename, (result, name) =>
+            {
+                // Upload compressed
+                if (result === true)
                 {
-                    demo.skip();
+                    //youtube.upload(name, demo);
+                    process.exit(0);
                 }
-                else
-                {
-                    console.log(`Finished recording ${config.youtube.video_limit} runs`);
-                }     
             });
 
             return;
