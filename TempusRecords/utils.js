@@ -2,14 +2,23 @@
     config = require("./config.json"),
     fs = require('fs');
 
-function startTF2()
+function launchSDR(params = "")
 {
-    console.log('Launching TF2');
+    console.log('Launching SDR');
 
     var launchCmd = `cd "${config.sdr.path}" && ${config.sdr.cli}`;
 
     for (var i = 0; i < config.sdr.args.length; i++)
     {
+        if (config.sdr.args[i]["arg"] == "/PARAMS")
+        {
+            if (params.length > 0)
+            {
+                launchCmd += ` ${config.sdr.args[i]["arg"]} "${config.sdr.args[i]["value"]} ${params}"`;
+                continue;
+            }
+        }
+
         launchCmd += ` ${config.sdr.args[i]["arg"]} "${config.sdr.args[i]["value"]}"`;
     }
 
@@ -101,7 +110,7 @@ function writeJson(path, data, cb)
     });
 }
 
-module.exports.startTF2 = startTF2;
+module.exports.launchSDR = launchSDR;
 module.exports.getLatestFile = getLatestFile;
 module.exports.secondsToTimeStamp = secondsToTimeStamp;
 module.exports.readJson = readJson;

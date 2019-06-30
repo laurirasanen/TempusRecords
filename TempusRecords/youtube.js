@@ -1,5 +1,7 @@
 ﻿const handbrake = require('handbrake-js'),
     youtube_api = require('youtube-api'),
+    ffmpegPath = require('@ffmpeg-installer/ffmpeg').path,
+    ffmpeg = require('fluent-ffmpeg'),
     fs = require('fs'),
     Lien = require('lien'),
     prettyBytes = require('pretty-bytes'),
@@ -95,6 +97,51 @@ function compress(file, cb)
         });
 }
 
+function remux(video, audio, output, cb)
+{
+    ffmpeg.setFfmpegPath(ffmpegPath);
+    ffmpeg()
+        .input(video)
+        .input(audio)
+        .videoCodec('copy')
+        .outputOptions(['-map 0:v:0', '-map 1:a:0'])
+        .save(output)
+        .on("error", (err, stdout, stderr) =>
+        {
+            console.log(err.message);
+        })
+        .on('end', (stdout, stderr) =>
+        {
+            console.log('Remux done');
+
+            // Remove old video and audio files
+            fs.unlink(video, err =>
+            {
+                if (err)
+                {
+                    console.log('Failed to unlink remux input video');
+                    console.log(err);
+                    return;
+                }
+
+                console.log('Unlinked remux input video');
+            });
+            fs.unlink(audio, err =>
+            {
+                if (err)
+                {
+                    console.log('Failed to unlink remux input audio');
+                    console.log(err);
+                    return;
+                }
+
+                console.log('Unlinked remux input audio');
+            });
+
+            return cb(true, output);
+        });
+}
+
 function upload(file, demo)
 {
     console.log(`Uploading ${file}`);
@@ -178,12 +225,12 @@ function upload(file, demo)
             {
                 if (err)
                 {
-                    console.log('Failed to unlink compressed recording');
+                    console.log('Failed to unlink uploaded video');
                     console.log(err);
                     return;
                 }
 
-                console.log('Unlinked compressed recording');
+                console.log('Unlinked uploaded video');
             });
         });
     });
@@ -196,3 +243,4 @@ function upload(file, demo)
 
 module.exports.compress = compress;
 module.exports.upload = upload;
+module.exports.remux = remux;

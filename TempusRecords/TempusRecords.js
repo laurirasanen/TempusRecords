@@ -1,13 +1,9 @@
 const rcon = require("./rcon.js"),
-    demo = require("./demo.js"),
-    utils = require('./utils.js');
+    demo = require("./demo.js");
 
 function start()
 {
-    utils.startTF2();
-
     rcon.init();
-
     demo.init();
 }
 

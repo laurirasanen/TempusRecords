@@ -48,7 +48,7 @@
       },
       {
         "arg": "/PARAMS",
-        "value": "-novid -high -windowed -noborder -hijack -nocrashdialog -w 2560 -h 1440 +ip 127.0.0.1 -usercon rcon_password bananaman +map itemtest -dxlevel 98"
+        "value": "-novid -high -windowed -noborder -nocrashdialog -w 2560 -h 1440 -dxlevel 98 +rcon_address 127.0.0.1:3002 +rcon_password bananaman +sdr_endmoviequit 1 +demo_quitafterplayback +sdr_video_x264_crf 20 +sdr_video_threads 12 +volume 0 +snd_musicvolume 0 +exec cinema"
       }
     ],
     "recording_folder": "E:/TempusRecordings",
