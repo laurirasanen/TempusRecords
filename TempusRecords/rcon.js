@@ -1,4 +1,5 @@
 ﻿const net = require('net'),
+    tasklist = require('tasklist'),
     demo = require('./demo.js'),
     youtube = require('./youtube.js'),
     config = require('./config.json'),
@@ -35,6 +36,21 @@ var srv = net.createServer(function (sock)
                 // add 5 sec delay just to make sure SDR is done processing
                 setTimeout((demoObj) =>
                 {
+                    // sdr_endmoviequit 1 will throw 'FCVAR_CLIENTCMD_CAN_EXECUTE prevented running command: quit'
+                    // in TF2. demo_quitafterplayback 1 doesn't seem to work either with SDR.
+                    // Kill TF2 and LauncherCLI to prevent them building up
+                    tasklist().then(tasks => 
+                    {
+                        tasks.forEach((task) => 
+                        {
+                            if (task.imageName == "hl2.exe" || task.imageName == "LauncherCLI.exe")
+                            {
+                                process.kill(task.pid);
+                            }
+                        });
+                    });
+
+
                     var filename = `${config.sdr.recording_folder}/${demoObj.demo_info.filename}.mp4`;
 
                     // Compress
