@@ -59,15 +59,15 @@ function compress(file, cb)
             "input": file,
             "output": `${file.split(".mp4")[0]}_compressed.mp4`,
             "encoder": "x264",
-            "vb": "24000",
+            "vb": "68000",
             "two-pass": true,
             "encoder-profile": "high",
             "encoder-level": "4.2",
             "encoder-preset": "veryfast",
             "encoder-tune": "film",
             "rate": 60,
-            "width": 2560,
-            "height": 1440,
+            "width": 3840,
+            "height": 2160,
             "aencoder": "copy:aac"
         })
         .on('error', err =>
