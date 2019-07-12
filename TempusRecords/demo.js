@@ -31,6 +31,16 @@ function init()
             return 0;
         });
 
+        for (var i = runs.length - 1; i >= 0; i--)
+        {
+            if (Date.now() - runs[i].map.date_added * 1000 < (1000 * 60 * 60 * 24 * 7))
+            {
+                console.log(`Removing run for map newer than 1 week ${runs[i].map.name} (${runs[i].class === 3 ? "Soldier" : "Demoman"})`);
+                runs.splice(i, 1);
+                continue;
+            }
+        }
+
         utils.readJson('./uploaded.json', (err, uploaded) =>
         {
             if (err !== null)
@@ -45,7 +55,7 @@ function init()
             {
                 if (uploaded.maps.includes(runs[i].id))
                 {
-                    console.log(`Removing already uploaded ${runs[i].map.name} (${runs[i].class === 3 ? "Soldier" : "Demoman"})`);
+                    //console.log(`Removing already uploaded ${runs[i].map.name} (${runs[i].class === 3 ? "Soldier" : "Demoman"})`);
                     runs.splice(i, 1);   
                     continue;
                 }
@@ -231,7 +241,14 @@ function getRuns(cb)
                         {
                             x.toRecordOverview().then(wr =>
                             {
-                                runs.push(wr);
+                                wr.map.toMapOverview().then(map => {
+                                    wr.map = map;
+                                    runs.push(wr);
+                                })
+                                .catch(err =>
+                                {
+                                console.log(err);
+                                });
                             })
                             .catch(err =>
                             {
@@ -250,7 +267,14 @@ function getRuns(cb)
                         {
                             x.toRecordOverview().then(wr =>
                             {
-                                runs.push(wr);
+                                wr.map.toMapOverview().then(map => {
+                                    wr.map = map;
+                                    runs.push(wr);
+                                })
+                                .catch(err =>
+                                {
+                                console.log(err);
+                                });
                             })
                             .catch(err =>
                             {
