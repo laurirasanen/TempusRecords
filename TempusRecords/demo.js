@@ -1,7 +1,6 @@
 ﻿const tempus = require('tempus-api'),
     downloader = require('./downloader.js'),
     rcon = require('./rcon.js'),
-    obs = require('./obs.js'),
     fs = require('fs'),
     utils = require('./utils.js'),
     config = require('./config.json'),
@@ -14,7 +13,6 @@
 var old_steamids = [
     { current: 'STEAM_0:0:203051360', old: 'STEAM_1:0:115234', date: 1523283653.81564 } // vice
 ],
-    demo_load_timeout = 20000,
     runs = [];
 
 global.currentDemo = null;
@@ -33,6 +31,16 @@ function init()
             return 0;
         });
 
+        for (var i = runs.length - 1; i >= 0; i--)
+        {
+            if (Date.now() - runs[i].map.date_added * 1000 < (1000 * 60 * 60 * 24 * 7))
+            {
+                console.log(`Removing run for map newer than 1 week ${runs[i].map.name} (${runs[i].class === 3 ? "Soldier" : "Demoman"})`);
+                runs.splice(i, 1);
+                continue;
+            }
+        }
+
         utils.readJson('./uploaded.json', (err, uploaded) =>
         {
             if (err !== null)
@@ -47,7 +55,7 @@ function init()
             {
                 if (uploaded.maps.includes(runs[i].id))
                 {
-                    console.log(`Removing already uploaded ${runs[i].map.name} (${runs[i].class === 3 ? "Soldier" : "Demoman"})`);
+                    //console.log(`Removing already uploaded ${runs[i].map.name} (${runs[i].class === 3 ? "Soldier" : "Demoman"})`);
                     runs.splice(i, 1);   
                     continue;
                 }
@@ -85,10 +93,7 @@ function init()
                 return;
             }
 
-            setTimeout(() =>
-            {
-                playDemo(runs[0]);
-            }, 10000); 
+            playDemo(runs[0]);
         });           
     });
 }
@@ -106,9 +111,6 @@ function skip()
 
 function playDemo(demo)
 {
-    if (rcon.active)
-        rcon.instance().send('volume 0');
-
     if (!demo || !demo.player_info || !demo.demo_info)
     {
         return;
@@ -176,10 +178,11 @@ function startDemo(demo)
         // Commands used to control the demo playback
         // rcon tmps_records_* commands will trigger events in rcon.js
         var commands = [
-            { tick: 33, commands: `sensitivity 0; m_yaw 0; m_pitch 0; unbindall; fog_override 1; fog_enable 0; rcon tmps_records_demo_load; demo_gototick ${demo.demo_start_tick - startPadding}; demo_setendtick ${demo.demo_end_tick + endPadding + 66}` },
-            { tick: demo.demo_start_tick - startPadding, commands: `exec tmps_records_spec_player; spec_mode 4; demo_resume; volume 0.1; rcon tmps_records_run_start` },
+            { tick: 33, commands: `sdr_outputdir ${config.sdr.recording_folder}; sensitivity 0; m_yaw 0; m_pitch 0; unbindall; fog_override 1; fog_enable 0; rcon tmps_records_demo_load; demo_gototick ${demo.demo_start_tick - startPadding}; demo_setendtick ${demo.demo_end_tick + endPadding + 66}` },
+            { tick: demo.demo_start_tick - startPadding, commands: `exec tmps_records_spec_player; spec_mode 4; demo_resume; volume 0.1; rcon tmps_records_run_start; startmovie ${demo.demo_info.filename}.mp4` },
             { tick: demo.demo_start_tick, commands: `exec tmps_records_spec_player; spec_mode 4` }, //in case player dead before start_tick
-            { tick: demo.demo_end_tick + endPadding, commands: 'rcon tmps_records_run_end' }
+            { tick: demo.demo_end_tick + endPadding - 33, commands: 'rcon tmps_records_run_end' }, //send rcon before endmovie, SDR will quit after processing finishes
+            { tick: demo.demo_end_tick + endPadding, commands: 'volume 0; endmovie' }
         ];
 
         // Write the play commands
@@ -188,17 +191,22 @@ function startDemo(demo)
             if (success)
             {
                 currentDemo = demo;
-                rcon.instance().send(`stopdemo; mat_fullbright 0; volume 0; demo_gototick 0; playdemo ${demo.demo_info.filename}`);
 
-                setTimeout(() =>
-                {
-                    // demo loading took too long
-                    if (!rcon.demo_loaded)
-                    {
-                        return;
-                    }
+                // Record audio
+                utils.launchSDR(`+sdr_audio_only 1 +sdr_audio_disable_video 0 +playdemo ${demo.demo_info.filename}`);
 
-                }, demo_load_timeout);                
+                // NOTE:
+                // Turns out PlayCommands are not registered with 'sdr_audio_disable_video' set to 1.
+                // Therefore it needs to be set to 0 for 'endmovie' to ever be registered,
+                // and the audio file to be closed.
+                // Starting another instance of SDR to record video will cause the audio instance
+                // to stop playing back video for whatever reason.
+                // This is equivalent to setting `sdr_audio_disable_video` to 1...
+                // Meaning we cannot record audio and video simulatenously,
+                // even with SDR MultiProcess extension enabled.
+                // Video will be recorded after audio finishes,
+                // in rcon.js, when tmps_records_run_end gets called the first time.
+                // The second time, video will be compressed, remuxed together with audio and uploaded.
             }
             else
             {
@@ -233,7 +241,14 @@ function getRuns(cb)
                         {
                             x.toRecordOverview().then(wr =>
                             {
-                                runs.push(wr);
+                                wr.map.toMapOverview().then(map => {
+                                    wr.map = map;
+                                    runs.push(wr);
+                                })
+                                .catch(err =>
+                                {
+                                console.log(err);
+                                });
                             })
                             .catch(err =>
                             {
@@ -252,7 +267,14 @@ function getRuns(cb)
                         {
                             x.toRecordOverview().then(wr =>
                             {
-                                runs.push(wr);
+                                wr.map.toMapOverview().then(map => {
+                                    wr.map = map;
+                                    runs.push(wr);
+                                })
+                                .catch(err =>
+                                {
+                                console.log(err);
+                                });
                             })
                             .catch(err =>
                             {

@@ -21,41 +21,37 @@
 		],
 		"video_limit": 65
 	},
-	"rcon":
+  "rcon": 
+  {
+    "address": "127.0.0.1",
+    "port": 27015,
+    "password": "bananaman",
+    "listen_address": "127.0.0.1",
+    "listen_port": 3002
+  },
+  "tf2":
 	{
-		"address": "127.0.0.1",
-		"port": 27015,
-		"password": "bananaman",
-		"listen_address": "127.0.0.1",
-		"listen_port": 3002
+		"path": "C:/Program Files (x86)/Steam/steamapps/common/Team Fortress 2/tf/"
 	},
-	"steam": 
-	{
-		"path": "C:/Program Files (x86)/Steam/Steam.exe",
-		"game": 440
-	},
-	"tf2":
-	{
-		"path": "C:/Program Files (x86)/Steam/steamapps/common/Team Fortress 2/tf/",
-		"launch_options": 
-		[
-			"-novid",
-			"-high",
-			"-windowed",
-			"-noborder",
-			"-hijack",
-			"-nocrashdialog",
-			"-w 2560",
-			"-h 1080",
-			"+ip 127.0.0.1",
-			"-usercon",
-			"rcon_password bananaman",
-			"+map itemtest",
-			"-dxlevel 98"
-		]
-	},
-	"obs":
-	{
-		"recording_folder": "E:/TempusRecordings/"
-	}
+  "sdr": 
+  {
+    "path": "E:/SourceDemoRenderer",
+    "cli": "LauncherCLI.exe",
+    "args": [
+      {
+        "arg": "/GAME",
+        "value": "C:\\Program Files (x86)\\Steam\\steamapps\\common\\Team Fortress 2\\hl2.exe"
+      },
+      {
+        "arg": "/PATH",
+        "value": "C:\\Program Files (x86)\\Steam\\steamapps\\common\\Team Fortress 2\\tf"
+      },
+      {
+        "arg": "/PARAMS",
+        "value": "-novid -high -windowed -noborder -nocrashdialog -w 2560 -h 1440 -dxlevel 98 +rcon_address 127.0.0.1:3002 +rcon_password bananaman demo_quitafterplayback 1 +sdr_endmoviequit 1 +demo_quitafterplayback +sdr_video_x264_crf 0 +sdr_video_threads 12 +volume 0 +snd_musicvolume 0 +exec cinema"
+      }
+    ],
+    "recording_folder": "E:/TempusRecordings",
+    "instances": 6
+  }
 }

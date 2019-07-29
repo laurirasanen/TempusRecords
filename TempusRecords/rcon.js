@@ -1,79 +1,90 @@
-﻿const rcon = require('rcon'),
-    net = require('net'),
+﻿const net = require('net'),
+    tasklist = require('tasklist'),
     demo = require('./demo.js'),
-    obs = require('./obs.js'),
-    utils = require('./utils.js'),
-    config = require('./config.json');
+    youtube = require('./youtube.js'),
+    config = require('./config.json'),
+    utils = require('./utils.js');
 
-var restarting = false,
-    active = false,
-    conn,
-    demo_loaded = false,
-    demo_playback = false,
-    recorded_runs = 0;
+var recorded_runs = 0,
+    finishedInstances = 0;
 
 // Listen for play commands
 var srv = net.createServer(function (sock)
 {
     sock.on('data', function (data)
     {
-        if (data.toString().includes('tmps_records_demo_load'))
-        {
-            console.log('[DEMO] LOADED');
-            demo_loaded = true;
-
-            if (currentDemo === undefined) demo.skip();
-
-            runStartTimeout = 5000 + currentDemo.demo_start_tick / 25;
-
-            setTimeout(() =>
-            {
-                // demo loading took too long
-                if (!demo_playback && demo_loaded)
-                {
-                    console.log(`[DEMO] Playing ${currentDemo.demo_info.filename} timed out, skipping!`);
-
-                    demo.skip();
-                    return;
-                }
-
-            }, runStartTimeout);
-            return;
-        }
-
-        if (data.toString().includes('tmps_records_run_start') && demo_loaded)
-        {
-            console.log('[DEMO] RUN START');
-            demo_playback = true;
-
-            // Start OBS recording
-            obs.startRecording();
-
-            return;
-        }
-
-        if (data.toString().includes('tmps_records_run_end') && demo_playback)
+        if (data.toString().includes('tmps_records_run_end'))
         {
             console.log('[DEMO] RUN END');
+            finishedInstances++;
 
-            // End OBS recording
-            obs.stopRecording(currentDemo.demo_info.filename, currentDemo, () =>
+            if (finishedInstances === 1)
             {
-                demo_playback = false;
-                demo_loaded = false;
-                conn.send('volume 0');
+                // Just finished running SDR audio instance,
+                // start video instance.
 
-                // Limit number of recordings
-                recorded_runs++;
-                if (recorded_runs < config.youtube.video_limit)
+                // Wait a bit to ensure previous instance has exited
+                setTimeout(() =>
                 {
-                    demo.skip();
-                }
-                else
+                    utils.launchSDR(`+playdemo ${currentDemo.demo_info.filename}`);
+                }, 1000);
+                return;
+            }
+            else if (finishedInstances > 1)
+            {
+                // run in seperate scope to prevent currentDemo change,
+                // add 5 sec delay just to make sure SDR is done processing
+                setTimeout((demoObj) =>
                 {
-                    console.log(`Finished recording ${config.youtube.video_limit} runs`);
-                }     
-            });
+                    // sdr_endmoviequit 1 will throw 'FCVAR_CLIENTCMD_CAN_EXECUTE prevented running command: quit'
+                    // in TF2. demo_quitafterplayback 1 doesn't seem to work either with SDR.
+                    // Kill TF2 and LauncherCLI to prevent them building up
+                    tasklist().then(tasks => 
+                    {
+                        tasks.forEach((task) => 
+                        {
+                            if (task.imageName == "hl2.exe" || task.imageName == "LauncherCLI.exe")
+                            {
+                                process.kill(task.pid);
+                            }
+                        });
+                    });
+
+
+                    var filename = `${config.sdr.recording_folder}/${demoObj.demo_info.filename}.mp4`;
+
+                    // Compress
+                    youtube.compress(filename, (result, name) =>
+                    {
+                        if (result === true)
+                        {
+                            // Compressed, remux audio
+                            // Assume audio recording has already finished,
+                            // it should be significantly faster than the video, unless it fails..
+                            youtube.remux(name, `${filename.split(".mp4")[0]}.wav`, `${filename.split(".mp4")[0]}_remuxed.mp4`, (result, name) =>
+                            {
+                                // Upload final output
+                                if (result === true)
+                                {
+                                    youtube.upload(name, demoObj);
+
+                                    // Limit number of recordings
+                                    recorded_runs++;
+                                    if (recorded_runs < config.youtube.video_limit)
+                                    {
+                                        finishedInstances = 0;
+                                        demo.skip();
+                                    }
+                                    else
+                                    {
+                                        console.log(`Finished recording ${config.youtube.video_limit} runs`);
+                                    }
+                                }
+                            });
+                        }
+                    });
+                }, 5000, currentDemo);
+            }
 
             return;
         }
@@ -84,112 +95,9 @@ var srv = net.createServer(function (sock)
     });
 });
 
-srv.listen(config.rcon.listen_port, config.rcon.listen_address);
-
 function init()
 {
-    console.log(config.rcon.address + ':' + config.rcon.port + ':' + config.rcon.password);
-    conn = new rcon(config.rcon.address, config.rcon.port, config.rcon.password);
-
-    conn.on('auth', () =>
-    {
-        console.log('[RCON] Authenticated!');
-        conn.send('disconnect; exec cinema; volume 0; rcon_address 127.0.0.1:3002');
-        active = true;
-        if (restarting)
-        {
-            restarting = false;
-            demo.playDemo(currentDemo);
-        }
-
-    }).on('response', (str) =>
-    {
-        if (str.length === 0)
-        {
-            // For some reason auth doesn't get called again when restarting TF2 so start playback here after restart
-            if (restarting)
-            {
-                console.log('[RCON] Authenticated!');
-                conn.send('disconnect; exec cinema; volume 0; rcon_address 127.0.0.1:3002');
-                active = true;
-                restarting = false;
-                demo.playDemo(currentDemo);
-            }
-
-            console.log('[RCON] Received empty response');
-            return;
-        }
-        console.log('[RCON] Received response: ' + str);
-
-    }).on('end', () =>
-    {
-        console.log('[RCON] Socket closed!');
-        active = false;
-
-    }).on('error', (err) =>
-    {
-        active = false;
-        if (err.code === 'ECONNREFUSED')
-        {
-            console.log(`[RCON] Could not connect to ${conn.host}:${conn.port}!`);
-            setTimeout(() =>
-            {
-                conn.connect();
-            }, 5000);
-        }
-        else if (err.code === 'ECONNRESET')
-        {
-            console.log('[RCON] Connection reset!');
-
-            restartTF2();
-        }
-        else if (err.code === 'EPIPE')
-        {
-            console.log('[RCON] Socket closed by other party!',);
-
-            restartTF2();
-        }
-        else
-        {
-            console.log('[RCON] Encountered unhandled error!');
-            console.log(err);
-
-            restartTF2();
-        }
-    });
-    try
-    {
-        conn.connect();
-    }
-    catch (err)
-    {
-        console.log('[RCON] Socket closed!');
-        console.log(err);
-
-        restartTF2();
-    }
-}
-
-// Restart tf2 if rcon socket encounters an error.
-// This *should* only happen if tf2 crashes.
-// This will not get called if you type 'exit' in console.
-function restartTF2()
-{
-    // start tf2 again and restart same demo
-    utils.startTF2();
-    restarting = true;
-
-    setTimeout(() =>
-    {
-        conn.connect();
-    }, 5000);
-}
-
-function instance()
-{
-    return conn;
+    srv.listen(config.rcon.listen_port, config.rcon.listen_address);
 }
 
 module.exports.init = init;
-module.exports.instance = instance;
-module.exports.active = active;

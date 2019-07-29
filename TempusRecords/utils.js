@@ -2,15 +2,24 @@
     config = require("./config.json"),
     fs = require('fs');
 
-function startTF2()
+function launchSDR(params = "")
 {
-    console.log('Launching TF2');
+    console.log('Launching SDR');
 
-    var launchCmd = `"${config.steam.path}" -applaunch ${config.steam.game}`;
+    var launchCmd = `cd "${config.sdr.path}" && ${config.sdr.cli}`;
 
-    for (var i = 0; i < config.tf2.launch_options.length; i++)
+    for (var i = 0; i < config.sdr.args.length; i++)
     {
-        launchCmd += ` ${config.tf2.launch_options[i]}`;
+        if (config.sdr.args[i]["arg"] == "/PARAMS")
+        {
+            if (params.length > 0)
+            {
+                launchCmd += ` ${config.sdr.args[i]["arg"]} "${config.sdr.args[i]["value"]} ${params}"`;
+                continue;
+            }
+        }
+
+        launchCmd += ` ${config.sdr.args[i]["arg"]} "${config.sdr.args[i]["value"]}"`;
     }
 
     exec(launchCmd, null, { shell: true }, function (err, data)
@@ -101,7 +110,7 @@ function writeJson(path, data, cb)
     });
 }
 
-module.exports.startTF2 = startTF2;
+module.exports.launchSDR = launchSDR;
 module.exports.getLatestFile = getLatestFile;
 module.exports.secondsToTimeStamp = secondsToTimeStamp;
 module.exports.readJson = readJson;
