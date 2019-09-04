@@ -88,6 +88,21 @@ var srv = net.createServer(function (sock)
 
             return;
         }
+        else if (data.toString().includes('tmps_records_skip'))
+        {
+            tasklist().then(tasks => 
+            {
+                tasks.forEach((task) => 
+                {
+                    if (task.imageName == "hl2.exe" || task.imageName == "LauncherCLI.exe")
+                    {
+                        process.kill(task.pid);
+                    }
+                });
+
+                demo.skip();
+            });
+        }
     })
     .on('error', (err) =>
     {
