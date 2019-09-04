@@ -15,16 +15,16 @@ let server = new Lien({
 });
 
 let oauth = youtube_api.authenticate(
-{
-    type: "oauth",
-    client_id: config.youtube.client_id,
-    client_secret: config.youtube.client_secret,
-    redirect_url: config.youtube.redirect_url
+    {
+        type: "oauth",
+        client_id: config.youtube.client_id,
+        client_secret: config.youtube.client_secret,
+        redirect_url: config.youtube.redirect_url
     });
 
 opn(oauth.generateAuthUrl({
     access_type: "offline",
-    scope: ["https://www.googleapis.com/auth/youtube.upload"]
+    scope: ["https://www.googleapis.com/auth/youtube"]
 }));
 
 server.addPage("/oauth2callback", lien =>
@@ -34,7 +34,7 @@ server.addPage("/oauth2callback", lien =>
     {
         if (err)
         {
-            
+
             lien.end(err, 400);
             return console.log(err);
         }
@@ -162,79 +162,117 @@ function upload(file, demo)
             .replace("$CLASS", demo.class === 3 ? "Soldier" : "Demoman")
             .replace("$DATETIME", d.toUTCString())
             .replace("$DATE", demo_date.toUTCString())
-            
+
             .replace("$DEMO_URL", 'https://tempus.xyz/demos/' + demo.demo_info.id);
 
         description += line + "\n";
     });
 
     var req = youtube_api.videos.insert(
-    {
-        resource:
         {
-            snippet:
+            resource:
             {
-                title: config.youtube.title.replace("$NAME", demo.player_info.name).replace("$MAP", demo.map.name).replace("$TIME", utils.secondsToTimeStamp(demo.duration)),
-                description: description
+                snippet:
+                {
+                    title: config.youtube.title.replace("$NAME", demo.player_info.name).replace("$MAP", demo.map.name).replace("$TIME", utils.secondsToTimeStamp(demo.duration)),
+                    description: description
+                },
+                status:
+                {
+                    privacyStatus: "public"
+                }
             },
-            status:
+            // This is for the callback function
+            part: "snippet,status",
+
+            // Create the readable stream to upload the video
+            media:
             {
-                privacyStatus: "public"
+                body: fs.createReadStream(file)
             }
         },
-        // This is for the callback function
-        part: "snippet,status",
-
-        // Create the readable stream to upload the video
-        media:
+        (err, data) =>
         {
-            body: fs.createReadStream(file)
-        }
-    },
-    (err, data) =>
-    {
-        console.log("Done uploading");
-        clearInterval(interval);
-
-        // Update last uploaded timestamp
-        utils.readJson('./uploaded.json', (err, uploaded) =>
-        {
-            if (err !== null)
+            if (err)
             {
-                console.log('Failed to read last uploaded');
+                console.log("Failed to upload video");
                 console.log(err);
+                clearInterval(interval);
                 return;
             }
+            else
+            {
+                console.log("Done uploading");
+            }
 
-            if (!uploaded.maps.includes(demo.id))
-                uploaded.maps.push(demo.id);
+            clearInterval(interval);
 
-            utils.writeJson('./uploaded.json', uploaded, (err) =>
+            // Add video to class playlist
+            youtube_api.playlistItems.insert(
+                {
+                    resource: {
+                        snippet: {
+                            playlistId: demo.class === 3 ? "PL_D9J2bYWXyLFs5OJcTugl_70HqzDN9nv" : "PL_D9J2bYWXyIeRkUq099oCV8wf5Omf9Fe",
+                            resourceId: {
+                                kind: "youtube#video",
+                                videoId: data.id
+                            }
+                        }
+                    },
+                    part: "snippet"
+                },
+                (err, data) =>
+                {
+                    if (err)
+                    {
+                        console.log("Failed to add video to playlist");
+                        console.log(err);
+                    }
+                    else
+                    {
+                        console.log("Video added to playlist");
+                    }
+                });
+
+            // Update last uploaded timestamp
+            utils.readJson('./uploaded.json', (err, uploaded) =>
             {
                 if (err !== null)
                 {
-                    console.log('Failed to write last uploaded');
+                    console.log('Failed to read last uploaded');
                     console.log(err);
                     return;
                 }
 
-                console.log('Updated uploaded list');
-            });
+                if (!uploaded.maps.includes(demo.id))
+                    uploaded.maps.push(demo.id);
 
-            // Remove compressed video
-            fs.unlink(file, err =>
-            {
-                if (err)
+                utils.writeJson('./uploaded.json', uploaded, (err) =>
                 {
-                    console.log('Failed to unlink uploaded video');
-                    console.log(err);
-                    return;
-                }
+                    if (err !== null)
+                    {
+                        console.log('Failed to write last uploaded');
+                        console.log(err);
+                        return;
+                    }
 
-                console.log('Unlinked uploaded video');
+                    console.log('Updated uploaded list');
+                });
+
+                // Remove compressed video
+                fs.unlink(file, err =>
+                {
+                    if (err)
+                    {
+                        console.log('Failed to unlink uploaded video');
+                        console.log(err);
+                        return;
+                    }
+
+                    console.log('Unlinked uploaded video');
+                });
             });
         });
-    });
 
     var interval = setInterval(function ()
     {
