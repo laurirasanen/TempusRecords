@@ -1,10 +1,6 @@
 [
   {
-    "name": "jump_yucca",
-    "class": 3
-  },
-  {
-    "name": "jump_yucca",
+    "name": "jump_strikapult_v11",
     "class": 4
   },
   {
@@ -17,30 +13,6 @@
   },
   {
     "name": "jump_shiver",
-    "class": 4
-  },
-  {
-    "name": "rj_rckteer_adv_v2",
-    "class": 3
-  },
-  {
-    "name": "rj_rckteer_adv_v2",
-    "class": 4
-  },
-  {
-    "name": "rj_rckteer",
-    "class": 3
-  },
-  {
-    "name": "rj_rckteer",
-    "class": 4
-  },
-  {
-    "name": "rj_training_v3",
-    "class": 3
-  },
-  {
-    "name": "rj_training_v3",
     "class": 4
   }
 ]
