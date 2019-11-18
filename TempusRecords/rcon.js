@@ -51,7 +51,7 @@ var srv = net.createServer(function (sock)
                     });
 
 
-                    var filename = `${config.sdr.recording_folder}/${demoObj.demo_info.filename}.mp4`;
+                    var filename = `${config.sdr.recording_folder}/${demoObj.demo_info.filename}_${demoObj.class === 3 ? "soldier" : "demoman"}.avi`;
 
                     // Compress
                     youtube.compress(filename, (result, name) =>
@@ -59,30 +59,29 @@ var srv = net.createServer(function (sock)
                         if (result === true)
                         {
                             // Compressed, remux audio
-                            // Assume audio recording has already finished,
-                            // it should be significantly faster than the video, unless it fails..
-                            youtube.remux(name, `${filename.split(".mp4")[0]}.wav`, `${filename.split(".mp4")[0]}_remuxed.mp4`, (result, name) =>
+                            youtube.remux(name, `${filename.split(".avi")[0]}.wav`, `${filename.split(".avi")[0]}_remuxed.mp4`, (result, name) =>
                             {
                                 // Upload final output
                                 if (result === true)
                                 {
                                     youtube.upload(name, demoObj);
-
-                                    // Limit number of recordings
-                                    recorded_runs++;
-                                    if (recorded_runs < config.youtube.video_limit)
-                                    {
-                                        finishedInstances = 0;
-                                        demo.skip();
-                                    }
-                                    else
-                                    {
-                                        console.log(`Finished recording ${config.youtube.video_limit} runs`);
-                                    }
                                 }
                             });
                         }
                     });
+
+                    // Limit number of recordings
+                    recorded_runs++;
+                    if (recorded_runs < config.youtube.video_limit)
+                    {
+                        finishedInstances = 0;
+                        demo.skip();
+                    }
+                    else
+                    {
+                        console.log(`Finished recording ${config.youtube.video_limit} runs`);
+                    }
+
                 }, 5000, currentDemo);
             }
 

@@ -3,7 +3,7 @@
     fs = require('fs'),
     unzip = require('unzip'),
     bz2 = require('unbzip2-stream'),
-    demo = require('./demo.js'),
+    demojs = require('./demo.js'),
     config = require('./config.json');
 
 // Download demo file from AWS
@@ -214,14 +214,14 @@ function download(url, map, demo, callback)
         {
             console.log('[DL] Error downloading');
             console.log(e.message);
-            demo.skip();
+            demojs.skip();
         });
 
         response.on("error", function (e)
         {
             console.log('[DL] Error downloading');
             console.log(e.message);
-            demo.skip();
+            demojs.skip();
         });
 
         callback(response, demo);
@@ -230,7 +230,7 @@ function download(url, map, demo, callback)
     {
         console.log('[DL] Error downloading');
         console.log(err.message);
-        demo.skip();
+        demojs.skip();
     });
 };
 

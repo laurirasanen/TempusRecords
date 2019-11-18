@@ -57,7 +57,7 @@ function compress(file, cb)
     handbrake.spawn(
         {
             "input": file,
-            "output": `${file.split(".mp4")[0]}_compressed.mp4`,
+            "output": `${file.split(".avi")[0]}_compressed.mp4`,
             "encoder": "x264",
             "vb": "68000",
             "two-pass": true,
@@ -94,7 +94,7 @@ function compress(file, cb)
                 }
             });
 
-            return cb(true, `${file.split(".mp4")[0]}_compressed.mp4`);
+            return cb(true, `${file.split(".avi")[0]}_compressed.mp4`);
         });
 }
 

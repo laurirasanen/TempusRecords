@@ -5,7 +5,8 @@
     utils = require('./utils.js'),
     config = require('./config.json'),
     nicknames = require('./nicknames.json'),
-    blacklist = require('./blacklist.json');
+    blacklist = require('./blacklist.json'),
+    youtube = require('./youtube.js');
 
 // Vice changed accounts at some point.
 // All records in tempus api have his new steamid but the old demo files themselves don't.
@@ -56,7 +57,7 @@ function init()
                 if (uploaded.maps.includes(runs[i].id))
                 {
                     //console.log(`Removing already uploaded ${runs[i].map.name} (${runs[i].class === 3 ? "Soldier" : "Demoman"})`);
-                    runs.splice(i, 1);   
+                    runs.splice(i, 1);
                     continue;
                 }
 
@@ -94,7 +95,7 @@ function init()
             }
 
             playDemo(runs[0]);
-        });           
+        });
     });
 }
 
@@ -166,7 +167,7 @@ function startDemo(demo)
     {
         if (err)
         {
-            console.log('[FILE] Could not write tmps_records_spec_player.cfg!',);
+            console.log('[FILE] Could not write tmps_records_spec_player.cfg!');
             console.log(err);
 
             return;
@@ -179,7 +180,7 @@ function startDemo(demo)
         // rcon tmps_records_* commands will trigger events in rcon.js
         var commands = [
             { tick: 33, commands: `sdr_outputdir ${config.sdr.recording_folder}; sensitivity 0; m_yaw 0; m_pitch 0; unbindall; fog_override 1; fog_enable 0; rcon tmps_records_demo_load; demo_gototick ${demo.demo_start_tick - startPadding}; demo_setendtick ${demo.demo_end_tick + endPadding + 66}` },
-            { tick: demo.demo_start_tick - startPadding, commands: `exec tmps_records_spec_player; spec_mode 4; demo_resume; volume 0.1; rcon tmps_records_run_start; startmovie ${demo.demo_info.filename}.mp4` },
+            { tick: demo.demo_start_tick - startPadding, commands: `exec tmps_records_spec_player; spec_mode 4; demo_resume; volume 0.1; rcon tmps_records_run_start; startmovie ${demo.demo_info.filename}_${demo.class === 3 ? "soldier" : "demoman"}.avi` },
             { tick: demo.demo_start_tick, commands: `exec tmps_records_spec_player; spec_mode 4` }, //in case player dead before start_tick
             { tick: demo.demo_end_tick + endPadding - 33, commands: 'rcon tmps_records_run_end' }, //send rcon before endmovie, SDR will quit after processing finishes
             { tick: demo.demo_end_tick + endPadding, commands: 'volume 0; endmovie' }
