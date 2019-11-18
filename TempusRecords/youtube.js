@@ -179,7 +179,8 @@ function upload(file, demo)
                 },
                 status:
                 {
-                    privacyStatus: "public"
+                    privacyStatus: "private",
+                    publishAt: new Date(Date.now() + 1000 * 60 * 30).toISOString() // Allow for 30 mins of processing before making public
                 }
             },
             // This is for the callback function
