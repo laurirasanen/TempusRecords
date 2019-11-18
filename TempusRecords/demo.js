@@ -117,6 +117,37 @@ function playDemo(demo)
         return;
     }
 
+    // Check for existing video
+    // if we crashed before, etc..
+    var video = `${config.sdr.recording_folder}/${demo.demo_info.filename}_${demo.class === 3 ? "soldier" : "demoman"}.avi`;
+    var audio = `${config.sdr.recording_folder}/${demo.demo_info.filename}_${demo.class === 3 ? "soldier" : "demoman"}.wav`;
+
+    if (fs.existsSync(video) && fs.existsSync(audio))
+    {
+        console.log(`WARNING: Uploading existing video '${video}'`);
+        console.log(`Make sure to delete existing videos if they're corrupted, etc.`);
+
+        // Compress
+        youtube.compress(video, (result, name) =>
+        {
+            if (result === true)
+            {
+                // Compressed, remux audio
+                youtube.remux(name, audio, `${video.split(".avi")[0]}_remuxed.mp4`, (result, name) =>
+                {
+                    // Upload final output
+                    if (result === true)
+                    {
+                        youtube.upload(name, demo);
+                    }
+                });
+            }
+        });
+
+        skip();
+        return;
+    }
+
     // Get map file
     downloader.getMap(demo.map.name, (res) =>
     {
