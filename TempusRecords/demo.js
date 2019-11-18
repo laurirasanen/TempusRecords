@@ -221,83 +221,103 @@ function startDemo(demo)
 // Get record runs from tempus
 function getRuns(cb)
 {
+    // This function is disgusting,
+    // abandon all hope ye who enter here.
+
     if (!cb || typeof (cb) !== 'function')
         throw 'callback is not a function';
 
     var runs = [];
     tempus.detailedMapList().then(list =>
     {
+
+        // Get soldier runs
         for (var i = 0; i < list.length; i++)
         {
             setTimeout((list, i, runs) =>
             {
-                console.log(`Getting map wrs ${i}/${list.length}`);
+                console.log(`Getting map wrs ${i}/${list.length * 2}`);
                 var map = list[i];
 
                 if (map.name !== null)
                 {
-                    tempus.mapWR(map.name, "s").then(x =>
+                    tempus.mapWR(map.name, "s").then(wr =>
                     {
-                        if (x !== undefined)
+                        if (wr !== undefined)
                         {
-                            x.toRecordOverview().then(wr =>
+                            wr.toRecordOverview().then(wrOverview =>
                             {
-                                wr.map.toMapOverview().then(map => {
-                                    wr.map = map;
-                                    runs.push(wr);
-                                })
-                                .catch(err =>
+                                // Get the actual data from the map class..
+                                wrOverview.map.toMapOverview().then(mapOverview =>
                                 {
-                                console.log(err);
+                                    wrOverview.map = mapOverview;
+                                    runs.push(wrOverview);
+                                }).catch(err =>
+                                {
+                                    console.log(err);
                                 });
-                            })
-                            .catch(err =>
-                            {
-                            console.log(err);
-                            });
-                        }                        
-                    })
-                    .catch(err =>
-                    {
-                        console.log(err);
-                    });
 
-                    tempus.mapWR(map.name, "d").then(x =>
-                    {
-                        if (x !== undefined)
-                        {
-                            x.toRecordOverview().then(wr =>
-                            {
-                                wr.map.toMapOverview().then(map => {
-                                    wr.map = map;
-                                    runs.push(wr);
-                                })
-                                .catch(err =>
-                                {
-                                console.log(err);
-                                });
-                            })
-                            .catch(err =>
+                            }).catch(err =>
                             {
                                 console.log(err);
                             });
                         }
-                    })
-                    .catch(err =>
+
+                    }).catch(err =>
                     {
                         console.log(err);
                     });
                 }
-
-                if (i >= list.length - 1)
-                {
-                    return cb(runs);
-                }
-
             }, i * 200, list, i, runs);
         }
-    })
-    .catch(err =>
+
+        // Get demoman runs
+        for (var i = 0; i < list.length; i++)
+        {
+            setTimeout((list, i, runs) =>
+            {
+                console.log(`Getting map wrs ${i + list.length}/${list.length * 2}`);
+                var map = list[i];
+
+                if (map.name !== null)
+                {
+                    tempus.mapWR(map.name, "d").then(wr =>
+                    {
+                        if (wr !== undefined)
+                        {
+                            wr.toRecordOverview().then(wrOverview =>
+                            {
+                                // Get the actual data from the map class..
+                                wrOverview.map.toMapOverview().then(mapOverview =>
+                                {
+                                    wrOverview.map = mapOverview;
+                                    runs.push(wrOverview);
+
+                                    // Return callback after getting last run
+                                    if (i >= list.length - 1)
+                                    {
+                                        return cb(runs);
+                                    }
+                                }).catch(err =>
+                                {
+                                    console.log(err);
+                                });
+
+                            }).catch(err =>
+                            {
+                                console.log(err);
+                            });
+                        }
+
+                    }).catch(err =>
+                    {
+                        console.log(err);
+                    });
+                }
+            }, list.length * 200 + i * 200, list, i, runs);
+        }
+
+    }).catch(err =>
     {
         console.log(err);
     });
