@@ -18,84 +18,95 @@ var old_steamids = [
 
 global.currentDemo = null;
 
-function init()
+const sleep = (milliseconds) =>
 {
-    getRuns((r) =>
+    return new Promise(resolve => setTimeout(resolve, milliseconds));
+};
+
+async function init(recent)
+{
+    var mapList = [];
+    if (recent)
     {
-        runs = r;
+        var activity = await tempus.getActivity();
+        runs = await getOverviews(activity.map_wrs);
+    }
+    else
+    {
+        mapList = await tempus.detailedMapList();
+        runs = await getRuns(mapList);
+    }
 
-        // Sort by date
-        runs.sort((a, b) =>
+    // Sort by date
+    runs.sort((a, b) =>
+    {
+        if (a.demo_info.date < b.demo_info.date) return -1;
+        if (a.demo_info.date > b.demo_info.date) return 1;
+        return 0;
+    });
+
+    for (var i = runs.length - 1; i >= 0; i--)
+    {
+        if (Date.now() - runs[i].map.date_added * 1000 < (1000 * 60 * 60 * 24 * 7))
         {
-            if (a.demo_info.date < b.demo_info.date) return -1;
-            if (a.demo_info.date > b.demo_info.date) return 1;
-            return 0;
-        });
+            console.log(`Removing run for map newer than 1 week ${runs[i].map.name} (${runs[i].class === 3 ? "Soldier" : "Demoman"})`);
+            runs.splice(i, 1);
+            continue;
+        }
+    }
 
+    utils.readJson('./uploaded.json', (err, uploaded) =>
+    {
+        if (err !== null)
+        {
+            console.log('Could not read uploaded.json');
+            console.log(err);
+            return;
+        }
+
+        // Remove already uploaded runs
         for (var i = runs.length - 1; i >= 0; i--)
         {
-            if (Date.now() - runs[i].map.date_added * 1000 < (1000 * 60 * 60 * 24 * 7))
+            if (uploaded.maps.includes(runs[i].id))
             {
-                console.log(`Removing run for map newer than 1 week ${runs[i].map.name} (${runs[i].class === 3 ? "Soldier" : "Demoman"})`);
                 runs.splice(i, 1);
                 continue;
             }
+
+            // Remove blacklisted runs
+            var cont = false;
+            for (var e = 0; e < blacklist.length; e++)
+            {
+                if (blacklist[e].name === runs[i].map.name
+                    && blacklist[e].class === runs[i].class)
+                {
+                    console.log(`Removing blacklisted ${runs[i].map.name} (${runs[i].class === 3 ? "Soldier" : "Demoman"})`);
+                    runs.splice(i, 1);
+                    cont = true;
+                    break;
+                }
+            }
+
+            if (cont) continue;
+
+            // Replace names
+            for (var e = 0; e < nicknames.length; e++)
+            {
+                if (runs[i].player_info.steamid === nicknames[e].steamid)
+                {
+                    runs[i].player_info.name = nicknames[e].name;
+                    break;
+                }
+            }
         }
 
-        utils.readJson('./uploaded.json', (err, uploaded) =>
+        if (runs.length <= 0)
         {
-            if (err !== null)
-            {
-                console.log('Could not read uploaded.json');
-                console.log(err);
-                return;
-            }
+            console.log("No new runs.");
+            return;
+        }
 
-            // Remove already uploaded runs
-            for (var i = runs.length - 1; i >= 0; i--)
-            {
-                if (uploaded.maps.includes(runs[i].id))
-                {
-                    //console.log(`Removing already uploaded ${runs[i].map.name} (${runs[i].class === 3 ? "Soldier" : "Demoman"})`);
-                    runs.splice(i, 1);
-                    continue;
-                }
-
-                // Remove blacklisted runs
-                var cont = false;
-                for (var e = 0; e < blacklist.length; e++)
-                {
-                    if (blacklist[e].name === runs[i].map.name
-                        && blacklist[e].class === runs[i].class)
-                    {
-                        console.log(`Removing blacklisted ${runs[i].map.name} (${runs[i].class === 3 ? "Soldier" : "Demoman"})`);
-                        runs.splice(i, 1);
-                        cont = true;
-                        break;
-                    }
-                }
-
-                if (cont) continue;
-
-                // Replace names
-                for (var e = 0; e < nicknames.length; e++)
-                {
-                    if (runs[i].player_info.steamid === nicknames[e].steamid)
-                    {
-                        runs[i].player_info.name = nicknames[e].name;
-                        break;
-                    }
-                }
-            }
-
-            if (runs.length <= 0)
-            {
-                console.log("No new runs.");
-                return;
-            }
-
-            playDemo(runs[0]);
-        });
+        playDemo(runs[0]);
     });
 }
 
@@ -249,109 +260,63 @@ function startDemo(demo)
     });
 }
 
-// Get record runs from tempus
-function getRuns(cb)
+// Get runs for a list of maps
+async function getRuns(mapList)
 {
-    // This function is disgusting,
-    // abandon all hope ye who enter here.
-
-    if (!cb || typeof (cb) !== 'function')
-        throw 'callback is not a function';
-
     var runs = [];
-    tempus.detailedMapList().then(list =>
+
+    for (var i = 0; i < mapList.length; i++)
     {
+        console.log(`Getting map wrs ${i + 1}/${mapList.length}`);
+        var map = mapList[i];
 
-        // Get soldier runs
-        for (var i = 0; i < list.length; i++)
+        if (map.name == null)
+            continue;
+
+        var swr = await tempus.mapWR(map.name, "s");
+        if (swr != null)
         {
-            setTimeout((list, i, runs) =>
-            {
-                console.log(`Getting map wrs ${i}/${list.length * 2}`);
-                var map = list[i];
-
-                if (map.name !== null)
-                {
-                    tempus.mapWR(map.name, "s").then(wr =>
-                    {
-                        if (wr !== undefined)
-                        {
-                            wr.toRecordOverview().then(wrOverview =>
-                            {
-                                // Get the actual data from the map class..
-                                wrOverview.map.toMapOverview().then(mapOverview =>
-                                {
-                                    wrOverview.map = mapOverview;
-                                    runs.push(wrOverview);
-                                }).catch(err =>
-                                {
-                                    console.log(err);
-                                });
-
-                            }).catch(err =>
-                            {
-                                console.log(err);
-                            });
-                        }
-
-                    }).catch(err =>
-                    {
-                        console.log(err);
-                    });
-                }
-            }, i * 200, list, i, runs);
+            var overview = await swr.toRecordOverview();
+            overview.map = await overview.map.toMapOverview();
+            runs.push(overview);
         }
 
-        // Get demoman runs
-        for (var i = 0; i < list.length; i++)
+        await sleep(50);
+
+        var dwr = await tempus.mapWR(map.name, "d");
+        if (dwr != null)
         {
-            setTimeout((list, i, runs) =>
-            {
-                console.log(`Getting map wrs ${i + list.length}/${list.length * 2}`);
-                var map = list[i];
-
-                if (map.name !== null)
-                {
-                    tempus.mapWR(map.name, "d").then(wr =>
-                    {
-                        if (wr !== undefined)
-                        {
-                            wr.toRecordOverview().then(wrOverview =>
-                            {
-                                // Get the actual data from the map class..
-                                wrOverview.map.toMapOverview().then(mapOverview =>
-                                {
-                                    wrOverview.map = mapOverview;
-                                    runs.push(wrOverview);
-
-                                    // Return callback after getting last run
-                                    if (i >= list.length - 1)
-                                    {
-                                        return cb(runs);
-                                    }
-                                }).catch(err =>
-                                {
-                                    console.log(err);
-                                });
-
-                            }).catch(err =>
-                            {
-                                console.log(err);
-                            });
-                        }
-
-                    }).catch(err =>
-                    {
-                        console.log(err);
-                    });
-                }
-            }, list.length * 200 + i * 200, list, i, runs);
+            var overview = await dwr.toRecordOverview();
+            overview.map = await overview.map.toMapOverview();
+            runs.push(overview);
         }
 
-    }).catch(err =>
+        await sleep(50);
+    }
+
+    return runs;
+}
+
+async function getOverviews(recordList)
+{
+    var runs = [];
+
+    for (var i = 0; i < recordList.length; i++)
     {
-        console.log(err);
-    });
+        console.log(`Getting map wrs ${i + 1}/${recordList.length}`);
+        var record = recordList[i];
+
+        if (record == null)
+            continue;
+
+        var overview = await record.toRecordOverview();
+        overview.map = await overview.map.toMapOverview();
+        runs.push(overview);
+
+        await sleep(50);
+    }
+
+    return runs;
 }
 
 // Save play commands to control the demo playback
