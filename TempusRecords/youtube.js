@@ -168,6 +168,21 @@ function upload(file, demo)
         description += line + "\n";
     });
 
+    // Common tags for all videos
+    var tags = [
+        "Team Fortress 2",
+        "TF2",
+        "rocketjump",
+        "speedrun",
+        "tempus",
+        "record"
+    ];
+
+    // Video specific tags
+    tags.push(demo.player_info.name);
+    tags.push(demo.map.name.split("_"));
+    tags.push(demo.class === 3 ? ["soldier", "solly"] : ["demoman", "demo"]);
+
     var req = youtube_api.videos.insert(
         {
             resource:
@@ -175,7 +190,8 @@ function upload(file, demo)
                 snippet:
                 {
                     title: config.youtube.title.replace("$NAME", demo.player_info.name).replace("$MAP", demo.map.name).replace("$TIME", utils.secondsToTimeStamp(demo.duration)),
-                    description: description
+                    description: description,
+                    tags: tags
                 },
                 status:
                 {
