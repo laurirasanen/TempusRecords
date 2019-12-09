@@ -116,6 +116,7 @@ function skip()
     {
         if (runs[i] === currentDemo || currentDemo === null)
         {
+            currentDemo = runs[i + 1];
             return playDemo(runs[i + 1]);
         }
     }
@@ -155,6 +156,18 @@ function playDemo(demo)
             }
         });
 
+        skip();
+        return;
+    }
+
+    // Check for already compressed and remuxed version
+    video = `${config.sdr.recording_folder}/${demo.demo_info.filename}_${demo.class === 3 ? "soldier" : "demoman"}_remuxed.mp4`;
+    if (fs.existsSync(video))
+    {
+        console.log(`WARNING: Uploading existing video '${video}'`);
+        console.log(`Make sure to delete existing videos if they're corrupted, etc.`);
+
+        youtube.upload(video, demo);
         skip();
         return;
     }

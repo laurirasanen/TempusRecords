@@ -76,7 +76,7 @@ function compress(file, cb)
         })
         .on('progress', progress =>
         {
-            console.log(`Percent complete: ${progress.percentComplete}, ETA: ${progress.eta}`);
+            console.log(`${file}: Compressed: ${progress.percentComplete}, ETA: ${progress.eta}`);
         })
         .on('cancel', () =>
         {
@@ -293,7 +293,7 @@ function upload(file, demo)
 
     var interval = setInterval(function ()
     {
-        console.log(`${prettyBytes(req.req.connection._bytesDispatched)} (${(100 * req.req.connection._bytesDispatched / fileSize).toFixed(2)}%) uploaded.`);
+        console.log(`${file}: ${prettyBytes(req.req.connection.bytesWritten)} (${(100 * req.req.connection.bytesWritten / fileSize).toFixed(2)}%) uploaded.`);
     }, 1000);
 }
 
