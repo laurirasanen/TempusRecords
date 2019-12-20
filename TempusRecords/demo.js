@@ -258,7 +258,7 @@ function startDemo(demo)
                 // Starting another instance of SDR to record video will cause the audio instance
                 // to stop playing back video for whatever reason.
                 // This is equivalent to setting `sdr_audio_disable_video` to 1...
-                // Meaning we cannot record audio and video simulatenously,
+                // Meaning we cannot record audio and video simulataneously,
                 // even with SDR MultiProcess extension enabled.
                 // Video will be recorded after audio finishes,
                 // in rcon.js, when tmps_records_run_end gets called the first time.

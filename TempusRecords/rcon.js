@@ -1,4 +1,5 @@
 ﻿const net = require('net'),
+    fs = require('fs'),
     tasklist = require('tasklist'),
     demo = require('./demo.js'),
     youtube = require('./youtube.js'),
@@ -24,10 +25,30 @@ var srv = net.createServer(function (sock)
                 // start video instance.
 
                 // Wait a bit to ensure previous instance has exited
-                setTimeout(() =>
+                setTimeout((demoObj) =>
                 {
-                    utils.launchSDR(`+playdemo ${currentDemo.demo_info.filename}`);
-                }, 1000);
+                    // Use listenserver.cfg to load picmip-plugin
+                    var listenConfig = 'sv_allow_wait_command 1\n'
+                        + 'meta load addons/picmip; wait 100; picmip set -10; '
+                        + `wait 100; playdemo ${demoObj.demo_info.filename}; `
+                        // starting a listen server does some weird shit with rcon,
+                        // need to change rcon_address to something else and back again..
+                        + `rcon_address 0.0.0.0:0; rcon_address ${config.rcon.listen_address}:${config.rcon.listen_port}`;
+
+                    fs.writeFile(config.tf2.path + '/cfg/listenserver.cfg', listenConfig, (err) =>
+                    {
+                        if (err)
+                        {
+                            console.log('[FILE] Could not write listenserver.cfg!');
+                            console.log(err);
+
+                            return;
+                        }
+
+                        utils.launchSDR('+map itemtest');
+                    });
+
+                }, 1000, currentDemo);
                 return;
             }
             else if (finishedInstances > 1)
@@ -103,10 +124,10 @@ var srv = net.createServer(function (sock)
             });
         }
     })
-    .on('error', (err) =>
-    {
-        console.log(err);
-    });
+        .on('error', (err) =>
+        {
+            console.log(err);
+        });
 });
 
 function init()

@@ -180,7 +180,10 @@ function upload(file, demo)
 
     // Video specific tags
     tags.push(demo.player_info.name);
-    tags.push(...demo.map.name.split("_"));
+    var mapParts = demo.map.name.split("_");
+    tags.push(...mapParts);
+    if (mapParts.length > 1)
+        tags.push(`${mapParts[0]}_${mapParts[1]}`);
     tags.push(demo.class === 3 ? ["soldier", "solly"] : ["demoman", "demo"]);
 
     var req = youtube_api.videos.insert(
