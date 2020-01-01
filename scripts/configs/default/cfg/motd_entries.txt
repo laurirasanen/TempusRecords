@@ -1,0 +1,16 @@
+"motd_entries"
+{
+	"last_request_time"		"2019-10-27 13:19:52"
+	"last_request_language"		"english"
+	"92"
+	{
+		"post_time"		"2019-10-11 09:50:00"
+		"title_english"		"Scream Fortress XI"
+		"text_english"		"Complete a new round of Merasmissions! Make offerings to your Soul Gargoyle! Play two new community created Halloween maps along with your favorites! Check out the new community cosmetic items and Unusual effects! Scream Fortress XI runs through November 7, 2019."
+		"url"		"http://www.teamfortress.com/post.php?id=54757"
+		"image"		"illustrations/gamemode_halloween2015"
+		"header_type"		"2"
+		"header_english"		"Happy Halloween"
+		"header_icon"		"class_icons/filter_all_motd"
+	}
+}
