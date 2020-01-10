@@ -6,5 +6,29 @@
   {
     "name": "jump_mad_rc3",
     "class": 4
+  },
+  {
+    "name": "jump_mowi_rc2",
+    "class": 3
+  },
+  {
+    "name": "jump_halcyon_b3",
+    "class": 4
+  },
+  {
+    "name": "jump_bromelia_rc5",
+    "class": 3
+  },
+  {
+    "name": "jump_luminous_rc5",
+    "class": 4
+  },
+  {
+    "name": "jump_orestes_rc5",
+    "class": 3
+  },
+  {
+    "name": "jump_sylvan",
+    "class": 4
   }
 ]
