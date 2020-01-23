@@ -172,6 +172,12 @@ function playDemo(demo)
         return;
     }
 
+    if (demo.demo_info.recording === true) {
+        // Demo is still recording,
+        // attemping to download will result in corrupt file.
+        skip();
+    }
+
     // Get map file
     downloader.getMap(demo.map.name, (res) =>
     {

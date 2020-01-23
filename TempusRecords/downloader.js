@@ -12,6 +12,10 @@ function getDemoFile(demo, cb)
     if (!cb || typeof (cb) !== 'function')
         throw ('callback is not a function');
 
+    if (!demo.demo_info.url) {
+        return cb(null);
+    }
+
     var dest = config.tf2.path + demo.demo_info.filename + '.dem';
 
     fs.open(dest, 'wx', (err, fd) =>

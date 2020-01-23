@@ -150,6 +150,7 @@ function upload(file, demo)
     var description = "";
     var stats = fs.statSync(file);
     var fileSize = stats.size;
+    var bytes = 0;
 
     config.youtube.description.forEach(line =>
     {
@@ -208,7 +209,10 @@ function upload(file, demo)
             // Create the readable stream to upload the video
             media:
             {
-                body: fs.createReadStream(file)
+                    body: fs.createReadStream(file).on('data', (chunk) => {
+                        bytes += chunk.length;
+                        console.log(`${file}: ${prettyBytes(bytes)} (${(100 * bytes / fileSize).toFixed(2)}%) uploaded.`);
+                    })
             }
         },
         (err, data) =>
@@ -217,15 +221,12 @@ function upload(file, demo)
             {
                 console.log("Failed to upload video");
                 console.log(err);
-                clearInterval(interval);
                 return;
             }
             else
             {
                 console.log("Done uploading");
             }
-
-            clearInterval(interval);
 
             // Add video to class playlist
             youtube_api.playlistItems.insert(
@@ -293,11 +294,6 @@ function upload(file, demo)
                 });
             });
         });
-
-    var interval = setInterval(function ()
-    {
-        console.log(`${file}: ${prettyBytes(req.req.connection.bytesWritten)} (${(100 * req.req.connection.bytesWritten / fileSize).toFixed(2)}%) uploaded.`);
-    }, 1000);
 }
 
 module.exports.compress = compress;
