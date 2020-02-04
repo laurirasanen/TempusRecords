@@ -1,7 +1,7 @@
 ﻿var https = require('https'),
     http = require('http'),
     fs = require('fs'),
-    unzip = require('unzip'),
+    unzipper = require('unzipper'),
     bz2 = require('unbzip2-stream'),
     demojs = require('./demo.js'),
     config = require('./config.json');
@@ -53,7 +53,7 @@ function getDemoFile(demo, cb)
 
             download(demo.demo_info.url, false, demo, (resp, demo) =>
             {
-                resp.pipe(unzip.Parse())
+                resp.pipe(unzipper.Parse())
                     .on('entry', (entry) =>
                     {
                         entry.pipe(stream);
