@@ -54,7 +54,7 @@ var srv = net.createServer(function (sock)
             else if (finishedInstances > 1)
             {
                 // run in seperate scope to prevent currentDemo change,
-                // add 5 sec delay just to make sure SDR is done processing
+                // add a delay just to make sure SDR is done processing
                 setTimeout((demoObj) =>
                 {
                     // sdr_endmoviequit 1 will throw 'FCVAR_CLIENTCMD_CAN_EXECUTE prevented running command: quit'
@@ -103,7 +103,7 @@ var srv = net.createServer(function (sock)
                         console.log(`Finished recording ${config.youtube.video_limit} runs`);
                     }
 
-                }, 5000, currentDemo);
+                }, 10000, currentDemo);
             }
 
             return;
