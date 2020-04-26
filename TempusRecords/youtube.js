@@ -154,11 +154,15 @@ function upload(file, demo) {
     var tags = ["Team Fortress 2", "TF2", "rocketjump", "speedrun", "tempus", "record"];
 
     // Video specific tags
-    tags.push(demo.player_info.name);
     var mapParts = demo.map.name.split("_");
     tags.push(...mapParts);
     if (mapParts.length > 1) tags.push(`${mapParts[0]}_${mapParts[1]}`);
     tags.push(demo.class === 3 ? ["soldier", "solly"] : ["demoman", "demo"]);
+
+    // Commas in player name will break youtube tags
+    var playerName = demo.player_info.name;
+    playerName = playerName.replace(",", "");
+    tags.push(playerName);
 
     var req = youtube_api.videos.insert(
         {
@@ -223,7 +227,7 @@ function upload(file, demo) {
                 }
             );
 
-            // Update last uploaded timestamp
+            // Add to uploaded runs
             utils.readJson("./uploaded.json", (err, uploaded) => {
                 if (err !== null) {
                     console.log("Failed to read last uploaded");
