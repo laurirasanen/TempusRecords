@@ -23,16 +23,27 @@ const sleep = (milliseconds) =>
     return new Promise(resolve => setTimeout(resolve, milliseconds));
 };
 
-async function init(recent)
+async function init(recent, mapName, className)
 {
     var mapList = [];
     if (recent)
     {
         var activity = await tempus.getActivity();
-        runs = await getOverviews(activity.map_wrs);
+        runs = await getOverviews(activity.map_wrs);        
     }
     else
     {
+        if (mapName && className) 
+        {
+            // upload specific run
+            var wr = await tempus.mapWR(mapName, className);
+            var overview = await wr.toRecordOverview();
+            overview.map = await overview.map.toMapOverview();
+            runs = await getOverviews([overview]);
+            playDemo(runs[0]);
+            return;
+        }
+
         mapList = await tempus.detailedMapList();
         runs = await getRuns(mapList);
     }
