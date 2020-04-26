@@ -1,14 +1,14 @@
 [
-  {
-    "name": "jump_strikapult_v11",
-    "class": 4
-  },
-  {
-    "name": "jump_mad_rc3",
-    "class": 4
-  },
-  {
-	"name": "jump_anxiety_a9",
-	"class": 4
-  }
+    {
+        "name": "jump_strikapult_v11",
+        "class": 4
+    },
+    {
+        "name": "jump_virtuoso_tpn",
+        "class": 4
+    },
+    {
+        "name": "jump_virtuoso_tpn",
+        "class": 3
+    }
 ]

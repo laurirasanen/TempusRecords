@@ -1,8 +1,7 @@
 const rcon = require("./rcon.js"),
     demo = require("./demo.js");
 
-function start()
-{
+function start() {
     rcon.init();
 
     // Default to just checking recent WR activity,
@@ -10,15 +9,12 @@ function start()
     var recent = true;
     var mapName = null;
     var className = null;
-    if (process.argv.length > 2)
-    {
-        if (process.argv[2] == "all")
-        {
+    if (process.argv.length > 2) {
+        if (process.argv[2] == "all") {
             recent = false;
         }
 
-        if (process.argv.length > 3) 
-        {
+        if (process.argv.length > 3) {
             recent = false;
             mapName = process.argv[2];
             className = process.argv[3];
