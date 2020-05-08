@@ -9,6 +9,8 @@
     opn = require("opn"),
     utils = require("./utils.js");
 
+let hasTokens = false;
+
 let server = new Lien({
     host: "localhost",
     port: "5000",
@@ -41,6 +43,8 @@ server.addPage("/oauth2callback", (lien) => {
         oauth.setCredentials(tokens);
 
         lien.end("Uploads authorized.");
+
+        hasTokens = true;
     });
 });
 
@@ -126,6 +130,14 @@ function remux(video, audio, output, cb) {
 }
 
 function upload(file, demo) {
+    if (!hasTokens) {
+        console.log("Awaiting tokens");
+        setTimeout(() => {
+            upload(file, demo);
+        }, 1000);
+        return;
+    }
+
     console.log(`Uploading ${file}`);
 
     var description = "";
