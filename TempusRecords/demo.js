@@ -24,19 +24,28 @@ const sleep = (milliseconds) => {
 async function init(recent, mapName, className) {
     var mapList = [];
     if (recent) {
+        // Upload most recent runs
         var activity = await tempus.getActivity();
         runs = await getOverviews(activity.map_wrs);
-    } else {
-        if (mapName && className) {
-            // upload specific run
-            var wr = await tempus.mapWR(mapName, className);
-            var overview = await wr.toRecordOverview();
-            overview.map = await overview.map.toMapOverview();
-            runs = await getOverviews([overview]);
-            playDemo(runs[0]);
-            return;
+    } else if (mapName && className) {
+        // upload specific run
+        var wr = await tempus.mapWR(mapName, className);
+        var overview = await wr.toRecordOverview();
+        overview.map = await overview.map.toMapOverview();
+        runs = await getOverviews([overview]);
+
+        // Replace name
+        for (var i = 0; i < nicknames.length; i++) {
+            if (runs[0].player_info.steamid === nicknames[i].steamid) {
+                runs[0].player_info.name = nicknames[i].name;
+                break;
+            }
         }
 
+        playDemo(runs[0]);
+        return;
+    } else {
+        // Upload all runs
         mapList = await tempus.detailedMapList();
         runs = await getRuns(mapList);
     }
