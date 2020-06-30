@@ -18,7 +18,8 @@
             "Demo download: $DEMO_URL"
         ],
         "video_limit": 65,
-        "delete_compressed": false
+        "delete_compressed": false,
+        "max_duration": 30
     },
     "rcon": {
         "address": "127.0.0.1",

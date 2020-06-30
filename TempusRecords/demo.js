@@ -67,6 +67,12 @@ async function init(recent, mapName, className) {
             runs.splice(i, 1);
             continue;
         }
+
+        if (runs[i].duration / 60 > config.youtube.max_duration) {
+            console.log(`Removing run too long ${runs[i].map.name} (${runs[i].class === 3 ? "Soldier" : "Demoman"})`);
+            runs.splice(i, 1);
+            continue;
+        }
     }
 
     utils.readJson("./uploaded.json", (err, uploaded) => {
