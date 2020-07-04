@@ -7,10 +7,8 @@
     "name": ""
   },
   "dependencies": {
-    "@ffmpeg-installer/ffmpeg": "^1.0.20",
     "fluent-ffmpeg": "^2.1.2",
     "graceful-fs": "^4.2.3",
-    "handbrake-js": "^3.0.8",
     "https": "^1.0.0",
     "lien": "^3.3.0",
     "net": "^1.0.2",

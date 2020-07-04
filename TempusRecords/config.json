@@ -19,6 +19,7 @@
         ],
         "video_limit": 65,
         "delete_compressed": false,
+        "delete_uncompressed": true,
         "max_duration": 30
     },
     "rcon": {
@@ -45,7 +46,7 @@
             },
             {
                 "arg": "/PARAMS",
-                "value": "-novid -high -windowed -noborder -nocrashdialog -w 2560 -h 1440 -dxlevel 98 +rcon_address 127.0.0.1:3002 +rcon_password bananaman +sdr_endmoviequit 1 +sdr_video_x264_crf 0 +sdr_video_threads 12 +sdr_video_sample_mult 32 +sdr_video_sample_exposure 0.5 +volume 0 +snd_musicvolume 0 +exec cinema +stopsound"
+                "value": "-novid -high -windowed -noborder -nocrashdialog -w 2560 -h 1440 -dxlevel 98 +rcon_address 127.0.0.1:3002 +rcon_password bananaman +sdr_endmoviequit 1 +sdr_video_x264_crf 18 +sdr_video_threads 12 +sdr_video_sample_mult 32 +sdr_video_sample_exposure 0.5 +volume 0 +snd_musicvolume 0 +exec cinema +stopsound"
             }
         ],
         "recording_folder": "D:/TempusRecordings"

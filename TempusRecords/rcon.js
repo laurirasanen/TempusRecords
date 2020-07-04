@@ -68,20 +68,12 @@ var srv = net.createServer(function (sock) {
                         }.avi`;
 
                         // Compress
-                        youtube.compress(filename, (result, name) => {
+                        youtube.compress(filename, `${filename.split(".avi")[0]}.wav`, (result, name) => {
                             if (result === true) {
-                                // Compressed, remux audio
-                                youtube.remux(
-                                    name,
-                                    `${filename.split(".avi")[0]}.wav`,
-                                    `${filename.split(".avi")[0]}_remuxed.mp4`,
-                                    (result, name) => {
-                                        // Upload final output
-                                        if (result === true) {
-                                            youtube.upload(name, demoObj);
-                                        }
-                                    }
-                                );
+                                // Upload final output
+                                if (result === true) {
+                                    youtube.upload(name, demoObj);
+                                }
                             }
                         });
 

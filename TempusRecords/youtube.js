@@ -1,6 +1,4 @@
-﻿const handbrake = require("handbrake-js"),
-    youtube_api = require("youtube-api"),
-    ffmpegPath = require("@ffmpeg-installer/ffmpeg").path,
+﻿const youtube_api = require("youtube-api"),
     ffmpeg = require("fluent-ffmpeg"),
     fs = require("fs"),
     Lien = require("lien"),
@@ -48,85 +46,130 @@ server.addPage("/oauth2callback", (lien) => {
     });
 });
 
-function compress(file, cb) {
-    if (!cb || typeof cb !== "function") throw "callback is not a function";
-
-    console.log(`Compressing ${file}`);
-
-    handbrake
-        .spawn({
-            input: file,
-            output: `${file.split(".avi")[0]}_compressed.mp4`,
-            encoder: "x264",
-            vb: "68000",
-            "two-pass": true,
-            "encoder-profile": "high",
-            "encoder-level": "4.2",
-            "encoder-preset": "veryfast",
-            "encoder-tune": "film",
-            rate: 60,
-            width: 3840,
-            height: 2160,
-            aencoder: "copy:aac",
-        })
-        .on("error", (err) => {
-            throw err;
-        })
-        .on("progress", (progress) => {
-            console.log(`${file}: Compressed: ${progress.percentComplete}, ETA: ${progress.eta}`);
-        })
-        .on("cancel", () => {
-            return cb(false, null);
-        })
-        .on("complete", () => {
-            // Remove uncompressed video
-            fs.unlink(file, (err) => {
-                if (err) {
-                    console.log("Failed to unlink uncompressed recording");
-                    console.log(err);
-                }
-            });
-
-            return cb(true, `${file.split(".avi")[0]}_compressed.mp4`);
-        });
+function getDuration(file, cb) {
+    ffmpeg(file).ffprobe((err, data) => {
+        if (err) {
+            // Ignore, just don't apply fades
+            return cb(false, -1);
+        }
+        return cb(true, data.format.duration);
+    });
 }
 
-function remux(video, audio, output, cb) {
-    ffmpeg.setFfmpegPath(ffmpegPath);
-    ffmpeg()
-        .input(video)
-        .input(audio)
-        .videoCodec("copy")
-        .outputOptions(["-map 0:v:0", "-map 1:a:0"])
-        .save(output)
-        .on("error", (err, stdout, stderr) => {
-            console.log(err.message);
-        })
-        .on("end", (stdout, stderr) => {
-            console.log("Remux done");
+function compress(video, audio, cb) {
+    if (!cb || typeof cb !== "function") throw "callback is not a function";
 
-            // Remove old video and audio files
-            fs.unlink(video, (err) => {
-                if (err) {
-                    console.log("Failed to unlink remux input video");
-                    console.log(err);
-                    return;
+    const output = video.split(".avi")[0] + "_compressed.mp4";
+    let prevProgress = 0;
+
+    getDuration(video, (success, duration) => {
+        let videoFilters = [
+            // Apply photoshop color curve
+            {
+                filter: "curves",
+                options: { psfile: "color_curves.acv" },
+            },
+            // Add a slight vignette
+            {
+                filter: "vignette",
+                options: { angle: 0.2 },
+            },
+        ];
+        let audioFilters = [];
+
+        // Add fade in/out
+        if (success) {
+            videoFilters.push(
+                {
+                    filter: "fade",
+                    options: "in:st=0:d=0.25",
+                },
+                {
+                    filter: "fade",
+                    options: `out:st=${duration - 0.5}:d=0.5`,
+                }
+            );
+            audioFilters.push(
+                {
+                    filter: "afade",
+                    options: "in:st=0:d=1",
+                },
+                {
+                    filter: "afade",
+                    options: `out:st=${duration - 1.5}:d=1.5`,
+                }
+            );
+        }
+
+        ffmpeg()
+            .input(video)
+            .input(audio)
+            .videoFilters(videoFilters)
+            .audioFilters(audioFilters)
+            .fps(60)
+            .size("3840x2160")
+            .outputOptions([
+                "-movflags faststart",
+                "-c:v libx264",
+                "-crf 18",
+                "-profile:v high",
+                "-level:v 4.2",
+                "-preset:v veryfast",
+                "-tune:v film",
+                "-bf 2",
+                "-g 30",
+                "-coder 1",
+                "-pix_fmt yuv420p",
+                "-map 0:v:0",
+                "-map 1:a:0",
+                "-c:a aac",
+                "-profile:a aac_low",
+                "-b:a 384k",
+            ])
+            .save(output)
+            .on("start", () => {
+                console.log(`Started compressing ${video}`);
+            })
+            .on("progress", (progress) => {
+                // Progress has no percentage with the settings used,
+                // make our own percentage with blackjack and hookers.
+                let frameCount = duration * 60;
+                let percentage = (100 * progress.frames) / frameCount;
+
+                if (percentage > prevProgress + 5) {
+                    let eta = utils.secondsToTimeStamp((frameCount - progress.frames) / progress.currentFps);
+                    console.log(`Progress: ${Math.round(percentage - (percentage % 5))}%, ETA: ${eta} (${video})`);
+                    prevProgress += 5;
+                }
+            })
+            .on("end", () => {
+                console.log(`Finished compressing ${video}`);
+
+                // Remove old video and audio
+                if (config.youtube.delete_uncompressed) {
+                    fs.unlink(video, (err) => {
+                        if (err) {
+                            console.log("Failed to unlink uncompressed video");
+                            console.log(err);
+                        }
+                    });
+
+                    fs.unlink(audio, (err) => {
+                        if (err) {
+                            console.log("Failed to unlink audio");
+                            console.log(err);
+                        }
+                    });
                 }
 
-                console.log("Unlinked remux input video");
+                return cb(true, output);
+            })
+            .on("error", (err) => {
+                console.log(`Failed to process ${video}`);
+                console.log(err.message);
+                return cb(false, null);
             });
-            fs.unlink(audio, (err) => {
-                if (err) {
-                    console.log("Failed to unlink remux input audio");
-                    console.log(err);
-                    return;
-                }
-
-                console.log("Unlinked remux input audio");
-            });
-
-            return cb(true, output);
-        });
+    });
 }
 
 function upload(file, demo) {
@@ -134,7 +177,7 @@ function upload(file, demo) {
         console.log("Awaiting tokens");
         setTimeout(() => {
             upload(file, demo);
-        }, 1000);
+        }, 5000);
         return;
     }
 
@@ -176,6 +219,8 @@ function upload(file, demo) {
     playerName = playerName.replace(",", "");
     tags.push(playerName);
 
+    let previousProgress = 0;
+
     var req = youtube_api.videos.insert(
         {
             resource: {
@@ -199,7 +244,13 @@ function upload(file, demo) {
             media: {
                 body: fs.createReadStream(file).on("data", (chunk) => {
                     bytes += chunk.length;
-                    console.log(`${file}: ${prettyBytes(bytes)} (${((100 * bytes) / fileSize).toFixed(2)}%) uploaded.`);
+                    let percentage = (100 * bytes) / fileSize;
+                    if (percentage > previousProgress + 5) {
+                        console.log(
+                            `${file}: ${prettyBytes(bytes)} (${Math.round(percentage - (percentage % 5))}%) uploaded.`
+                        );
+                        previousProgress += 5;
+                    }
                 }),
             },
         },
@@ -278,4 +329,3 @@ function upload(file, demo) {
 
 module.exports.compress = compress;
 module.exports.upload = upload;
-module.exports.remux = remux;

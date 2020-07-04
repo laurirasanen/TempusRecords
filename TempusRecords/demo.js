@@ -150,15 +150,12 @@ function playDemo(demo) {
         console.log(`Make sure to delete existing videos if they're corrupted, etc.`);
 
         // Compress
-        youtube.compress(video, (result, name) => {
+        youtube.compress(video, audio, (result, name) => {
             if (result === true) {
-                // Compressed, remux audio
-                youtube.remux(name, audio, `${video.split(".avi")[0]}_remuxed.mp4`, (result, name) => {
-                    // Upload final output
-                    if (result === true) {
-                        youtube.upload(name, demo);
-                    }
-                });
+                // Upload final output
+                if (result === true) {
+                    youtube.upload(name, demo);
+                }
             }
         });
 
@@ -166,10 +163,10 @@ function playDemo(demo) {
         return;
     }
 
-    // Check for already compressed and remuxed version
+    // Check for already compressed version
     video = `${config.sdr.recording_folder}/${demo.demo_info.filename}_${
         demo.class === 3 ? "soldier" : "demoman"
-    }_remuxed.mp4`;
+    }_compressed.mp4`;
     if (fs.existsSync(video)) {
         console.log(`WARNING: Uploading existing video '${video}'`);
         console.log(`Make sure to delete existing videos if they're corrupted, etc.`);
