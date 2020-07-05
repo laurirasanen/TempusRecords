@@ -6,7 +6,7 @@ from resolution import ScreenRes
 tf_path = "C:/Program Files (x86)/Steam/steamapps/common/Team Fortress 2/tf"
 recording_cfg_path = "./configs/tempusrecords"
 default_cfg_path = "./configs/default"
-tempusrecords_path = "../TempusRecords"
+tempusrecords_path = "../src"
 
 def remove():
 	# remove old files
@@ -42,6 +42,6 @@ if __name__ == "__main__":
 	# start tempusrecords
 	os.chdir(tempusrecords_path)
 	if len(sys.argv) > 1:
-		os.system("node ./TempusRecords.js " + " ".join(sys.argv[1:]))
+		os.system("node ./index.js " + " ".join(sys.argv[1:]))
 	else:
-		os.system("node ./TempusRecords.js")
+		os.system("node ./index.js")

@@ -1,27 +1,58 @@
-﻿const exec = require("child_process").execFile,
-    config = require("./config.json"),
-    fs = require("fs");
+﻿const exec = require("child_process").exec,
+    tasklist = require("tasklist"),
+    fs = require("fs"),
+    config = require("./config.json");
 
-function launchSDR(params = "") {
-    console.log("Launching SDR");
+global.tf2Proc = null;
+global.svrProc = null;
 
-    var launchCmd = `cd "${config.sdr.path}" && ${config.sdr.cli}`;
+function launchSVR() {
+    console.log("Launching SVR");
 
-    for (var i = 0; i < config.sdr.args.length; i++) {
-        if (config.sdr.args[i]["arg"] == "/PARAMS") {
-            if (params.length > 0) {
-                launchCmd += ` ${config.sdr.args[i]["arg"]} "${config.sdr.args[i]["value"]} ${params}"`;
-                continue;
-            }
-        }
+    let launchCmd = `"${config.svr.launch}" ${config.svr.args}`;
 
-        launchCmd += ` ${config.sdr.args[i]["arg"]} "${config.sdr.args[i]["value"]}"`;
-    }
-
-    exec(launchCmd, null, { shell: true }, function (err, data) {
-        if (err) {
+    svrProc = exec(launchCmd, { shell: true, cwd: config.svr.path }, (err) => {
+        if (err && !err.killed) {
             console.log(err);
         }
+    });
+}
+
+function launchTF2(args) {
+    console.log("Launching TF2");
+
+    let launchCmd = `"${config.tf2.launch}" ${config.tf2.args} ${args}`;
+
+    tf2Proc = exec(launchCmd, (err) => {
+        if (err && !err.killed) {
+            console.log(err);
+        }
+    });
+}
+
+function killSVR() {
+    console.log(`Killing svr`);
+    if (svrProc) {
+        svrProc.kill("SIGTERM");
+    }
+    killTF2();
+}
+
+function killTF2() {
+    console.log(`Killing tf2`);
+    if (tf2Proc) {
+        // kill() will only kill the parent cmd.exe process.
+        tf2Proc.kill();
+        tf2Proc = null;
+    }
+    // Killing just hl2.exe would work too, but then
+    // the parent cmd.exe process would spew errors in launchTF2.
+    tasklist().then((tasks) => {
+        tasks.forEach((task) => {
+            if (task.imageName == "hl2.exe") {
+                process.kill(task.pid);
+            }
+        });
     });
 }
 
@@ -88,8 +119,16 @@ function writeJson(path, data, cb) {
     });
 }
 
-module.exports.launchSDR = launchSDR;
+const sleep = (milliseconds) => {
+    return new Promise((resolve) => setTimeout(resolve, milliseconds));
+};
+
+module.exports.launchSVR = launchSVR;
+module.exports.launchTF2 = launchTF2;
+module.exports.killSVR = killSVR;
+module.exports.killTF2 = killTF2;
 module.exports.getLatestFile = getLatestFile;
 module.exports.secondsToTimeStamp = secondsToTimeStamp;
 module.exports.readJson = readJson;
 module.exports.writeJson = writeJson;
+module.exports.sleep = sleep;

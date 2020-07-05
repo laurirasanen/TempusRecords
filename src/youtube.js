@@ -59,7 +59,7 @@ function getDuration(file, cb) {
 function compress(video, audio, cb) {
     if (!cb || typeof cb !== "function") throw "callback is not a function";
 
-    const output = video.split(".avi")[0] + "_compressed.mp4";
+    const output = video.split(".mp4")[0] + "_compressed.mp4";
     let prevProgress = 0;
 
     getDuration(video, (success, duration) => {
@@ -72,7 +72,7 @@ function compress(video, audio, cb) {
             // Add a slight vignette
             {
                 filter: "vignette",
-                options: { angle: 0.2 },
+                options: { angle: 0.1 },
             },
         ];
         let audioFilters = [];

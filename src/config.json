@@ -1,0 +1,46 @@
+{
+    "youtube": {
+        "client_id": "",
+        "client_secret": "",
+        "redirect_url": "http://localhost:5000/oauth2callback",
+        "title": "$NAME on $MAP - $TIME",
+        "description": [
+            "Player: $NAME",
+            "Map: $MAP",
+            "Class: $CLASS",
+            "Time: $TIME",
+            "Date: $DATE",
+            "",
+            "Map download: $MAP_URL",
+            "Demo download: $DEMO_URL",
+            "",
+            "This video was automatically generated on $DATETIME.",
+            "https://github.com/laurirasanen/tempusrecords",
+            "",
+            "Recorded with Source Video Render by crashfort",
+            "https://github.com/crashfort/SourceDemoRender"
+        ],
+        "video_limit": 65,
+        "delete_compressed": false,
+        "delete_uncompressed": true,
+        "max_duration": 30
+    },
+    "rcon": {
+        "address": "127.0.0.1",
+        "port": 27015,
+        "password": "bananaman",
+        "listen_address": "127.0.0.1",
+        "listen_port": 3002
+    },
+    "tf2": {
+        "path": "C:/Program Files (x86)/Steam/steamapps/common/Team Fortress 2/tf/",
+        "launch": "C:/Program Files (x86)/Steam/steamapps/common/Team Fortress 2/hl2.exe",
+        "args": "-game tf -dxlevel 98 -novid -windowed -w 1280 -h 720 +exec cinema +volume 0 +stopsound +rcon_address 127.0.0.1:3002 +rcon_password bananaman"
+    },
+    "svr": {
+        "path": "../svr",
+        "launch": "../svr/svr_game_launcher_cli.exe",
+        "args": "tf2-win",
+        "recording_folder": "../svr/data/movies"
+    }
+}

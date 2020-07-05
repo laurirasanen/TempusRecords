@@ -1,3 +1,12 @@
+# svr
+svr/*
+!svr/data/
+svr/data/*
+!svr/data/launcher-config.json
+!svr/data/profiles/
+svr/data/profiles/*
+!svr/data/profiles/tempus.json
+
 __pycache__
 
 # vs
