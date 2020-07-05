@@ -3,7 +3,7 @@
     fs = require("fs"),
     Lien = require("lien"),
     prettyBytes = require("pretty-bytes"),
-    config = require("./config.json"),
+    config = require("./data/config.json"),
     opn = require("opn"),
     utils = require("./utils.js");
 
@@ -67,7 +67,7 @@ function compress(video, audio, cb) {
             // Apply photoshop color curve
             {
                 filter: "curves",
-                options: { psfile: "color_curves.acv" },
+                options: { psfile: "data/color_curves.acv" },
             },
             // Add a slight vignette
             {
@@ -291,7 +291,7 @@ function upload(file, demo) {
             );
 
             // Add to uploaded runs
-            utils.readJson("./uploaded.json", (err, uploaded) => {
+            utils.readJson("./data/uploaded.json", (err, uploaded) => {
                 if (err !== null) {
                     console.log("Failed to read last uploaded");
                     console.log(err);
@@ -300,7 +300,7 @@ function upload(file, demo) {
 
                 if (!uploaded.maps.includes(demo.id)) uploaded.maps.push(demo.id);
 
-                utils.writeJson("./uploaded.json", uploaded, (err) => {
+                utils.writeJson("./data/uploaded.json", uploaded, (err) => {
                     if (err !== null) {
                         console.log("Failed to write last uploaded");
                         console.log(err);

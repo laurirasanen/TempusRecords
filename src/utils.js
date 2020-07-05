@@ -1,7 +1,7 @@
 ﻿const exec = require("child_process").exec,
     tasklist = require("tasklist"),
     fs = require("fs"),
-    config = require("./config.json");
+    config = require("./data/config.json");
 
 global.tf2Proc = null;
 global.svrProc = null;

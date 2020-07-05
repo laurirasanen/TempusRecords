@@ -4,7 +4,7 @@
     unzipper = require("unzipper"),
     bz2 = require("unbzip2-stream"),
     demojs = require("./demo.js"),
-    config = require("./config.json");
+    config = require("./data/config.json");
 
 // Download demo file from AWS
 function getDemoFile(demo, cb) {

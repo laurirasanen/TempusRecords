@@ -2,9 +2,9 @@
     downloader = require("./downloader.js"),
     fs = require("fs"),
     utils = require("./utils.js"),
-    config = require("./config.json"),
-    nicknames = require("./nicknames.json"),
-    blacklist = require("./blacklist.json"),
+    config = require("./data/config.json"),
+    nicknames = require("./data/nicknames.json"),
+    blacklist = require("./data/blacklist.json"),
     youtube = require("./youtube.js");
 
 // Some players have changed accounts at some point.
@@ -76,7 +76,7 @@ async function init(recent, mapName, className) {
         }
     }
 
-    utils.readJson("./uploaded.json", (err, uploaded) => {
+    utils.readJson("./data/uploaded.json", (err, uploaded) => {
         if (err !== null) {
             console.log("Could not read uploaded.json");
             console.log(err);

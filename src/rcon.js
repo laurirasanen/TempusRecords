@@ -2,7 +2,7 @@
     fs = require("fs"),
     demo = require("./demo.js"),
     youtube = require("./youtube.js"),
-    config = require("./config.json"),
+    config = require("./data/config.json"),
     utils = require("./utils.js");
 
 var recorded_runs = 0,
