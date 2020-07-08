@@ -35,7 +35,7 @@ var srv = net.createServer(function (sock) {
                                         `${config.tf2.path}/${demoObj.demo_info.filename}_${
                                             demoObj.class === 3 ? "soldier" : "demoman"
                                         }.wav`,
-                                        `${config.svr.recording_folder}/${demoObj.demo_info.filename}_${
+                                        `${config.svr.recordingFolder}/${demoObj.demo_info.filename}_${
                                             demoObj.class === 3 ? "soldier" : "demoman"
                                         }.wav`
                                     );
@@ -58,7 +58,7 @@ var srv = net.createServer(function (sock) {
                                     `wait 100; playdemo ${demoObj.demo_info.filename}; ` +
                                     // Starting a listen server does some weird shit with rcon,
                                     // need to change rcon_address to something else and back again..
-                                    `rcon_address 0.0.0.0:0; rcon_address ${config.rcon.listen_address}:${config.rcon.listen_port}`;
+                                    `rcon_address 0.0.0.0:0; rcon_address ${config.rcon.listenAddress}:${config.rcon.listenPort}`;
 
                                 fs.writeFile(config.tf2.path + "/cfg/listenserver.cfg", listenConfig, (err) => {
                                     if (err) {
@@ -95,12 +95,12 @@ var srv = net.createServer(function (sock) {
                     (demoObj) => {
                         utils.killSVR();
 
-                        var filename = `${config.svr.recording_folder}/${demoObj.demo_info.filename}_${
+                        var filename = `${config.svr.recordingFolder}/${demoObj.demo_info.filename}_${
                             demoObj.class === 3 ? "soldier" : "demoman"
                         }.mp4`;
 
                         // Compress
-                        youtube.compress(filename, `${filename.split(".mp4")[0]}.wav`, (result, name) => {
+                        youtube.compress(filename, `${filename.split(".mp4")[0]}.wav`, demoObj, (result, name) => {
                             if (result === true) {
                                 // Upload final output
                                 if (result === true) {
@@ -134,7 +134,7 @@ var srv = net.createServer(function (sock) {
 });
 
 function init() {
-    srv.listen(config.rcon.listen_port, config.rcon.listen_address);
+    srv.listen(config.rcon.listenPort, config.rcon.listenAddress);
 }
 
 module.exports.init = init;

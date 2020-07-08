@@ -1,5 +1,4 @@
-﻿var https = require("https"),
-    http = require("http"),
+﻿var http = require("http"),
     fs = require("fs"),
     unzipper = require("unzipper"),
     bz2 = require("unbzip2-stream"),
@@ -161,12 +160,6 @@ function download(url, map, demo, callback) {
             });
 
             request.on("error", function (e) {
-                console.log("[DL] Error downloading");
-                console.log(e.message);
-                demojs.skip();
-            });
-
-            response.on("error", function (e) {
                 console.log("[DL] Error downloading");
                 console.log(e.message);
                 demojs.skip();

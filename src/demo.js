@@ -69,7 +69,7 @@ async function init(recent, mapName, className) {
             continue;
         }
 
-        if (runs[i].duration / 60 > config.youtube.max_duration) {
+        if (runs[i].duration / 60 > config.video.maxDuration) {
             console.log(`Removing run too long ${runs[i].map.name} (${runs[i].class === 3 ? "Soldier" : "Demoman"})`);
             runs.splice(i, 1);
             continue;
@@ -138,10 +138,10 @@ function playDemo(demo) {
     }
 
     // Check for existing video if we crashed before, etc
-    var video = `${config.svr.recording_folder}/${demo.demo_info.filename}_${
+    var video = `${config.svr.recordingFolder}/${demo.demo_info.filename}_${
         demo.class === 3 ? "soldier" : "demoman"
     }.mp4`;
-    var audio = `${config.svr.recording_folder}/${demo.demo_info.filename}_${
+    var audio = `${config.svr.recordingFolder}/${demo.demo_info.filename}_${
         demo.class === 3 ? "soldier" : "demoman"
     }.wav`;
 
@@ -150,7 +150,7 @@ function playDemo(demo) {
         console.log(`Make sure to delete existing videos if they're corrupted, etc.`);
 
         // Compress
-        youtube.compress(video, audio, (result, name) => {
+        youtube.compress(video, audio, demo, (result, name) => {
             if (result === true) {
                 // Upload final output
                 if (result === true) {
@@ -164,7 +164,7 @@ function playDemo(demo) {
     }
 
     // Check for already compressed version
-    video = `${config.svr.recording_folder}/${demo.demo_info.filename}_${
+    video = `${config.svr.recordingFolder}/${demo.demo_info.filename}_${
         demo.class === 3 ? "soldier" : "demoman"
     }_compressed.mp4`;
     if (fs.existsSync(video)) {
@@ -248,7 +248,7 @@ function startDemo(demo) {
 
 function getPlayCommands(demo, isVideo = true) {
     const startPadding = 200;
-    const endPadding = 150;
+    const endPadding = 200;
 
     // Commands used to control the demo playback.
     // Executing tmps_records_* config files will trigger events in rcon.js.

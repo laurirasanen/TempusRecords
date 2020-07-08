@@ -5,7 +5,8 @@
     prettyBytes = require("pretty-bytes"),
     config = require("./data/config.json"),
     opn = require("opn"),
-    utils = require("./utils.js");
+    utils = require("./utils.js"),
+    split = require("./split.js");
 
 let hasTokens = false;
 
@@ -14,12 +15,7 @@ let server = new Lien({
     port: "5000",
 });
 
-let oauth = youtube_api.authenticate({
-    type: "oauth",
-    client_id: config.youtube.client_id,
-    client_secret: config.youtube.client_secret,
-    redirect_url: config.youtube.redirect_url,
-});
+let oauth = youtube_api.authenticate(config.youtube.oauth);
 
 opn(
     oauth.generateAuthUrl({
@@ -56,11 +52,13 @@ function getDuration(file, cb) {
     });
 }
 
-function compress(video, audio, cb) {
+async function compress(video, audio, demo, cb) {
     if (!cb || typeof cb !== "function") throw "callback is not a function";
 
     const output = video.split(".mp4")[0] + "_compressed.mp4";
     let prevProgress = 0;
+
+    let wrSplit = await split.getWRSplit(demo.map.id, demo.class);
 
     getDuration(video, (success, duration) => {
         let videoFilters = [
@@ -77,26 +75,67 @@ function compress(video, audio, cb) {
         ];
         let audioFilters = [];
 
-        // Add fade in/out
         if (success) {
+            // Add wr split
+            if (wrSplit) {
+                // Escape semicolon and wrap in quotes for ffmpeg
+                let text = `'${wrSplit.replace(/:/g, "\\:")}'`;
+
+                // Get timestamps for text fading
+                let fadeOutEnd = duration - config.video.text.endPadding;
+                let fadeOutStart = fadeOutEnd - config.video.text.fadeOutDuration;
+                let fadeInEnd = fadeOutStart - config.video.text.displayDuration;
+                let fadeInStart = fadeInEnd - config.video.text.fadeInDuration;
+                let maxAlpha = config.video.text.maxAlpha;
+
+                videoFilters.push({
+                    filter: "drawtext",
+                    options: {
+                        ...config.video.text.ffmpegOptions,
+                        text: text,
+                        // Modify alpha to fade text in and out
+                        alpha: `
+                            min(
+                                ${maxAlpha},
+                                if(lt(t,${fadeInStart}),
+                                    0,
+                                    if(lt(t,${fadeInEnd}),
+                                        (t-${fadeInStart})*${maxAlpha},
+                                        if(lt(t,${fadeOutStart}),
+                                            ${maxAlpha},
+                                            if(lt(t,${fadeOutEnd}),
+                                                (${maxAlpha}-(t-${fadeOutStart}))*${maxAlpha}
+                                            )
+                                        )
+                                    )
+                                )
+                            )                        
+                        `,
+                    },
+                });
+            }
+
+            // Add video fade in/out
             videoFilters.push(
                 {
                     filter: "fade",
-                    options: "in:st=0:d=0.25",
+                    options: `in:st=0:d=${config.video.fadeInDuration}`,
                 },
                 {
                     filter: "fade",
-                    options: `out:st=${duration - 0.5}:d=0.5`,
+                    options: `out:st=${duration - config.video.fadeOutDuration}:d=${config.video.fadeOutDuration}`,
                 }
             );
+
+            // Add audio fade in/out
             audioFilters.push(
                 {
                     filter: "afade",
-                    options: "in:st=0:d=1",
+                    options: `in:st=0:d=${config.audio.fadeInDuration}`,
                 },
                 {
                     filter: "afade",
-                    options: `out:st=${duration - 1.5}:d=1.5`,
+                    options: `out:st=${duration - config.audio.fadeOutDuration}:d=${config.audio.fadeOutDuration}`,
                 }
             );
         }
@@ -146,7 +185,7 @@ function compress(video, audio, cb) {
                 console.log(`Finished compressing ${video}`);
 
                 // Remove old video and audio
-                if (config.youtube.delete_uncompressed) {
+                if (config.youtube.deleteUncompressed) {
                     fs.unlink(video, (err) => {
                         if (err) {
                             console.log("Failed to unlink uncompressed video");
@@ -172,7 +211,7 @@ function compress(video, audio, cb) {
     });
 }
 
-function upload(file, demo) {
+async function upload(file, demo) {
     if (!hasTokens) {
         console.log("Awaiting tokens");
         setTimeout(() => {
@@ -188,6 +227,9 @@ function upload(file, demo) {
     var fileSize = stats.size;
     var bytes = 0;
 
+    // Get split
+    let wrSplit = await split.getWRSplit(demo.map.id, demo.class);
+
     config.youtube.description.forEach((line) => {
         var d = new Date();
         var demo_date = new Date(demo.demo_info.date * 1000);
@@ -196,10 +238,10 @@ function upload(file, demo) {
             .replace("$MAP", demo.map.name)
             .replace("$NAME", demo.player_info.name)
             .replace("$TIME", utils.secondsToTimeStamp(demo.duration))
+            .replace("$SPLIT", wrSplit ? `(${wrSplit})` : "")
             .replace("$CLASS", demo.class === 3 ? "Soldier" : "Demoman")
             .replace("$DATETIME", d.toUTCString())
             .replace("$DATE", demo_date.toUTCString())
-
             .replace("$DEMO_URL", "https://tempus.xyz/demos/" + demo.demo_info.id);
 
         description += line + "\n";
@@ -311,7 +353,7 @@ function upload(file, demo) {
                 });
 
                 // Remove compressed video
-                if (config.youtube.delete_compressed) {
+                if (config.youtube.deleteCompressed) {
                     fs.unlink(file, (err) => {
                         if (err) {
                             console.log("Failed to unlink uploaded video");
