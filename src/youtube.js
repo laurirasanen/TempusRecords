@@ -6,7 +6,8 @@
     config = require("./data/config.json"),
     opn = require("opn"),
     utils = require("./utils.js"),
-    split = require("./split.js");
+    split = require("./split.js"),
+    fullbright = require("./data/fullbright_maps.json");
 
 let hasTokens = false;
 
@@ -62,17 +63,30 @@ async function compress(video, audio, demo, cb) {
 
     getDuration(video, (success, duration) => {
         let videoFilters = [
-            // Apply photoshop color curve
-            {
-                filter: "curves",
-                options: { psfile: "data/color_curves.acv" },
-            },
             // Add a slight vignette
             {
                 filter: "vignette",
                 options: { angle: 0.1 },
             },
         ];
+
+        // Use different color curve for fullbright maps
+        let curveFile = "data/color_curves.acv";
+        if (fullbright.includes(demo.map.name)) {
+            //curveFile = "data/color_curves_fullbright.acv";
+            // Don't apply curves to fullbright maps for now
+            curveFile = null;
+        }
+
+        if (curveFile) {
+            // Apply photoshop color curve.
+            // Insert before vignette just in case that makes a difference.
+            videoFilters.unshift({
+                filter: "curves",
+                options: { psfile: curveFile },
+            });
+        }
+
         let audioFilters = [];
 
         if (success) {
