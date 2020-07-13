@@ -73,19 +73,15 @@ async function compress(video, audio, demo, cb) {
         // Use different color curve for fullbright maps
         let curveFile = "data/color_curves.acv";
         if (fullbright.includes(demo.map.name)) {
-            //curveFile = "data/color_curves_fullbright.acv";
-            // Don't apply curves to fullbright maps for now
-            curveFile = null;
+            curveFile = "data/color_curves_fullbright.acv";
         }
 
-        if (curveFile) {
-            // Apply photoshop color curve.
-            // Insert before vignette just in case that makes a difference.
-            videoFilters.unshift({
-                filter: "curves",
-                options: { psfile: curveFile },
-            });
-        }
+        // Apply photoshop color curve.
+        // Insert before vignette just in case that makes a difference.
+        videoFilters.unshift({
+            filter: "curves",
+            options: { psfile: curveFile },
+        });
 
         let audioFilters = [];
 
