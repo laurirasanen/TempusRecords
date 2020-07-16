@@ -275,7 +275,7 @@ function getPlayCommands(demo, isVideo = true) {
     return commands;
 }
 
-// Get runs for a list of maps
+// Get soldier and demo run overviews for a list of maps
 async function getRuns(mapList) {
     var runs = [];
 
@@ -283,7 +283,7 @@ async function getRuns(mapList) {
         console.log(`Getting map wrs ${i + 1}/${mapList.length}`);
         var map = mapList[i];
 
-        if (map.name == null) continue;
+        if (!map || map.name) continue;
 
         var swr = await tempus.mapWR(map.name, "s");
         if (swr != null) {
@@ -307,6 +307,7 @@ async function getRuns(mapList) {
     return runs;
 }
 
+// Get overviews for a list of records
 async function getOverviews(recordList) {
     var runs = [];
 
