@@ -195,7 +195,7 @@ async function compress(video, audio, demo, cb) {
                 console.log(`Finished compressing ${video}`);
 
                 // Remove old video and audio
-                if (config.youtube.deleteUncompressed) {
+                if (config.video.deleteUncompressed) {
                     fs.unlink(video, (err) => {
                         if (err) {
                             console.log("Failed to unlink uncompressed video");
@@ -363,7 +363,7 @@ async function upload(file, demo) {
                 });
 
                 // Remove compressed video
-                if (config.youtube.deleteCompressed) {
+                if (config.video.deleteCompressed) {
                     fs.unlink(file, (err) => {
                         if (err) {
                             console.log("Failed to unlink uploaded video");
