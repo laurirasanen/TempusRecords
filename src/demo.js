@@ -283,7 +283,7 @@ async function getRuns(mapList) {
         console.log(`Getting map wrs ${i + 1}/${mapList.length}`);
         var map = mapList[i];
 
-        if (!map || map.name) continue;
+        if (!map) continue;
 
         var swr = await tempus.mapWR(map.name, "s");
         if (swr != null) {
