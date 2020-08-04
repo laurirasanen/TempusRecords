@@ -285,31 +285,26 @@ async function getRuns(mapList) {
 
         if (!map) continue;
 
-        try {
-            var swr = await tempus.mapWR(map.name, "s");
-            if (swr != null) {
-                var overview = await swr.toRecordOverview();
-                overview.map = await overview.map.toMapOverview();
-                runs.push(overview);
-            }
-        } catch (err) {
-            console.error(err);
+        var records = await tempus.mapRecords(map.name, "map", 1, 1, 1);
+        var classRuns = [];
+        if (records.soldier && records.soldier["0"]) {
+            classRuns.push(records.soldier["0"]);
+        }
+        if (records.demoman && records.demoman["0"]) {
+            classRuns.push(records.demoman["0"]);
         }
 
-        await utils.sleep(50);
-
-        try {
-            var dwr = await tempus.mapWR(map.name, "d");
-            if (dwr != null) {
-                var overview = await dwr.toRecordOverview();
+        for (let run of classRuns) {
+            try {
+                var overview = await run.toRecordOverview();
                 overview.map = await overview.map.toMapOverview();
                 runs.push(overview);
+            } catch (err) {
+                console.error(err);
             }
-        } catch (err) {
-            console.error(err);
         }
 
-        await utils.sleep(50);
+        await utils.sleep(100);
     }
 
     return runs;
