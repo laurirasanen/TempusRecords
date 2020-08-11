@@ -180,6 +180,7 @@ function playDemo(demo) {
         // Demo is still recording,
         // attemping to download will result in corrupt file.
         skip();
+        return;
     }
 
     // Get map file
