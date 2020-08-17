@@ -7,7 +7,8 @@
     opn = require("opn"),
     utils = require("./utils.js"),
     split = require("./split.js"),
-    fullbright = require("./data/fullbright_maps.json");
+    fullbright = require("./data/fullbright_maps.json"),
+    uploaded = require("./data/uploaded.json");
 
 let hasTokens = false;
 
@@ -59,7 +60,12 @@ async function compress(video, audio, demo, cb) {
     const output = video.split(".mp4")[0] + "_compressed.mp4";
     let prevProgress = 0;
 
-    let wrSplit = await split.getWRSplit(demo.map.id, demo.class);
+    let wrSplit = null;
+    if (isBonusCollection) {
+        wrSplit = await split.getWRSplit(demo.map.id, demo.class, "bonus", demo.bonusNumber);
+    } else {
+        wrSplit = await split.getWRSplit(demo.map.id, demo.class);
+    }
 
     getDuration(video, (success, duration) => {
         let videoFilters = [
@@ -86,41 +92,104 @@ async function compress(video, audio, demo, cb) {
         let audioFilters = [];
 
         if (success) {
+            // Get timestamps for text fading
+            let fadeOutEnd = duration - config.video.text.endPadding;
+            let fadeOutStart = fadeOutEnd - config.video.text.fadeOutDuration;
+            let fadeInEnd = fadeOutStart - config.video.text.displayDuration;
+            let fadeInStart = fadeInEnd - config.video.text.fadeInDuration;
+            let maxAlpha = config.video.text.maxAlpha;
+
+            // Modify alpha to fade text in and out
+            let alphaTimeSplit = `
+                min(
+                    ${maxAlpha},
+                    if(lt(t,${fadeInStart}),
+                        0,
+                        if(lt(t,${fadeInEnd}),
+                            (t-${fadeInStart})*${maxAlpha},
+                            if(lt(t,${fadeOutStart}),
+                                ${maxAlpha},
+                                if(lt(t,${fadeOutEnd}),
+                                    (${maxAlpha}-(t-${fadeOutStart}))*${maxAlpha}
+                                )
+                            )
+                        )
+                    )
+                )                        
+            `;
+
+            fadeInStart = config.video.text.startPadding;
+            fadeInEnd = fadeInStart + config.video.text.fadeInDuration;
+
+            let alphaName = `
+                min(
+                    ${maxAlpha},
+                    if(lt(t,${fadeInStart}),
+                        0,
+                        if(lt(t,${fadeInEnd}),
+                            (t-${fadeInStart})*${maxAlpha},
+                            if(lt(t,${fadeOutStart}),
+                                ${maxAlpha},
+                                if(lt(t,${fadeOutEnd}),
+                                    (${maxAlpha}-(t-${fadeOutStart}))*${maxAlpha}
+                                )
+                            )
+                        )
+                    )
+                )                        
+            `;
+
             // Add wr split
             if (wrSplit) {
                 // Escape semicolon and wrap in quotes for ffmpeg
                 let text = `'${wrSplit.replace(/:/g, "\\:")}'`;
 
-                // Get timestamps for text fading
-                let fadeOutEnd = duration - config.video.text.endPadding;
-                let fadeOutStart = fadeOutEnd - config.video.text.fadeOutDuration;
-                let fadeInEnd = fadeOutStart - config.video.text.displayDuration;
-                let fadeInStart = fadeInEnd - config.video.text.fadeInDuration;
-                let maxAlpha = config.video.text.maxAlpha;
-
                 videoFilters.push({
                     filter: "drawtext",
                     options: {
                         ...config.video.text.ffmpegOptions,
+                        ...(isBonusCollection
+                            ? config.video.text.position.bonus.time
+                            : config.video.text.position.map.time),
                         text: text,
-                        // Modify alpha to fade text in and out
-                        alpha: `
-                            min(
-                                ${maxAlpha},
-                                if(lt(t,${fadeInStart}),
-                                    0,
-                                    if(lt(t,${fadeInEnd}),
-                                        (t-${fadeInStart})*${maxAlpha},
-                                        if(lt(t,${fadeOutStart}),
-                                            ${maxAlpha},
-                                            if(lt(t,${fadeOutEnd}),
-                                                (${maxAlpha}-(t-${fadeOutStart}))*${maxAlpha}
-                                            )
-                                        )
-                                    )
-                                )
-                            )                        
-                        `,
+                        alpha: alphaTimeSplit,
+                    },
+                });
+            }
+
+            if (isBonusCollection) {
+                // Add map name, bonus number, and player name to video
+
+                // Player
+                videoFilters.push({
+                    filter: "drawtext",
+                    options: {
+                        ...config.video.text.ffmpegOptions,
+                        ...config.video.text.position.bonus.player,
+                        text: demo.player_info.name,
+                        alpha: alphaName,
+                    },
+                });
+
+                // Map
+                videoFilters.push({
+                    filter: "drawtext",
+                    options: {
+                        ...config.video.text.ffmpegOptions,
+                        ...config.video.text.position.bonus.map,
+                        text: demo.map.name,
+                        alpha: alphaName,
+                    },
+                });
+
+                // Bonus
+                videoFilters.push({
+                    filter: "drawtext",
+                    options: {
+                        ...config.video.text.ffmpegOptions,
+                        ...config.video.text.position.bonus.bonus,
+                        text: "bonus " + demo.bonusNumber,
+                        alpha: alphaName,
                     },
                 });
             }
@@ -222,6 +291,13 @@ async function compress(video, audio, demo, cb) {
 }
 
 async function upload(file, demo) {
+    if (isBonusCollection) {
+        concatBonusRuns(() => {
+            uploadBonusCollection();
+        });
+        return;
+    }
+
     if (!hasTokens) {
         console.log("Awaiting tokens");
         setTimeout(() => {
@@ -374,6 +450,203 @@ async function upload(file, demo) {
                         console.log("Unlinked uploaded video");
                     });
                 }
+            });
+        }
+    );
+}
+
+async function concatBonusRuns(cb) {
+    if (typeof cb !== "function") {
+        throw "callback is not a function";
+    }
+
+    console.log("Concatenating bonus videos");
+
+    let prevProgress = 0;
+    let completed = false;
+
+    let ff = ffmpeg();
+    // ffmpeg uses inputs in reverse order
+    for (let i = bonusRuns.length - 1; i >= 0; i--) {
+        ff.input(bonusRuns[i].outputFile);
+    }
+    ff.on("error", (err) => {
+        console.log("Failed to concatenate files");
+        console.error(err);
+    })
+        .on("progress", (progress) => {
+            let actualProgress = progress.percent / bonusRuns.length;
+            if (actualProgress > prevProgress + 5) {
+                prevProgress += 5;
+                console.log("Concat progress: " + Math.round(actualProgress - (actualProgress % 5)) + "%");
+            }
+        })
+        .on("end", () => {
+            // This gets called multiple times for some reason
+            if (completed) {
+                return;
+            }
+            completed = true;
+
+            console.log("Finished concatenating");
+            cb();
+        })
+        .mergeToFile(config.svr.recordingFolder + "/bonuscollection.mp4", config.svr.recordingFolder);
+}
+
+async function uploadBonusCollection() {
+    if (!hasTokens) {
+        console.log("Awaiting tokens");
+        setTimeout(() => {
+            uploadBonusCollection();
+        }, 5000);
+        return;
+    }
+
+    console.log(`Uploading bonus collection`);
+
+    var file = config.svr.recordingFolder + "/bonuscollection.mp4";
+    var description = "";
+    var stats = fs.statSync(file);
+    var fileSize = stats.size;
+    var bytes = 0;
+
+    let date = new Date();
+
+    let players = [];
+    let maps = [];
+    for (let run of bonusRuns) {
+        if (!players.includes(run.player_info.name)) {
+            players.push(run.player_info.name);
+        }
+        if (!maps.includes(run.map.name)) {
+            maps.push(run.map.name);
+        }
+    }
+    players.sort();
+    maps.sort();
+
+    description = "Featured players:\n";
+    for (let name of players) {
+        description += `${name}\n`;
+    }
+    description += "\n";
+    description += "Featured maps:\n";
+    for (let name of maps) {
+        description += `${name}\n`;
+    }
+    description += "\n";
+
+    config.youtube.bonusDescription.forEach((line) => {
+        line = line.replace("$DATETIME", date.toUTCString());
+        description += line + "\n";
+    });
+
+    // Common tags for all videos
+    var tags = [
+        "Team Fortress 2",
+        "TF2",
+        "rocketjump",
+        "speedrun",
+        "tempus",
+        "record",
+        "bonus",
+        "bonuses",
+        "bonus collection",
+        "soldier",
+        "demoman",
+    ];
+
+    let previousProgress = 0;
+
+    var req = youtube_api.videos.insert(
+        {
+            resource: {
+                snippet: {
+                    title: config.youtube.bonusTitle.replace("$NUMBER", uploaded.bonusCollections + 1),
+                    description: description,
+                    tags: tags,
+                },
+                status: {
+                    privacyStatus: "private",
+                    publishAt: new Date(Date.now() + 1000 * 60 * 30).toISOString(), // Allow for 30 mins of processing before making public
+                },
+            },
+            // This is for the callback function
+            part: "snippet,status",
+
+            // Create the readable stream to upload the video
+            media: {
+                body: fs.createReadStream(file).on("data", (chunk) => {
+                    bytes += chunk.length;
+                    let percentage = (100 * bytes) / fileSize;
+                    if (percentage > previousProgress + 5) {
+                        console.log(
+                            `${file}: ${prettyBytes(bytes)} (${Math.round(percentage - (percentage % 5))}%) uploaded.`
+                        );
+                        previousProgress += 5;
+                    }
+                }),
+            },
+        },
+        (err, data) => {
+            if (err) {
+                console.log("Failed to upload video");
+                console.log(err);
+                return;
+            } else {
+                console.log("Done uploading");
+            }
+
+            // Add video to bonus playlist
+            youtube_api.playlistItems.insert(
+                {
+                    resource: {
+                        snippet: {
+                            playlistId: "PL_D9J2bYWXyJBc0YvjRpqpFc5hY-ieU-B",
+                            resourceId: {
+                                kind: "youtube#video",
+                                videoId: data.id,
+                            },
+                        },
+                    },
+                    part: "snippet",
+                },
+                (err, data) => {
+                    if (err) {
+                        console.log("Failed to add video to playlist");
+                        console.log(err);
+                    } else {
+                        console.log("Video added to playlist");
+                    }
+                }
+            );
+
+            // Add to uploaded runs
+            utils.readJson("./data/uploaded.json", (err, uploaded) => {
+                if (err !== null) {
+                    console.log("Failed to read last uploaded");
+                    console.log(err);
+                    return;
+                }
+
+                for (let run of bonusRuns) {
+                    if (!uploaded.bonuses.includes(run.id)) {
+                        uploaded.bonuses.push(run.id);
+                    }
+                }
+
+                uploaded.bonusCollections += 1;
+
+                utils.writeJson("./data/uploaded.json", uploaded, (err) => {
+                    if (err !== null) {
+                        console.log("Failed to write last uploaded");
+                        console.log(err);
+                        return;
+                    }
+
+                    console.log("Updated uploaded list");
+                });
             });
         }
     );

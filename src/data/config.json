@@ -7,6 +7,7 @@
             "redirect_url": "http://localhost:5000/oauth2callback"
         },
         "title": "$NAME on $MAP - $TIME",
+        "bonusTitle": "Bonus collection #$NUMBER",
         "description": [
             "Player: $NAME",
             "Map: $MAP",
@@ -27,24 +28,61 @@
             "https://github.com/TheRealHona/TempusHub",
             "https://tempushub.xyz/"
         ],
+        "bonusDescription": [
+            "This video was automatically generated on $DATETIME",
+            "https://github.com/laurirasanen/tempusrecords",
+            "",
+            "Recorded with Source Video Render by crashfort",
+            "https://github.com/crashfort/SourceDemoRender",
+            "",
+            "WR time splits provided by Hona",
+            "https://github.com/TheRealHona/TempusHub",
+            "https://tempushub.xyz/"
+        ],
         "video_limit": 65
     },
     "video": {
         "deleteCompressed": false,
         "deleteUncompressed": true,
+        "maxBonusesInCollection": 100,
         "maxDuration": 30,
         "text": {
             "ffmpegOptions": {
                 "font": "Segoe UI Light",
                 "fontsize": "h/15",
-                "fontcolor": "#FFFFFF",
-                "x": "w/15",
-                "y": "h - h/7.5"
+                "fontcolor": "#FFFFFF"
+            },
+            "position": {
+                "map": {
+                    "time": {
+                        "x": "0",
+                        "y": "h - h/7.5"
+                    }
+                },
+                "bonus": {
+                    "time": {
+                        "x": "0",
+                        "y": "h - h/7.5"
+                    },
+                    "player": {
+                        "x": "0",
+                        "y": "h - h/15"
+                    },
+                    "bonus": {
+                        "x": "w - tw",
+                        "y": "h - h/7.5"
+                    },
+                    "map": {
+                        "x": "w - tw",
+                        "y": "h - h/15"
+                    }
+                }
             },
             "displayDuration": 3,
             "fadeInDuration": 0.5,
             "fadeOutDuration": 0.5,
             "endPadding": 0,
+            "startPadding": 0,
             "maxAlpha": 0.8
         },
         "fadeInDuration": 0.25,

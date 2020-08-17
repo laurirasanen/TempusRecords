@@ -21,14 +21,12 @@ const old_steamids = [
 let runs = [];
 
 global.currentDemo = null;
+global.isBonusCollection = false;
+global.isLastRun = false;
+global.bonusRuns = [];
 
-async function init(recent, mapName, className) {
-    var mapList = [];
-    if (recent) {
-        // Upload most recent runs
-        var activity = await tempus.getActivity();
-        runs = await getOverviews(activity.map_wrs);
-    } else if (mapName && className) {
+async function init(recent, mapName, className, bonus) {
+    if (mapName && className) {
         // Upload specific run
         var wr = await tempus.mapWR(mapName, className);
         var overview = await wr.toRecordOverview();
@@ -45,9 +43,84 @@ async function init(recent, mapName, className) {
 
         playDemo(runs[0]);
         return;
+    }
+
+    if (bonus) {
+        // Upload bonus runs
+        isBonusCollection = true;
+
+        let mapList = await tempus.detailedMapList();
+        runs = await getBonusRuns(mapList);
+        utils.readJson("./data/uploaded.json", (err, uploaded) => {
+            if (err !== null) {
+                console.log("Could not read uploaded.json");
+                console.log(err);
+                return;
+            }
+
+            // Remove already uploaded runs
+            for (var i = runs.length - 1; i >= 0; i--) {
+                if (uploaded.bonuses.includes(runs[i].id)) {
+                    runs.splice(i, 1);
+                    continue;
+                }
+
+                if (!runs[i].demo_info.filename || !runs[i].demo_info.url) {
+                    runs.splice(i, 1);
+                    continue;
+                }
+
+                // TODO: blacklist
+
+                // Replace names
+                for (var e = 0; e < nicknames.length; e++) {
+                    if (runs[i].player_info.steamid === nicknames[e].steamid) {
+                        runs[i].player_info.name = nicknames[e].name;
+                        break;
+                    }
+
+                    if (e >= nicknames.length - 1) {
+                        console.log(
+                            `Warn: no nickname for player ${runs[i].player_info.name} (${runs[i].player_info.steamid})`
+                        );
+                    }
+                }
+
+                // This is used for concatenating bonus video files before upload
+                runs[i].outputFile = `${config.svr.recordingFolder}/${runs[i].demo_info.filename}_bonus${
+                    runs[i].bonusNumber
+                }_${runs[i].class === 3 ? "soldier" : "demoman"}_compressed.mp4`;
+                bonusRuns.push(runs[i]);
+            }
+
+            // Check for max number of runs
+            if (runs.length > config.video.maxBonusesInCollection) {
+                let firstDeleted = runs[config.video.maxBonusesInCollection];
+                runs = runs.splice(0, config.video.maxBonusesInCollection);
+
+                // Let's not end the collection midway through a map...
+                while (runs[runs.length - 1].map.name === firstDeleted.map.name) {
+                    runs.splice(runs.length - 1, 1);
+                }
+            }
+
+            if (runs.length <= 0) {
+                console.log("No new runs.");
+                return;
+            }
+
+            playDemo(runs[0]);
+        });
+        return;
+    }
+
+    if (recent) {
+        // Upload most recent runs
+        var activity = await tempus.getActivity();
+        runs = await getOverviews(activity.map_wrs);
     } else {
         // Upload all runs
-        mapList = await tempus.detailedMapList();
+        let mapList = await tempus.detailedMapList();
         runs = await getRuns(mapList);
     }
 
@@ -127,6 +200,9 @@ function skip() {
     for (var i = 0; i < runs.length - 1; i++) {
         if (runs[i] === currentDemo || currentDemo === null) {
             currentDemo = runs[i + 1];
+            if (i + 1 >= runs.length - 1) {
+                isLastRun = true;
+            }
             return playDemo(runs[i + 1]);
         }
     }
@@ -139,11 +215,11 @@ function playDemo(demo) {
 
     // Check for existing video if we crashed before, etc
     var video = `${config.svr.recordingFolder}/${demo.demo_info.filename}_${
-        demo.class === 3 ? "soldier" : "demoman"
-    }.mp4`;
+        isBonusCollection ? "bonus" + demo.bonusNumber : "map"
+    }_${demo.class === 3 ? "soldier" : "demoman"}.mp4`;
     var audio = `${config.svr.recordingFolder}/${demo.demo_info.filename}_${
-        demo.class === 3 ? "soldier" : "demoman"
-    }.wav`;
+        isBonusCollection ? "bonus" + demo.bonusNumber : "map"
+    }_${demo.class === 3 ? "soldier" : "demoman"}.wav`;
 
     if (fs.existsSync(video) && fs.existsSync(audio)) {
         console.log(`WARNING: Using existing video '${video}'`);
@@ -153,7 +229,7 @@ function playDemo(demo) {
         youtube.compress(video, audio, demo, (result, name) => {
             if (result === true) {
                 // Upload final output
-                if (result === true) {
+                if (result === true && (!isBonusCollection || isLastRun)) {
                     youtube.upload(name, demo);
                 }
             }
@@ -165,18 +241,21 @@ function playDemo(demo) {
 
     // Check for already compressed version
     video = `${config.svr.recordingFolder}/${demo.demo_info.filename}_${
-        demo.class === 3 ? "soldier" : "demoman"
-    }_compressed.mp4`;
+        isBonusCollection ? "bonus" + demo.bonusNumber : "map"
+    }_${demo.class === 3 ? "soldier" : "demoman"}_compressed.mp4`;
     if (fs.existsSync(video)) {
-        console.log(`WARNING: Uploading existing video '${video}'`);
-        console.log(`Make sure to delete existing videos if they're corrupted, etc.`);
+        if (!isBonusCollection || isLastRun) {
+            console.log(`WARNING: Uploading existing video '${video}'`);
+            console.log(`Make sure to delete existing videos if they're corrupted, etc.`);
 
-        youtube.upload(video, demo);
+            youtube.upload(video, demo);
+        }
+
         skip();
         return;
     }
 
-    if (demo.demo_info.recording === true) {
+    if (demo.demo_info.recording === true || !demo.demo_info.url) {
         // Demo is still recording,
         // attemping to download will result in corrupt file.
         skip();
@@ -265,8 +344,8 @@ function getPlayCommands(demo, isVideo = true) {
             commands: `exec tmps_records_spec_player; spec_mode 4; demo_resume; ${
                 isVideo ? "" : "volume 0.1;"
             } rcon tmps_records_run_start; startmovie ${demo.demo_info.filename}_${
-                demo.class === 3 ? "soldier" : "demoman"
-            }${isVideo ? ".mp4 tempus" : ".wav wav"}`,
+                isBonusCollection ? "bonus" + demo.bonusNumber : "map"
+            }_${demo.class === 3 ? "soldier" : "demoman"}${isVideo ? ".mp4 tempus" : ".wav wav"}`,
         },
         { tick: demo.demo_start_tick, commands: `exec tmps_records_spec_player; spec_mode 4` }, // In case player dead before start_tick
         { tick: demo.demo_end_tick + endPadding - 33, commands: "rcon tmps_records_run_end" },
@@ -306,6 +385,45 @@ async function getRuns(mapList) {
         }
 
         await utils.sleep(100);
+    }
+
+    return runs;
+}
+
+// Get soldier and demo bonus run overviews for a list of maps
+async function getBonusRuns(mapList) {
+    var runs = [];
+
+    for (var i = 0; i < mapList.length; i++) {
+        console.log(`Getting bonus wrs for map ${i + 1}/${mapList.length}`);
+        var map = mapList[i];
+
+        if (!map) continue;
+        let mapOverview = await map.toMapOverview();
+
+        for (var j = 1; j < map.zone_counts.bonus_end + 1; j++) {
+            var records = await tempus.mapRecords(map.name, "bonus", j, 1, 1);
+            var classRuns = [];
+            if (records.soldier && records.soldier["0"]) {
+                classRuns.push(records.soldier["0"]);
+            }
+            if (records.demoman && records.demoman["0"]) {
+                classRuns.push(records.demoman["0"]);
+            }
+
+            for (let run of classRuns) {
+                try {
+                    var overview = await run.toRecordOverview();
+                    overview.map = mapOverview;
+                    overview.bonusNumber = j;
+                    runs.push(overview);
+                } catch (err) {
+                    console.error(err);
+                }
+            }
+
+            await utils.sleep(100);
+        }
     }
 
     return runs;

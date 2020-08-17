@@ -9,12 +9,13 @@ const BASE_OPTIONS = {
     json: true,
 };
 
-async function getWRSplit(mapId, classId, recordType = "map") {
+async function getWRSplit(mapId, classId, recordType = "map", recordIndex = 0) {
     let options = {
         ...BASE_OPTIONS,
-        uri: BASE_URL + `/WRSplit/${mapId}/${classId}/${recordType}`,
+        uri: BASE_URL + `/WRSplit/${mapId}/${classId}/${recordType}/${recordType != "map" ? recordIndex : ""}`,
     };
 
+    // TODO: regex
     try {
         return await rp(options);
     } catch {
