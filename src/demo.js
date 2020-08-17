@@ -70,6 +70,16 @@ async function init(recent, mapName, className, bonus) {
                     continue;
                 }
 
+                if (runs[i].duration / 60 > config.video.bonusMaxDuration) {
+                    console.log(
+                        `Removing run too long ${runs[i].map.name} bonus ${runs[i].bonusNumber} (${
+                            runs[i].class === 3 ? "Soldier" : "Demoman"
+                        })`
+                    );
+                    runs.splice(i, 1);
+                    continue;
+                }
+
                 // TODO: blacklist
 
                 // Replace names

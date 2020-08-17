@@ -44,8 +44,9 @@
     "video": {
         "deleteCompressed": false,
         "deleteUncompressed": true,
-        "maxBonusesInCollection": 100,
+        "maxBonusesInCollection": 50,
         "maxDuration": 30,
+        "bonusMaxDuration": 1,
         "text": {
             "ffmpegOptions": {
                 "font": "Segoe UI Light",
