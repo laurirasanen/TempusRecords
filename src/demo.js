@@ -47,10 +47,9 @@ async function init(recent, mapName, className, bonus) {
     if (bonus) {
         // Upload bonus runs
         isBonusCollection = true;
-
         let mapList = await tempus.detailedMapList();
-        mapList = mapList.splice(0, 40);
         runs = await getBonusRuns(mapList);
+
         utils.readJson("./data/uploaded.json", (err, uploaded) => {
             if (err !== null) {
                 console.log("Could not read uploaded.json");
@@ -99,6 +98,17 @@ async function init(recent, mapName, className, bonus) {
                 }
 
                 if (cont) continue;
+
+                // Remove too recent runs
+                if (Date.now() - runs[i].demo_info.date * 1000 < 1000 * 60 * 60 * 24 * config.video.bonusMinAge) {
+                    console.log(
+                        `Removing run newer than ${config.video.bonusMinAge} days ${runs[i].map.name} bonus ${
+                            runs[i].bonusNumber
+                        } (${runs[i].class === 3 ? "Soldier" : "Demoman"})`
+                    );
+                    runs.splice(i, 1);
+                    continue;
+                }
 
                 // Replace names
                 for (var e = 0; e < nicknames.length; e++) {
@@ -162,9 +172,9 @@ async function init(recent, mapName, className, bonus) {
     });
 
     for (var i = runs.length - 1; i >= 0; i--) {
-        if (Date.now() - runs[i].map.date_added * 1000 < 1000 * 60 * 60 * 24 * 7) {
+        if (Date.now() - runs[i].map.date_added * 1000 < 1000 * 60 * 60 * 24 * config.video.mapMinAge) {
             console.log(
-                `Removing run for map newer than 1 week ${runs[i].map.name} (${
+                `Removing run newer than ${config.video.mapMinAge} days ${runs[i].map.name} (${
                     runs[i].class === 3 ? "Soldier" : "Demoman"
                 })`
             );

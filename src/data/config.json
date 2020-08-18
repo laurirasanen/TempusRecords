@@ -47,6 +47,8 @@
         "maxBonusesInCollection": 30,
         "maxDuration": 30,
         "bonusMaxDuration": 1,
+        "bonusMinAge": 3,
+        "mapMinAge": 7,
         "text": {
             "ffmpegOptions": {
                 "font": "Segoe UI Light",
