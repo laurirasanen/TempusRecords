@@ -44,7 +44,7 @@
     "video": {
         "deleteCompressed": false,
         "deleteUncompressed": true,
-        "maxBonusesInCollection": 50,
+        "maxBonusesInCollection": 30,
         "maxDuration": 30,
         "bonusMaxDuration": 1,
         "text": {
