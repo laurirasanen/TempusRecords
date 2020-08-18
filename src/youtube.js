@@ -466,13 +466,13 @@ async function concatBonusRuns(cb) {
     let completed = false;
 
     let ff = ffmpeg();
-    // ffmpeg uses inputs in reverse order
     for (let i = bonusRuns.length - 1; i >= 0; i--) {
-        if (fs.existsSync(bonusRuns[i].outputFile)) {
-            ff.input(bonusRuns[i].outputFile);
-        } else {
+        if (!fs.existsSync(bonusRuns[i].outputFile)) {
             bonusRuns.splice(i, 1);
         }
+    }
+    for (let i = 0; i < bonusRuns.length; i++) {
+        ff.input(bonusRuns[i].outputFile);
     }
     ff.on("error", (err) => {
         console.log("Failed to concatenate files");
