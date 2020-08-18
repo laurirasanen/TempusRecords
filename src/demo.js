@@ -22,7 +22,6 @@ let runs = [];
 
 global.currentDemo = null;
 global.isBonusCollection = false;
-global.isLastRun = false;
 global.bonusRuns = [];
 
 async function init(recent, mapName, className, bonus) {
@@ -231,12 +230,13 @@ function skip() {
     for (var i = 0; i < runs.length - 1; i++) {
         if (runs[i] === currentDemo || currentDemo === null) {
             currentDemo = runs[i + 1];
-            if (i + 1 >= runs.length - 1) {
-                isLastRun = true;
-            }
             return playDemo(runs[i + 1]);
         }
     }
+}
+
+function isLastRun(demo) {
+    return demo.id === runs[runs.length - 1].id;
 }
 
 function playDemo(demo) {
@@ -260,7 +260,7 @@ function playDemo(demo) {
         youtube.compress(video, audio, demo, (result, name) => {
             if (result === true) {
                 // Upload final output
-                if (result === true && (!isBonusCollection || isLastRun)) {
+                if (result === true && (!isBonusCollection || isLastRun(demo))) {
                     youtube.upload(name, demo);
                 }
             }
@@ -275,7 +275,7 @@ function playDemo(demo) {
         isBonusCollection ? "bonus" + demo.bonusNumber : "map"
     }_${demo.class === 3 ? "soldier" : "demoman"}_compressed.mp4`;
     if (fs.existsSync(video)) {
-        if (!isBonusCollection || isLastRun) {
+        if (!isBonusCollection || isLastRun(demo)) {
             console.log(`WARNING: Uploading existing video '${video}'`);
             console.log(`Make sure to delete existing videos if they're corrupted, etc.`);
 
@@ -520,3 +520,4 @@ module.exports.init = init;
 module.exports.skip = skip;
 module.exports.getPlayCommands = getPlayCommands;
 module.exports.savePlayCommands = savePlayCommands;
+module.exports.isLastRun = isLastRun;
