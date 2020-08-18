@@ -50,6 +50,7 @@ async function init(recent, mapName, className, bonus) {
         isBonusCollection = true;
 
         let mapList = await tempus.detailedMapList();
+        mapList = mapList.splice(0, 40);
         runs = await getBonusRuns(mapList);
         utils.readJson("./data/uploaded.json", (err, uploaded) => {
             if (err !== null) {
@@ -80,7 +81,25 @@ async function init(recent, mapName, className, bonus) {
                     continue;
                 }
 
-                // TODO: blacklist
+                // Remove blacklisted runs
+                var cont = false;
+                for (var j = 0; j < blacklist.length; j++) {
+                    if (
+                        blacklist[j].name === runs[i].map.name &&
+                        blacklist[j][runs[i].class].bonuses.includes(runs[i].bonusNumber)
+                    ) {
+                        console.log(
+                            `Removing blacklisted ${runs[i].map.name} bonus ${runs[i].bonusNumber} (${
+                                runs[i].class === 3 ? "Soldier" : "Demoman"
+                            })`
+                        );
+                        runs.splice(i, 1);
+                        cont = true;
+                        break;
+                    }
+                }
+
+                if (cont) continue;
 
                 // Replace names
                 for (var e = 0; e < nicknames.length; e++) {
@@ -95,21 +114,15 @@ async function init(recent, mapName, className, bonus) {
                         );
                     }
                 }
-
-                // This is used for concatenating bonus video files before upload
-                runs[i].outputFile = `${config.svr.recordingFolder}/${runs[i].demo_info.filename}_bonus${
-                    runs[i].bonusNumber
-                }_${runs[i].class === 3 ? "soldier" : "demoman"}_compressed.mp4`;
-                bonusRuns.push(runs[i]);
             }
 
             // Check for max number of runs
             if (runs.length > config.video.maxBonusesInCollection) {
-                let firstDeleted = runs[config.video.maxBonusesInCollection];
+                let firstDeleted = runs[config.video.maxBonusesInCollection].map.name;
                 runs = runs.splice(0, config.video.maxBonusesInCollection);
 
                 // Let's not end the collection midway through a map...
-                while (runs[runs.length - 1].map.name === firstDeleted.map.name) {
+                while (runs[runs.length - 1].map.name === firstDeleted) {
                     runs.splice(runs.length - 1, 1);
                 }
             }
@@ -117,6 +130,14 @@ async function init(recent, mapName, className, bonus) {
             if (runs.length <= 0) {
                 console.log("No new runs.");
                 return;
+            }
+
+            for (let i = 0; i < runs.length; i++) {
+                // This is used for concatenating bonus video files before upload
+                runs[i].outputFile = `${config.svr.recordingFolder}/${runs[i].demo_info.filename}_bonus${
+                    runs[i].bonusNumber
+                }_${runs[i].class === 3 ? "soldier" : "demoman"}_compressed.mp4`;
+                bonusRuns.push(runs[i]);
             }
 
             playDemo(runs[0]);
@@ -176,7 +197,7 @@ async function init(recent, mapName, className, bonus) {
             // Remove blacklisted runs
             var cont = false;
             for (var e = 0; e < blacklist.length; e++) {
-                if (blacklist[e].name === runs[i].map.name && blacklist[e].class === runs[i].class) {
+                if (blacklist[e].name === runs[i].map.name && blacklist[e][runs[i].class].map) {
                     console.log(
                         `Removing blacklisted ${runs[i].map.name} (${runs[i].class === 3 ? "Soldier" : "Demoman"})`
                     );
