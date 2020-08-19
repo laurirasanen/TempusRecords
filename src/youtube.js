@@ -517,27 +517,21 @@ async function uploadBonusCollection() {
 
     let date = new Date();
 
-    let players = [];
-    let maps = [];
+    let seconds = 0;
+    description = "Runs:\n";
     for (let run of bonusRuns) {
-        if (!players.includes(run.player_info.name)) {
-            players.push(run.player_info.name);
-        }
-        if (!maps.includes(run.map.name)) {
-            maps.push(run.map.name);
-        }
-    }
-    players.sort();
-    maps.sort();
+        getDuration(run.outputFile, (success, duration) => {
+            if (!success) {
+                console.log(`Error getting duration of ${run.outputFile}!`);
+                return;
+            }
 
-    description = "Featured players:\n";
-    for (let name of players) {
-        description += `${name}\n`;
-    }
-    description += "\n";
-    description += "Featured maps:\n";
-    for (let name of maps) {
-        description += `${name}\n`;
+            let timeElapsed = new Date(0);
+            timeElapsed.setSeconds(Math.floor(seconds));
+            let timestamp = `${timeElapsed.getMinutes()}:${timeElapsed.getSeconds()}`;
+            description += `${timestamp} ${run.map.name} Bonus ${run.bonusNumber} by ${run.player_info.name} (${run.class === 3 ? "Soldier" : "Demoman"})\n`;
+            seconds += duration;
+        });
     }
     description += "\n";
 
