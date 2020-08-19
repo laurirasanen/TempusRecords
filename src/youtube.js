@@ -44,13 +44,14 @@ server.addPage("/oauth2callback", (lien) => {
     });
 });
 
-function getDuration(file, cb) {
-    ffmpeg(file).ffprobe((err, data) => {
-        if (err) {
-            // Ignore, just don't apply fades
-            return cb(false, -1);
-        }
-        return cb(true, data.format.duration);
+function getDuration(file) {
+    return new Promise((resolve, reject) => {
+        ffmpeg(file).ffprobe((err, data) => {
+            if (err) {
+                reject(err);
+            }
+            resolve(data.format.duration);
+        });
     });
 }
 
@@ -67,227 +68,230 @@ async function compress(video, audio, demo, cb) {
         wrSplit = await split.getWRSplit(demo.map.id, demo.class);
     }
 
-    getDuration(video, (success, duration) => {
-        let videoFilters = [
-            // Add a slight vignette
-            {
-                filter: "vignette",
-                options: { angle: 0.1 },
+    let duration = 0;
+    try {
+        duration = await getDuration(video);
+    } catch (err) {
+        console.log(`Failed to get the duration of ${video}`);
+        console.log(err);
+        return;
+    }
+
+    let videoFilters = [
+        // Add a slight vignette
+        {
+            filter: "vignette",
+            options: { angle: 0.1 },
+        },
+    ];
+
+    // Use different color curve for fullbright maps
+    let curveFile = "data/color_curves.acv";
+    if (fullbright.includes(demo.map.name)) {
+        curveFile = "data/color_curves_fullbright.acv";
+    }
+
+    // Apply photoshop color curve.
+    // Insert before vignette just in case that makes a difference.
+    videoFilters.unshift({
+        filter: "curves",
+        options: { psfile: curveFile },
+    });
+
+    let audioFilters = [];
+
+    // Get timestamps for text fading
+    let fadeOutEnd = duration - config.video.text.endPadding;
+    let fadeOutStart = fadeOutEnd - config.video.text.fadeOutDuration;
+    let fadeInEnd = fadeOutStart - config.video.text.displayDuration;
+    let fadeInStart = fadeInEnd - config.video.text.fadeInDuration;
+    let maxAlpha = config.video.text.maxAlpha;
+
+    // Modify alpha to fade text in and out
+    let alphaTimeSplit = `
+        min(
+            ${maxAlpha},
+            if(lt(t,${fadeInStart}),
+                0,
+                if(lt(t,${fadeInEnd}),
+                    (t-${fadeInStart})*${maxAlpha},
+                    if(lt(t,${fadeOutStart}),
+                        ${maxAlpha},
+                        if(lt(t,${fadeOutEnd}),
+                            (${maxAlpha}-(t-${fadeOutStart}))*${maxAlpha}
+                        )
+                    )
+                )
+            )
+        )                        
+    `;
+
+    fadeInStart = config.video.text.startPadding;
+    fadeInEnd = fadeInStart + config.video.text.fadeInDuration;
+
+    let alphaName = `
+        min(
+            ${maxAlpha},
+            if(lt(t,${fadeInStart}),
+                0,
+                if(lt(t,${fadeInEnd}),
+                    (t-${fadeInStart})*${maxAlpha},
+                    if(lt(t,${fadeOutStart}),
+                        ${maxAlpha},
+                        if(lt(t,${fadeOutEnd}),
+                            (${maxAlpha}-(t-${fadeOutStart}))*${maxAlpha}
+                        )
+                    )
+                )
+            )
+        )                        
+    `;
+
+    // Add wr split
+    if (wrSplit) {
+        // Escape semicolon and wrap in quotes for ffmpeg
+        let text = `'${wrSplit.replace(/:/g, "\\:")}'`;
+
+        videoFilters.push({
+            filter: "drawtext",
+            options: {
+                ...config.video.text.ffmpegOptions,
+                ...(isBonusCollection ? config.video.text.position.bonus.time : config.video.text.position.map.time),
+                text: text,
+                alpha: alphaTimeSplit,
             },
-        ];
+        });
+    }
 
-        // Use different color curve for fullbright maps
-        let curveFile = "data/color_curves.acv";
-        if (fullbright.includes(demo.map.name)) {
-            curveFile = "data/color_curves_fullbright.acv";
-        }
+    if (isBonusCollection) {
+        // Add map name, bonus number, and player name to video
 
-        // Apply photoshop color curve.
-        // Insert before vignette just in case that makes a difference.
-        videoFilters.unshift({
-            filter: "curves",
-            options: { psfile: curveFile },
+        // Player
+        videoFilters.push({
+            filter: "drawtext",
+            options: {
+                ...config.video.text.ffmpegOptions,
+                ...config.video.text.position.bonus.player,
+                text: demo.player_info.name,
+                alpha: alphaName,
+            },
         });
 
-        let audioFilters = [];
+        // Map
+        videoFilters.push({
+            filter: "drawtext",
+            options: {
+                ...config.video.text.ffmpegOptions,
+                ...config.video.text.position.bonus.map,
+                text: demo.map.name,
+                alpha: alphaName,
+            },
+        });
 
-        if (success) {
-            // Get timestamps for text fading
-            let fadeOutEnd = duration - config.video.text.endPadding;
-            let fadeOutStart = fadeOutEnd - config.video.text.fadeOutDuration;
-            let fadeInEnd = fadeOutStart - config.video.text.displayDuration;
-            let fadeInStart = fadeInEnd - config.video.text.fadeInDuration;
-            let maxAlpha = config.video.text.maxAlpha;
+        // Bonus
+        videoFilters.push({
+            filter: "drawtext",
+            options: {
+                ...config.video.text.ffmpegOptions,
+                ...config.video.text.position.bonus.bonus,
+                text: "bonus " + demo.bonusNumber,
+                alpha: alphaName,
+            },
+        });
+    }
 
-            // Modify alpha to fade text in and out
-            let alphaTimeSplit = `
-                min(
-                    ${maxAlpha},
-                    if(lt(t,${fadeInStart}),
-                        0,
-                        if(lt(t,${fadeInEnd}),
-                            (t-${fadeInStart})*${maxAlpha},
-                            if(lt(t,${fadeOutStart}),
-                                ${maxAlpha},
-                                if(lt(t,${fadeOutEnd}),
-                                    (${maxAlpha}-(t-${fadeOutStart}))*${maxAlpha}
-                                )
-                            )
-                        )
-                    )
-                )                        
-            `;
-
-            fadeInStart = config.video.text.startPadding;
-            fadeInEnd = fadeInStart + config.video.text.fadeInDuration;
-
-            let alphaName = `
-                min(
-                    ${maxAlpha},
-                    if(lt(t,${fadeInStart}),
-                        0,
-                        if(lt(t,${fadeInEnd}),
-                            (t-${fadeInStart})*${maxAlpha},
-                            if(lt(t,${fadeOutStart}),
-                                ${maxAlpha},
-                                if(lt(t,${fadeOutEnd}),
-                                    (${maxAlpha}-(t-${fadeOutStart}))*${maxAlpha}
-                                )
-                            )
-                        )
-                    )
-                )                        
-            `;
-
-            // Add wr split
-            if (wrSplit) {
-                // Escape semicolon and wrap in quotes for ffmpeg
-                let text = `'${wrSplit.replace(/:/g, "\\:")}'`;
-
-                videoFilters.push({
-                    filter: "drawtext",
-                    options: {
-                        ...config.video.text.ffmpegOptions,
-                        ...(isBonusCollection
-                            ? config.video.text.position.bonus.time
-                            : config.video.text.position.map.time),
-                        text: text,
-                        alpha: alphaTimeSplit,
-                    },
-                });
-            }
-
-            if (isBonusCollection) {
-                // Add map name, bonus number, and player name to video
-
-                // Player
-                videoFilters.push({
-                    filter: "drawtext",
-                    options: {
-                        ...config.video.text.ffmpegOptions,
-                        ...config.video.text.position.bonus.player,
-                        text: demo.player_info.name,
-                        alpha: alphaName,
-                    },
-                });
-
-                // Map
-                videoFilters.push({
-                    filter: "drawtext",
-                    options: {
-                        ...config.video.text.ffmpegOptions,
-                        ...config.video.text.position.bonus.map,
-                        text: demo.map.name,
-                        alpha: alphaName,
-                    },
-                });
-
-                // Bonus
-                videoFilters.push({
-                    filter: "drawtext",
-                    options: {
-                        ...config.video.text.ffmpegOptions,
-                        ...config.video.text.position.bonus.bonus,
-                        text: "bonus " + demo.bonusNumber,
-                        alpha: alphaName,
-                    },
-                });
-            }
-
-            // Add video fade in/out
-            videoFilters.push(
-                {
-                    filter: "fade",
-                    options: `in:st=0:d=${config.video.fadeInDuration}`,
-                },
-                {
-                    filter: "fade",
-                    options: `out:st=${duration - config.video.fadeOutDuration}:d=${config.video.fadeOutDuration}`,
-                }
-            );
-
-            // Add audio fade in/out
-            audioFilters.push(
-                {
-                    filter: "afade",
-                    options: `in:st=0:d=${config.audio.fadeInDuration}`,
-                },
-                {
-                    filter: "afade",
-                    options: `out:st=${duration - config.audio.fadeOutDuration}:d=${config.audio.fadeOutDuration}`,
-                }
-            );
+    // Add video fade in/out
+    videoFilters.push(
+        {
+            filter: "fade",
+            options: `in:st=0:d=${config.video.fadeInDuration}`,
+        },
+        {
+            filter: "fade",
+            options: `out:st=${duration - config.video.fadeOutDuration}:d=${config.video.fadeOutDuration}`,
         }
+    );
 
-        ffmpeg()
-            .input(video)
-            .input(audio)
-            .videoFilters(videoFilters)
-            .audioFilters(audioFilters)
-            .fps(60)
-            .size("3840x2160")
-            .outputOptions([
-                "-movflags faststart",
-                "-c:v libx264",
-                "-crf 18",
-                "-profile:v high",
-                "-level:v 4.2",
-                "-preset:v veryfast",
-                "-tune:v film",
-                "-bf 2",
-                "-g 30",
-                "-coder 1",
-                "-pix_fmt yuv420p",
-                "-map 0:v:0",
-                "-map 1:a:0",
-                "-c:a aac",
-                "-profile:a aac_low",
-                "-b:a 384k",
-            ])
-            .save(output)
-            .on("start", () => {
-                console.log(`Started compressing ${video}`);
-            })
-            .on("progress", (progress) => {
-                // Progress has no percentage with the settings used,
-                // make our own percentage with blackjack and hookers.
-                let frameCount = duration * 60;
-                let percentage = (100 * progress.frames) / frameCount;
+    // Add audio fade in/out
+    audioFilters.push(
+        {
+            filter: "afade",
+            options: `in:st=0:d=${config.audio.fadeInDuration}`,
+        },
+        {
+            filter: "afade",
+            options: `out:st=${duration - config.audio.fadeOutDuration}:d=${config.audio.fadeOutDuration}`,
+        }
+    );
 
-                if (percentage > prevProgress + 5) {
-                    let eta = utils.secondsToTimeStamp((frameCount - progress.frames) / progress.currentFps);
-                    console.log(`Progress: ${Math.round(percentage - (percentage % 5))}%, ETA: ${eta} (${video})`);
-                    prevProgress += 5;
-                }
-            })
-            .on("end", () => {
-                console.log(`Finished compressing ${video}`);
+    ffmpeg()
+        .input(video)
+        .input(audio)
+        .videoFilters(videoFilters)
+        .audioFilters(audioFilters)
+        .fps(60)
+        .size("3840x2160")
+        .outputOptions([
+            "-movflags faststart",
+            "-c:v libx264",
+            "-crf 18",
+            "-profile:v high",
+            "-level:v 4.2",
+            "-preset:v veryfast",
+            "-tune:v film",
+            "-bf 2",
+            "-g 30",
+            "-coder 1",
+            "-pix_fmt yuv420p",
+            "-map 0:v:0",
+            "-map 1:a:0",
+            "-c:a aac",
+            "-profile:a aac_low",
+            "-b:a 384k",
+        ])
+        .save(output)
+        .on("start", () => {
+            console.log(`Started compressing ${video}`);
+        })
+        .on("progress", (progress) => {
+            // Progress has no percentage with the settings used,
+            // make our own percentage with blackjack and hookers.
+            let frameCount = duration * 60;
+            let percentage = (100 * progress.frames) / frameCount;
 
-                // Remove old video and audio
-                if (config.video.deleteUncompressed) {
-                    fs.unlink(video, (err) => {
-                        if (err) {
-                            console.log("Failed to unlink uncompressed video");
-                            console.log(err);
-                        }
-                    });
+            if (percentage > prevProgress + 5) {
+                let eta = utils.secondsToTimeStamp((frameCount - progress.frames) / progress.currentFps);
+                console.log(`Progress: ${Math.round(percentage - (percentage % 5))}%, ETA: ${eta} (${video})`);
+                prevProgress += 5;
+            }
+        })
+        .on("end", () => {
+            console.log(`Finished compressing ${video}`);
 
-                    fs.unlink(audio, (err) => {
-                        if (err) {
-                            console.log("Failed to unlink audio");
-                            console.log(err);
-                        }
-                    });
-                }
+            // Remove old video and audio
+            if (config.video.deleteUncompressed) {
+                fs.unlink(video, (err) => {
+                    if (err) {
+                        console.log("Failed to unlink uncompressed video");
+                        console.log(err);
+                    }
+                });
 
-                return cb(true, output);
-            })
-            .on("error", (err) => {
-                console.log(`Failed to process ${video}`);
-                console.log(err.message);
-                return cb(false, null);
-            });
-    });
+                fs.unlink(audio, (err) => {
+                    if (err) {
+                        console.log("Failed to unlink audio");
+                        console.log(err);
+                    }
+                });
+            }
+
+            return cb(true, output);
+        })
+        .on("error", (err) => {
+            console.log(`Failed to process ${video}`);
+            console.log(err.message);
+            return cb(false, null);
+        });
 }
 
 async function upload(file, demo) {
@@ -517,23 +521,33 @@ async function uploadBonusCollection() {
 
     let date = new Date();
 
+    let useTimestamps = true;
     let seconds = 0;
     description = "Runs:\n";
     for (let run of bonusRuns) {
-        getDuration(run.outputFile, (success, duration) => {
-            if (!success) {
+        if (useTimestamps) {
+            try {
+                let duration = await getDuration(run.outputFile);
+                let timeElapsed = new Date(0);
+                timeElapsed.setSeconds(Math.floor(seconds));
+                let timestamp = `${timeElapsed.getMinutes()}:${timeElapsed.getSeconds()}`;
+                description += `${timestamp} ${run.map.name} Bonus ${run.bonusNumber} by ${run.player_info.name} (${
+                    run.class === 3 ? "Soldier" : "Demoman"
+                })\n`;
+                seconds += duration;
+            } catch (err) {
                 console.log(`Error getting duration of ${run.outputFile}!`);
-                return;
+                console.error(err);
+                // Failing to get the length of 1 video will make all future timestamps inaccurate
+                useTimestamps = false;
             }
+        }
 
-            let timeElapsed = new Date(0);
-            timeElapsed.setSeconds(Math.floor(seconds));
-            let timestamp = `${timeElapsed.getMinutes()}:${timeElapsed.getSeconds()}`;
-            description += `${timestamp} ${run.map.name} Bonus ${run.bonusNumber} by ${run.player_info.name} (${
+        if (!useTimestamps) {
+            description += `${run.map.name} Bonus ${run.bonusNumber} by ${run.player_info.name} (${
                 run.class === 3 ? "Soldier" : "Demoman"
             })\n`;
-            seconds += duration;
-        });
+        }
     }
     description += "\n";
 
