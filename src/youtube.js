@@ -530,7 +530,9 @@ async function uploadBonusCollection() {
                 let duration = await getDuration(run.outputFile);
                 let timeElapsed = new Date(0);
                 timeElapsed.setSeconds(Math.floor(seconds));
-                let timestamp = `${timeElapsed.getMinutes()}:${timeElapsed.getSeconds()}`;
+                let timestamp = `${timeElapsed.getMinutes()}:${
+                    timeElapsed.getSeconds() < 10 ? "0" : ""
+                }${timeElapsed.getSeconds()}`;
                 description += `${timestamp} ${run.map.name} Bonus ${run.bonusNumber} by ${run.player_info.name} (${
                     run.class === 3 ? "Soldier" : "Demoman"
                 })\n`;
