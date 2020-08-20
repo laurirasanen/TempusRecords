@@ -468,6 +468,15 @@ async function concatBonusRuns(cb) {
 
     let prevProgress = 0;
     let completed = false;
+    let duration = 0;
+    for (let run of bonusRuns) {
+        try {
+            duration += await getDuration(run.outputFile);
+        } catch (err) {
+            console.log(err);
+        }
+    }
+    let frameCount = duration * 60;
 
     let ff = ffmpeg();
     for (let i = bonusRuns.length - 1; i >= 0; i--) {
@@ -483,10 +492,12 @@ async function concatBonusRuns(cb) {
         console.error(err);
     })
         .on("progress", (progress) => {
-            let actualProgress = progress.percent / bonusRuns.length;
-            if (actualProgress > prevProgress + 5) {
+            let percentage = (100 * progress.frames) / frameCount;
+
+            if (percentage > prevProgress + 5) {
+                let eta = utils.secondsToTimeStamp((frameCount - progress.frames) / progress.currentFps);
+                console.log(`Concat progress: ${Math.round(percentage - (percentage % 5))}%, ETA: ${eta}`);
                 prevProgress += 5;
-                console.log("Concat progress: " + Math.round(actualProgress - (actualProgress % 5)) + "%");
             }
         })
         .on("end", () => {
