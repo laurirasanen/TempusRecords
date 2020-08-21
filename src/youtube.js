@@ -366,7 +366,7 @@ async function upload(file, demo) {
                 },
                 status: {
                     privacyStatus: "private",
-                    publishAt: new Date(Date.now() + 1000 * 60 * 30).toISOString(), // Allow for 30 mins of processing before making public
+                    publishAt: new Date(Date.now() + 1000 * 60 * config.youtube.publishDelay).toISOString(),
                 },
             },
             // This is for the callback function
@@ -596,7 +596,7 @@ async function uploadBonusCollection() {
                 },
                 status: {
                     privacyStatus: "private",
-                    publishAt: new Date(Date.now() + 1000 * 60 * 30).toISOString(), // Allow for 30 mins of processing before making public
+                    publishAt: new Date(Date.now() + 1000 * 60 * config.youtube.publishDelay).toISOString(), // Allow time for processing before making public
                 },
             },
             // This is for the callback function

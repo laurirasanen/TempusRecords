@@ -39,7 +39,8 @@
             "https://github.com/TheRealHona/TempusHub",
             "https://tempushub.xyz/"
         ],
-        "video_limit": 65
+        "video_limit": 65,
+        "publishDelay": 60
     },
     "video": {
         "deleteCompressed": false,
