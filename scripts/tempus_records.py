@@ -42,6 +42,6 @@ if __name__ == "__main__":
 	# start tempusrecords
 	os.chdir(tempusrecords_path)
 	if len(sys.argv) > 1:
-		os.system("node ./index.js " + " ".join(sys.argv[1:]))
+		os.system("node --max-old-space-size=4096 ./index.js " + " ".join(sys.argv[1:]))
 	else:
-		os.system("node ./index.js")
+		os.system("node --max-old-space-size=4096 ./index.js")

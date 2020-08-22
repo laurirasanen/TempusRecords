@@ -1,6 +1,45 @@
 [
     {
         "name": "jump_strikapult_v11",
-        "class": 4
+        "3": {
+            "map": false,
+            "courses": [],
+            "bonuses": []
+        },
+        "4": {
+            "map": true,
+            "courses": [],
+            "bonuses": []
+        }
+    },
+    {
+        "name": "jump_airships_v2",
+        "3": {
+            "map": false,
+            "courses": [],
+            "bonuses": [
+                1
+            ]
+        },
+        "4": {
+            "map": false,
+            "courses": [],
+            "bonuses": []
+        }
+    },
+    {
+        "name": "jump_ante",
+        "3": {
+            "map": false,
+            "courses": [],
+            "bonuses": [
+                9
+            ]
+        },
+        "4": {
+            "map": false,
+            "courses": [],
+            "bonuses": []
+        }
     }
 ]

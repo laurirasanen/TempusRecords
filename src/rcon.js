@@ -33,16 +33,16 @@ var srv = net.createServer(function (sock) {
                                 try {
                                     fs.copyFileSync(
                                         `${config.tf2.path}/${demoObj.demo_info.filename}_${
-                                            demoObj.class === 3 ? "soldier" : "demoman"
-                                        }.wav`,
+                                            isBonusCollection ? "bonus" + demoObj.bonusNumber : "map"
+                                        }_${demoObj.class === 3 ? "soldier" : "demoman"}.wav`,
                                         `${config.svr.recordingFolder}/${demoObj.demo_info.filename}_${
-                                            demoObj.class === 3 ? "soldier" : "demoman"
-                                        }.wav`
+                                            isBonusCollection ? "bonus" + demoObj.bonusNumber : "map"
+                                        }_${demoObj.class === 3 ? "soldier" : "demoman"}.wav`
                                     );
                                     fs.unlinkSync(
                                         `${config.tf2.path}/${demoObj.demo_info.filename}_${
-                                            demoObj.class === 3 ? "soldier" : "demoman"
-                                        }.wav`
+                                            isBonusCollection ? "bonus" + demoObj.bonusNumber : "map"
+                                        }_${demoObj.class === 3 ? "soldier" : "demoman"}.wav`
                                     );
                                 } catch (err) {
                                     console.log("[FILE] Could not movie audio file!");
@@ -96,14 +96,14 @@ var srv = net.createServer(function (sock) {
                         utils.killSVR();
 
                         var filename = `${config.svr.recordingFolder}/${demoObj.demo_info.filename}_${
-                            demoObj.class === 3 ? "soldier" : "demoman"
-                        }.mp4`;
+                            isBonusCollection ? "bonus" + demoObj.bonusNumber : "map"
+                        }_${demoObj.class === 3 ? "soldier" : "demoman"}.mp4`;
 
                         // Compress
                         youtube.compress(filename, `${filename.split(".mp4")[0]}.wav`, demoObj, (result, name) => {
                             if (result === true) {
                                 // Upload final output
-                                if (result === true) {
+                                if (result === true && (!isBonusCollection || demo.isLastRun(demoObj))) {
                                     youtube.upload(name, demoObj);
                                 }
                             }
@@ -111,7 +111,7 @@ var srv = net.createServer(function (sock) {
 
                         // Limit number of recordings
                         recorded_runs++;
-                        if (recorded_runs < config.youtube.video_limit) {
+                        if (recorded_runs < config.youtube.video_limit || isBonusCollection) {
                             finishedInstances = 0;
                             demo.skip();
                         } else {

@@ -9,9 +9,14 @@ function start() {
     var recent = true;
     var mapName = null;
     var className = null;
+    var bonus = false;
     if (process.argv.length > 2) {
         if (process.argv[2] == "all") {
             recent = false;
+        }
+
+        if (process.argv[2] == "bonus") {
+            bonus = true;
         }
 
         if (process.argv.length > 3) {
@@ -34,7 +39,7 @@ function start() {
         }
     }
 
-    demo.init(recent, mapName, className);
+    demo.init(recent, mapName, className, bonus);
 }
 
 start();

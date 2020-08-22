@@ -26,6 +26,10 @@ function launchTF2(args) {
     tf2Proc = exec(launchCmd, (err) => {
         if (err && !err.killed) {
             console.log(err);
+            // For some reason this fails occasionally for no obvious reason, retry
+            setTimeout(() => {
+                launchTF2(args);
+            }, 5000);
         }
     });
 }
