@@ -8,7 +8,12 @@
     utils = require("./utils.js"),
     split = require("./split.js"),
     fullbright = require("./data/fullbright_maps.json"),
-    uploaded = require("./data/uploaded.json");
+    uploaded = require("./data/uploaded.json"),
+    readline = require("readline"),
+    rl = readline.createInterface({
+        input: process.stdin,
+        output: process.stdout,
+    });
 
 let hasTokens = false;
 
@@ -620,59 +625,67 @@ async function uploadBonusCollection() {
             if (err) {
                 console.log("Failed to upload video");
                 console.log(err);
-                return;
             } else {
                 console.log("Done uploading");
             }
 
-            // Add video to bonus playlist
-            youtube_api.playlistItems.insert(
-                {
-                    resource: {
-                        snippet: {
-                            playlistId: "PL_D9J2bYWXyJBc0YvjRpqpFc5hY-ieU-B",
-                            resourceId: {
-                                kind: "youtube#video",
-                                videoId: data.id,
-                            },
-                        },
-                    },
-                    part: "snippet",
-                },
-                (err, data) => {
-                    if (err) {
-                        console.log("Failed to add video to playlist");
-                        console.log(err);
-                    } else {
-                        console.log("Video added to playlist");
-                    }
-                }
-            );
-
-            // Add to uploaded runs
-            utils.readJson("./data/uploaded.json", (err, uploaded) => {
-                if (err !== null) {
-                    console.log("Failed to read last uploaded");
-                    console.log(err);
+            // Youtube sucks
+            rl.question("Was youtube processing succesful? Y/n", (answer) => {
+                if (answer === "n") {
+                    // Reupload
+                    uploadBonusCollection();
                     return;
                 }
 
-                for (let run of bonusRuns) {
-                    if (!uploaded.bonuses.includes(run.id)) {
-                        uploaded.bonuses.push(run.id);
+                // Add video to bonus playlist
+                youtube_api.playlistItems.insert(
+                    {
+                        resource: {
+                            snippet: {
+                                playlistId: "PL_D9J2bYWXyJBc0YvjRpqpFc5hY-ieU-B",
+                                resourceId: {
+                                    kind: "youtube#video",
+                                    videoId: data.id,
+                                },
+                            },
+                        },
+                        part: "snippet",
+                    },
+                    (err, data) => {
+                        if (err) {
+                            console.log("Failed to add video to playlist");
+                            console.log(err);
+                        } else {
+                            console.log("Video added to playlist");
+                        }
                     }
-                }
+                );
 
-                uploaded.bonusCollections += 1;
-
-                utils.writeJson("./data/uploaded.json", uploaded, (err) => {
+                // Add to uploaded runs
+                utils.readJson("./data/uploaded.json", (err, uploaded) => {
                     if (err !== null) {
-                        console.log("Failed to write last uploaded");
+                        console.log("Failed to read last uploaded");
                         console.log(err);
                         return;
                     }
 
-                    console.log("Updated uploaded list");
+                    for (let run of bonusRuns) {
+                        if (!uploaded.bonuses.includes(run.id)) {
+                            uploaded.bonuses.push(run.id);
+                        }
+                    }
+
+                    uploaded.bonusCollections += 1;
+
+                    utils.writeJson("./data/uploaded.json", uploaded, (err) => {
+                        if (err !== null) {
+                            console.log("Failed to write last uploaded");
+                            console.log(err);
+                            return;
+                        }
+
+                        console.log("Updated uploaded list");
+                    });
                 });
             });
         }
