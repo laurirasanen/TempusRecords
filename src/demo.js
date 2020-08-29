@@ -372,7 +372,7 @@ function getPlayCommands(demo, isVideo = true) {
     const endPadding = 200;
 
     // Commands used to control the demo playback.
-    // Executing tmps_records_* config files will trigger events in rcon.js.
+    // Running rcon tmps_records_* commands will trigger events in rcon.js.
     var commands = [
         {
             tick: 33,
