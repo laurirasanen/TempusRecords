@@ -254,7 +254,6 @@ async function compress(video, audio, demo, cb) {
             "-profile:a aac_low",
             "-b:a 384k",
         ])
-        .save(output)
         .on("start", () => {
             console.log(`Started compressing ${video}`);
         })
@@ -296,7 +295,8 @@ async function compress(video, audio, demo, cb) {
             console.log(`Failed to process ${video}`);
             console.log(err.message);
             return cb(false, null);
-        });
+        })
+        .save(output);
 }
 
 async function upload(file, demo) {
