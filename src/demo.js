@@ -101,9 +101,9 @@ async function init(recent, mapName, className, bonus) {
                     runs.splice(i, 1);
                     continue;
                 }
-
-                replaceNames();
             }
+
+            replaceNames();
 
             // Check for max number of runs
             if (runs.length > config.video.maxBonusesInCollection) {
@@ -192,8 +192,6 @@ async function init(recent, mapName, className, bonus) {
             }
 
             if (cont) continue;
-
-            replaceNames();
         }
 
         if (runs.length <= 0) {
@@ -201,6 +199,7 @@ async function init(recent, mapName, className, bonus) {
             return;
         }
 
+        replaceNames();
         playDemo(runs[0]);
     });
 }

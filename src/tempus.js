@@ -7,7 +7,7 @@ async function getMapWRs(mapList) {
         wrs.push(await getMapWR(map, "SOLDIER"));
         wrs.push(await getMapWR(map, "DEMOMAN"));
     }
-    wrs = wrs.filter((wr) => wr != null);
+    wrs = wrs.filter((wr) => wr != null).sort((a, b) => a.date - b.date);
     return wrs;
 }
 
@@ -66,7 +66,7 @@ async function getBonusWRs(mapList) {
             wrs.push(await getZoneWR(map, "BONUS", zone.id, "DEMOMAN"));
         }
     }
-    wrs = wrs.filter((wr) => wr != null);
+    wrs = wrs.filter((wr) => wr != null).sort((a, b) => a.date - b.date);
     return wrs;
 }
 
@@ -172,7 +172,7 @@ async function getRecentMapWRs() {
         console.log(`Getting recent WRs ${wrs.length + 1}/${result.data.activity.mapWrs.length}`);
         wrs.push(await getMapWR(wr.map.name, wr.class));
     }
-    wrs = wrs.filter((wr) => wr != null);
+    wrs = wrs.filter((wr) => wr != null).sort((a, b) => a.date - b.date);
     return wrs;
 }
 
