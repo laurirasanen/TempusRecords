@@ -1,4 +1,4 @@
-﻿const tempus = require("tempus-api"),
+﻿const tempus = require("./tempus.js"),
     downloader = require("./downloader.js"),
     fs = require("fs"),
     utils = require("./utils.js"),
@@ -27,19 +27,14 @@ global.bonusRuns = [];
 async function init(recent, mapName, className, bonus) {
     if (mapName && className) {
         // Upload specific run
-        var wr = await tempus.mapWR(mapName, className);
-        var overview = await wr.toRecordOverview();
-        overview.map = await overview.map.toMapOverview();
-        runs = await getOverviews([overview]);
-
-        // Replace name
-        for (var i = 0; i < nicknames.length; i++) {
-            if (runs[0].player_info.steamid === nicknames[i].steamid) {
-                runs[0].player_info.name = nicknames[i].name;
-                break;
-            }
+        let wr = await tempus.getMapWR(mapName, className);
+        if (!wr) {
+            console.log(`Couldn't find WR for map ${mapName} as ${className}`);
+            return;
         }
+        runs.push(wr);
 
+        replaceNames();
         playDemo(runs[0]);
         return;
     }
@@ -47,8 +42,11 @@ async function init(recent, mapName, className, bonus) {
     if (bonus) {
         // Upload bonus runs
         isBonusCollection = true;
-        let mapList = await tempus.detailedMapList();
-        runs = await getBonusRuns(mapList);
+        let mapList = await tempus.getMapList();
+        // splice bonus runs manually for now so we can get through all maps
+        // TODO: remove
+        mapList = mapList.splice(290, 50);
+        runs = await tempus.getBonusWRs(mapList);
 
         utils.readJson("./data/uploaded.json", (err, uploaded) => {
             if (err !== null) {
@@ -64,16 +62,14 @@ async function init(recent, mapName, className, bonus) {
                     continue;
                 }
 
-                if (!runs[i].demo_info.filename || !runs[i].demo_info.url) {
+                if (!runs[i].demo.filename || !runs[i].demo.url) {
                     runs.splice(i, 1);
                     continue;
                 }
 
                 if (runs[i].duration / 60 > config.video.bonusMaxDuration) {
                     console.log(
-                        `Removing run too long ${runs[i].map.name} bonus ${runs[i].bonusNumber} (${
-                            runs[i].class === 3 ? "Soldier" : "Demoman"
-                        })`
+                        `Removing run too long ${runs[i].map.name} bonus ${runs[i].zone.zoneindex} (${runs[i].class})`
                     );
                     runs.splice(i, 1);
                     continue;
@@ -84,12 +80,10 @@ async function init(recent, mapName, className, bonus) {
                 for (var j = 0; j < blacklist.length; j++) {
                     if (
                         blacklist[j].name === runs[i].map.name &&
-                        blacklist[j][runs[i].class].bonuses.includes(runs[i].bonusNumber)
+                        blacklist[j][runs[i].class].bonuses.includes(runs[i].zone.zoneindex)
                     ) {
                         console.log(
-                            `Removing blacklisted ${runs[i].map.name} bonus ${runs[i].bonusNumber} (${
-                                runs[i].class === 3 ? "Soldier" : "Demoman"
-                            })`
+                            `Removing blacklisted ${runs[i].map.name} bonus ${runs[i].zone.zoneindex} (${runs[i].class})`
                         );
                         runs.splice(i, 1);
                         cont = true;
@@ -100,29 +94,15 @@ async function init(recent, mapName, className, bonus) {
                 if (cont) continue;
 
                 // Remove too recent runs
-                if (Date.now() - runs[i].demo_info.date * 1000 < 1000 * 60 * 60 * 24 * config.video.bonusMinAge) {
+                if (Date.now() - runs[i].demo.date * 1000 < 1000 * 60 * 60 * 24 * config.video.bonusMinAge) {
                     console.log(
-                        `Removing run newer than ${config.video.bonusMinAge} days ${runs[i].map.name} bonus ${
-                            runs[i].bonusNumber
-                        } (${runs[i].class === 3 ? "Soldier" : "Demoman"})`
+                        `Removing run newer than ${config.video.bonusMinAge} days ${runs[i].map.name} bonus ${runs[i].zone.zoneindex} (${runs[i].class})`
                     );
                     runs.splice(i, 1);
                     continue;
                 }
 
-                // Replace names
-                for (var e = 0; e < nicknames.length; e++) {
-                    if (runs[i].player_info.steamid === nicknames[e].steamid) {
-                        runs[i].player_info.name = nicknames[e].name;
-                        break;
-                    }
-
-                    if (e >= nicknames.length - 1) {
-                        console.log(
-                            `Warn: no nickname for player ${runs[i].player_info.name} (${runs[i].player_info.steamid})`
-                        );
-                    }
-                }
+                replaceNames();
             }
 
             // Check for max number of runs
@@ -143,9 +123,9 @@ async function init(recent, mapName, className, bonus) {
 
             for (let i = 0; i < runs.length; i++) {
                 // This is used for concatenating bonus video files before upload
-                runs[i].outputFile = `${config.svr.recordingFolder}/${runs[i].demo_info.filename}_bonus${
-                    runs[i].bonusNumber
-                }_${runs[i].class === 3 ? "soldier" : "demoman"}_compressed.mp4`;
+                runs[
+                    i
+                ].outputFile = `${config.svr.recordingFolder}/${runs[i].demo.filename}_bonus${runs[i].zone.zoneindex}_${runs[i].class}_compressed.mp4`;
                 bonusRuns.push(runs[i]);
             }
 
@@ -155,35 +135,32 @@ async function init(recent, mapName, className, bonus) {
     }
 
     if (recent) {
-        // Upload most recent runs
-        var activity = await tempus.getActivity();
-        runs = await getOverviews(activity.map_wrs);
+        // Check most recent runs
+        runs = await tempus.getRecentMapWRs();
     } else {
-        // Upload all runs
-        let mapList = await tempus.detailedMapList();
-        runs = await getRuns(mapList);
+        // Check all runs
+        let mapList = await tempus.getMapList();
+        runs = await tempus.getMapWRs(mapList);
     }
 
     // Sort by date
     runs.sort((a, b) => {
-        if (a.demo_info.date < b.demo_info.date) return -1;
-        if (a.demo_info.date > b.demo_info.date) return 1;
+        if (a.demo.date < b.demo.date) return -1;
+        if (a.demo.date > b.demo.date) return 1;
         return 0;
     });
 
     for (var i = runs.length - 1; i >= 0; i--) {
-        if (Date.now() - runs[i].map.date_added * 1000 < 1000 * 60 * 60 * 24 * config.video.mapMinAge) {
+        if (Date.now() - runs[i].map.dateAdded * 1000 < 1000 * 60 * 60 * 24 * config.video.mapMinAge) {
             console.log(
-                `Removing run newer than ${config.video.mapMinAge} days ${runs[i].map.name} (${
-                    runs[i].class === 3 ? "Soldier" : "Demoman"
-                })`
+                `Removing run newer than ${config.video.mapMinAge} days ${runs[i].map.name} (${runs[i].class})`
             );
             runs.splice(i, 1);
             continue;
         }
 
         if (runs[i].duration / 60 > config.video.maxDuration) {
-            console.log(`Removing run too long ${runs[i].map.name} (${runs[i].class === 3 ? "Soldier" : "Demoman"})`);
+            console.log(`Removing run too long ${runs[i].map.name} (${runs[i].class})`);
             runs.splice(i, 1);
             continue;
         }
@@ -207,9 +184,7 @@ async function init(recent, mapName, className, bonus) {
             var cont = false;
             for (var e = 0; e < blacklist.length; e++) {
                 if (blacklist[e].name === runs[i].map.name && blacklist[e][runs[i].class].map) {
-                    console.log(
-                        `Removing blacklisted ${runs[i].map.name} (${runs[i].class === 3 ? "Soldier" : "Demoman"})`
-                    );
+                    console.log(`Removing blacklisted ${runs[i].map.name} (${runs[i].class})`);
                     runs.splice(i, 1);
                     cont = true;
                     break;
@@ -218,13 +193,7 @@ async function init(recent, mapName, className, bonus) {
 
             if (cont) continue;
 
-            // Replace names
-            for (var e = 0; e < nicknames.length; e++) {
-                if (runs[i].player_info.steamid === nicknames[e].steamid) {
-                    runs[i].player_info.name = nicknames[e].name;
-                    break;
-                }
-            }
+            replaceNames();
         }
 
         if (runs.length <= 0) {
@@ -236,6 +205,21 @@ async function init(recent, mapName, className, bonus) {
     });
 }
 
+function replaceNames() {
+    for (var i = 0; i < runs.length; i++) {
+        for (var j = 0; j < nicknames.length; j++) {
+            if (runs[i].player.steamId === nicknames[j].steamId) {
+                runs[i].player.name = nicknames[j].name;
+                break;
+            }
+
+            if (j >= nicknames.length - 1) {
+                console.log(`Warn: no nickname for player ${runs[i].player.name} (${runs[i].player.steamId})`);
+            }
+        }
+    }
+}
+
 function skip() {
     for (var i = 0; i < runs.length - 1; i++) {
         if (runs[i] === currentDemo || currentDemo === null) {
@@ -245,22 +229,24 @@ function skip() {
     }
 }
 
-function isLastRun(demo) {
-    return demo.id === runs[runs.length - 1].id;
+function isLastRun(run) {
+    return run.id === runs[runs.length - 1].id;
 }
 
+// TODO: the var name "demo" is used here and in a lot of other places,
+// replace with "run", etc. to be less misleading.
 function playDemo(demo) {
-    if (!demo || !demo.player_info || !demo.demo_info) {
+    if (!demo || !demo.player || !demo.demo) {
         return;
     }
 
     // Check for existing video if we crashed before, etc
-    var video = `${config.svr.recordingFolder}/${demo.demo_info.filename}_${
-        isBonusCollection ? "bonus" + demo.bonusNumber : "map"
-    }_${demo.class === 3 ? "soldier" : "demoman"}.mp4`;
-    var audio = `${config.svr.recordingFolder}/${demo.demo_info.filename}_${
-        isBonusCollection ? "bonus" + demo.bonusNumber : "map"
-    }_${demo.class === 3 ? "soldier" : "demoman"}.wav`;
+    var video = `${config.svr.recordingFolder}/${demo.demo.filename}_${demo.zone.type + demo.zone.zoneindex}_${
+        demo.class
+    }.mp4`;
+    var audio = `${config.svr.recordingFolder}/${demo.demo.filename}_${demo.zone.type + demo.zone.zoneindex}_${
+        demo.class
+    }.wav`;
 
     if (fs.existsSync(video) && fs.existsSync(audio)) {
         console.log(`WARNING: Using existing video '${video}'`);
@@ -281,9 +267,9 @@ function playDemo(demo) {
     }
 
     // Check for already compressed version
-    video = `${config.svr.recordingFolder}/${demo.demo_info.filename}_${
-        isBonusCollection ? "bonus" + demo.bonusNumber : "map"
-    }_${demo.class === 3 ? "soldier" : "demoman"}_compressed.mp4`;
+    video = `${config.svr.recordingFolder}/${demo.demo.filename}_${demo.zone.type + demo.zone.zoneindex}_${
+        demo.class
+    }_compressed.mp4`;
     if (fs.existsSync(video)) {
         if (!isBonusCollection || isLastRun(demo)) {
             console.log(`WARNING: Uploading existing video '${video}'`);
@@ -296,9 +282,7 @@ function playDemo(demo) {
         return;
     }
 
-    if (demo.demo_info.recording === true || !demo.demo_info.url) {
-        // Demo is still recording,
-        // attemping to download will result in corrupt file.
+    if (!demo.demo.url) {
         skip();
         return;
     }
@@ -313,7 +297,7 @@ function playDemo(demo) {
                     skip();
                     return;
                 } else if (result === false) {
-                    console.log(`[DL] Demo file ${demo.demo_info.filename} exists already!`);
+                    console.log(`[DL] Demo file ${demo.demo.filename} exists already!`);
                 }
 
                 startDemo(demo);
@@ -327,18 +311,18 @@ function playDemo(demo) {
 function startDemo(demo) {
     // Create a tmps_records_spec_player.cfg, which will get executed when the demo loads.
     // The config just contains a 'spec_player "STEAMID"' command.
-    // This cannot be done via rcon because the steamid needs quotes around it and source does not like that.
+    // This cannot be done via rcon because the steamId needs quotes around it and source does not like that.
 
     // Check for old steamids
-    var steamid = demo.player_info.steamid;
+    var steamId = demo.player.steamId;
     for (var i = 0; i < old_steamids.length; i++) {
-        if (old_steamids[i].current === demo.player_info.steamid && demo.demo_info.date < old_steamids[i].date) {
-            steamid = old_steamids[i].old;
+        if (old_steamids[i].current === demo.player.steamId && demo.demo.date < old_steamids[i].date) {
+            steamId = old_steamids[i].old;
         }
     }
 
     // Write the .cfg
-    fs.writeFile(config.tf2.path + "/cfg/tmps_records_spec_player.cfg", `spec_player "${steamid}"`, (err) => {
+    fs.writeFile(config.tf2.path + "/cfg/tmps_records_spec_player.cfg", `spec_player "${steamId}"`, (err) => {
         if (err) {
             console.log("[FILE] Could not write tmps_records_spec_player.cfg!");
             console.log(err);
@@ -349,12 +333,12 @@ function startDemo(demo) {
         let commands = getPlayCommands(demo, false);
 
         // Write the play commands
-        savePlayCommands(demo.demo_info.filename, commands, (success) => {
+        savePlayCommands(demo.demo.filename, commands, (success) => {
             if (success) {
                 currentDemo = demo;
 
                 // Record audio without SVR
-                utils.launchTF2(`+playdemo ${demo.demo_info.filename}`);
+                utils.launchTF2(`+playdemo ${demo.demo.filename}`);
 
                 // Video will be recorded after audio finishes
                 // when rcon.js receives 'tmps_records_run_end' the first time.
@@ -368,8 +352,8 @@ function startDemo(demo) {
 }
 
 function getPlayCommands(demo, isVideo = true) {
-    const startPadding = 200;
-    const endPadding = 200;
+    const startPadding = config.video.startPadding * 67;
+    const endPadding = config.video.endPadding * 67;
 
     // Commands used to control the demo playback.
     // Running rcon tmps_records_* commands will trigger events in rcon.js.
@@ -377,121 +361,23 @@ function getPlayCommands(demo, isVideo = true) {
         {
             tick: 33,
             commands: `sensitivity 0; m_yaw 0; m_pitch 0; unbindall; fog_override 1; fog_enable 0; rcon tmps_records_demo_load; demo_gototick ${
-                demo.demo_start_tick - startPadding
-            }; demo_setendtick ${demo.demo_end_tick + endPadding + 66}`,
+                demo.demoStartTick - startPadding
+            }; demo_setendtick ${demo.demoEndTick + endPadding + 66}`,
         },
         {
-            tick: demo.demo_start_tick - startPadding,
+            tick: demo.demoStartTick - startPadding,
             commands: `exec tmps_records_spec_player; spec_mode 4; demo_resume; ${
                 isVideo ? "" : "volume 0.1;"
-            } rcon tmps_records_run_start; startmovie ${demo.demo_info.filename}_${
-                isBonusCollection ? "bonus" + demo.bonusNumber : "map"
-            }_${demo.class === 3 ? "soldier" : "demoman"}${isVideo ? ".mp4 tempus" : ".wav wav"}`,
+            } rcon tmps_records_run_start; startmovie ${demo.demo.filename}_${demo.zone.type + demo.zone.zoneindex}_${
+                demo.class
+            }${isVideo ? ".mp4 tempus" : ".wav wav"}`,
         },
-        { tick: demo.demo_start_tick, commands: `exec tmps_records_spec_player; spec_mode 4` }, // In case player dead before start_tick
-        { tick: demo.demo_end_tick + endPadding - 33, commands: "rcon tmps_records_run_end" },
-        { tick: demo.demo_end_tick + endPadding, commands: "volume 0; endmovie" },
+        { tick: demo.demoStartTick, commands: `exec tmps_records_spec_player; spec_mode 4` }, // In case player dead before start_tick
+        { tick: demo.demoEndTick + endPadding - 33, commands: "rcon tmps_records_run_end" },
+        { tick: demo.demoEndTick + endPadding, commands: "volume 0; endmovie" },
     ];
 
     return commands;
-}
-
-// Get soldier and demo run overviews for a list of maps
-async function getRuns(mapList) {
-    var runs = [];
-
-    for (var i = 0; i < mapList.length; i++) {
-        console.log(`Getting map wrs ${i + 1}/${mapList.length}`);
-        var map = mapList[i];
-
-        if (!map) continue;
-
-        var records = await tempus.mapRecords(map.name, "map", 1, 1, 1);
-        var classRuns = [];
-        if (records.soldier && records.soldier["0"]) {
-            classRuns.push(records.soldier["0"]);
-        }
-        if (records.demoman && records.demoman["0"]) {
-            classRuns.push(records.demoman["0"]);
-        }
-
-        for (let run of classRuns) {
-            try {
-                var overview = await run.toRecordOverview();
-                overview.map = await overview.map.toMapOverview();
-                runs.push(overview);
-            } catch (err) {
-                console.error(err);
-            }
-        }
-
-        await utils.sleep(100);
-    }
-
-    return runs;
-}
-
-// Get soldier and demo bonus run overviews for a list of maps
-async function getBonusRuns(mapList) {
-    var runs = [];
-
-    for (var i = 0; i < mapList.length; i++) {
-        console.log(`Getting bonus wrs for map ${i + 1}/${mapList.length}`);
-        var map = mapList[i];
-
-        if (!map) continue;
-        let mapOverview = await map.toMapOverview();
-
-        for (var j = 1; j < map.zone_counts.bonus_end + 1; j++) {
-            var records = await tempus.mapRecords(map.name, "bonus", j, 1, 1);
-            var classRuns = [];
-            if (records.soldier && records.soldier["0"]) {
-                classRuns.push(records.soldier["0"]);
-            }
-            if (records.demoman && records.demoman["0"]) {
-                classRuns.push(records.demoman["0"]);
-            }
-
-            for (let run of classRuns) {
-                try {
-                    var overview = await run.toRecordOverview();
-                    overview.map = mapOverview;
-                    overview.bonusNumber = j;
-                    runs.push(overview);
-                } catch (err) {
-                    console.error(err);
-                }
-            }
-
-            await utils.sleep(100);
-        }
-    }
-
-    return runs;
-}
-
-// Get overviews for a list of records
-async function getOverviews(recordList) {
-    var runs = [];
-
-    for (var i = 0; i < recordList.length; i++) {
-        console.log(`Getting map wrs ${i + 1}/${recordList.length}`);
-        var record = recordList[i];
-
-        if (record == null) continue;
-
-        try {
-            var overview = await record.toRecordOverview();
-            overview.map = await overview.map.toMapOverview();
-            runs.push(overview);
-        } catch (err) {
-            console.error(err);
-        }
-
-        await utils.sleep(50);
-    }
-
-    return runs;
 }
 
 // Save play commands to control the demo playback
@@ -525,7 +411,6 @@ function savePlayCommands(filename, commands, cb) {
 }
 
 module.exports.playDemo = playDemo;
-module.exports.getRuns = getRuns;
 module.exports.init = init;
 module.exports.skip = skip;
 module.exports.getPlayCommands = getPlayCommands;

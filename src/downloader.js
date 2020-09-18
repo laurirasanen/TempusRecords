@@ -9,11 +9,11 @@
 function getDemoFile(demo, cb) {
     if (!cb || typeof cb !== "function") throw "callback is not a function";
 
-    if (!demo.demo_info.url) {
+    if (!demo.demo.url) {
         return cb(null);
     }
 
-    var dest = config.tf2.path + demo.demo_info.filename + ".dem";
+    var dest = config.tf2.path + demo.demo.filename + ".dem";
 
     fs.open(dest, "wx", (err, fd) => {
         if (fd) {
@@ -37,14 +37,14 @@ function getDemoFile(demo, cb) {
         } else {
             var stream = fs.createWriteStream(dest);
 
-            download(demo.demo_info.url, false, demo, (resp, demo) => {
+            download(demo.demo.url, false, demo, (resp, demo) => {
                 resp.pipe(unzipper.Parse())
                     .on("entry", (entry) => {
                         entry.pipe(stream);
                         stream
                             .on("finish", () => {
                                 stream.close(() => {
-                                    console.log(`[DL] Downloaded demo ${demo.demo_info.filename}`);
+                                    console.log(`[DL] Downloaded demo ${demo.demo.filename}`);
                                     return cb(true);
                                 });
                             })

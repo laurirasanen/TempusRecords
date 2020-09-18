@@ -6,7 +6,7 @@
     config = require("./data/config.json"),
     opn = require("opn"),
     utils = require("./utils.js"),
-    split = require("./split.js"),
+    splitjs = require("./split.js"),
     fullbright = require("./data/fullbright_maps.json"),
     uploaded = require("./data/uploaded.json"),
     readline = require("readline"),
@@ -66,11 +66,14 @@ async function compress(video, audio, demo, cb) {
     const output = video.split(".mp4")[0] + "_compressed.mp4";
     let prevProgress = 0;
 
-    let wrSplit = null;
+    let wrSplits = [];
     if (isBonusCollection) {
-        wrSplit = await split.getWRSplit(demo.map.id, demo.class, "bonus", demo.bonusNumber);
+        let split = await splitjs.getWRSplit(demo.map.id, demo.class, "bonus", demo.zone.zoneindex);
+        if (split) {
+            wrSplits.push(split);
+        }
     } else {
-        wrSplit = await split.getWRSplit(demo.map.id, demo.class);
+        wrSplits = demo.splits;
     }
 
     let duration = 0;
@@ -106,66 +109,107 @@ async function compress(video, audio, demo, cb) {
     let audioFilters = [];
 
     // Get timestamps for text fading
-    let fadeOutEnd = duration - config.video.text.endPadding;
-    let fadeOutStart = fadeOutEnd - config.video.text.fadeOutDuration;
-    let fadeInEnd = fadeOutStart - config.video.text.displayDuration;
-    let fadeInStart = fadeInEnd - config.video.text.fadeInDuration;
+    let fadeInStart =
+        duration -
+        config.video.text.endPadding -
+        config.video.text.fadeOutDuration -
+        config.video.text.displayDuration -
+        config.video.text.fadeInDuration;
     let maxAlpha = config.video.text.maxAlpha;
 
     // Modify alpha to fade text in and out
-    let alphaTimeSplit = `
-        min(
-            ${maxAlpha},
-            if(lt(t,${fadeInStart}),
-                0,
-                if(lt(t,${fadeInEnd}),
-                    (t-${fadeInStart})*${maxAlpha},
-                    if(lt(t,${fadeOutStart}),
-                        ${maxAlpha},
-                        if(lt(t,${fadeOutEnd}),
-                            (${maxAlpha}-(t-${fadeOutStart}))*${maxAlpha}
-                        )
-                    )
-                )
-            )
-        )                        
-    `;
+    let alphaTimeSplit = utils.getAlphaFade(
+        fadeInStart,
+        config.video.text.displayDuration,
+        config.video.text.fadeInDuration,
+        config.video.text.fadeOutDuration,
+        config.video.text.maxAlpha
+    );
 
     fadeInStart = config.video.text.startPadding;
-    fadeInEnd = fadeInStart + config.video.text.fadeInDuration;
+    let alphaName = utils.getAlphaFade(
+        fadeInStart,
+        config.video.text.displayDuration,
+        config.video.text.fadeInDuration,
+        config.video.text.fadeOutDuration,
+        config.video.text.maxAlpha
+    );
 
-    let alphaName = `
-        min(
-            ${maxAlpha},
-            if(lt(t,${fadeInStart}),
-                0,
-                if(lt(t,${fadeInEnd}),
-                    (t-${fadeInStart})*${maxAlpha},
-                    if(lt(t,${fadeOutStart}),
-                        ${maxAlpha},
-                        if(lt(t,${fadeOutEnd}),
-                            (${maxAlpha}-(t-${fadeOutStart}))*${maxAlpha}
-                        )
-                    )
-                )
-            )
-        )                        
-    `;
+    // Add splits
+    if (isBonusCollection) {
+        if (wrSplits.length) {
+            // Escape semicolon and wrap in quotes for ffmpeg
+            let text = `'${wrSplits[0].replace(/:/g, "\\:")}'`;
 
-    // Add wr split
-    if (wrSplit) {
-        // Escape semicolon and wrap in quotes for ffmpeg
-        let text = `'${wrSplit.replace(/:/g, "\\:")}'`;
+            videoFilters.push({
+                filter: "drawtext",
+                options: {
+                    ...config.video.text.ffmpegOptions,
+                    ...(isBonusCollection
+                        ? config.video.text.position.bonus.time
+                        : config.video.text.position.map.time),
+                    text: text,
+                    alpha: alphaTimeSplit,
+                },
+            });
+        }
+    } else {
+        for (const split of wrSplits) {
+            if (split.duration) {
+                let alpha = utils.getAlphaFade(
+                    config.video.startPadding + split.duration - config.video.text.fadeInDuration,
+                    config.video.text.displayDuration,
+                    config.video.text.fadeInDuration,
+                    config.video.text.fadeOutDuration,
+                    config.video.text.maxAlpha
+                );
+                let zone = "";
+                switch (split.type) {
+                    case "checkpoint":
+                        zone = `CP${split.zoneindex}`;
+                        break;
 
-        videoFilters.push({
-            filter: "drawtext",
-            options: {
-                ...config.video.text.ffmpegOptions,
-                ...(isBonusCollection ? config.video.text.position.bonus.time : config.video.text.position.map.time),
-                text: text,
-                alpha: alphaTimeSplit,
-            },
-        });
+                    case "course":
+                        zone = `Course ${split.zoneindex}`;
+                        break;
+
+                    case "map":
+                        zone = "Map";
+                        break;
+
+                    default:
+                        throw `Unhandled zone type ${split.type}`;
+                }
+
+                let text = utils.secondsToTimeStamp(split.duration);
+                text = `'${zone}\\: ${text.replace(/:/g, "\\:")}'`;
+
+                videoFilters.push({
+                    filter: "drawtext",
+                    options: {
+                        ...config.video.text.ffmpegOptions,
+                        ...config.video.text.position.map.time,
+                        text: text,
+                        alpha: alpha,
+                    },
+                });
+
+                if (split.comparedDuration) {
+                    text = utils.secondsToTimeStamp(split.duration - split.comparedDuration, true);
+                    text = `'(${text.replace(/:/g, "\\:")})'`;
+
+                    videoFilters.push({
+                        filter: "drawtext",
+                        options: {
+                            ...config.video.text.ffmpegOptions,
+                            ...config.video.text.position.map.timeSplit,
+                            text: text,
+                            alpha: alpha,
+                        },
+                    });
+                }
+            }
+        }
     }
 
     if (isBonusCollection) {
@@ -177,7 +221,7 @@ async function compress(video, audio, demo, cb) {
             options: {
                 ...config.video.text.ffmpegOptions,
                 ...config.video.text.position.bonus.player,
-                text: demo.player_info.name,
+                text: demo.player.name,
                 alpha: alphaName,
             },
         });
@@ -199,7 +243,7 @@ async function compress(video, audio, demo, cb) {
             options: {
                 ...config.video.text.ffmpegOptions,
                 ...config.video.text.position.bonus.bonus,
-                text: "bonus " + demo.bonusNumber,
+                text: "bonus " + demo.zone.zoneindex,
                 alpha: alphaName,
             },
         });
@@ -322,22 +366,29 @@ async function upload(file, demo) {
     var fileSize = stats.size;
     var bytes = 0;
 
-    // Get split
-    let wrSplit = await split.getWRSplit(demo.map.id, demo.class);
+    let wrSplit = null;
+    for (const split of demo.splits) {
+        if (split.type === "map") {
+            if (split.comparedDuration && split.duration) {
+                wrSplit = utils.secondsToTimeStamp(split.duration - split.comparedDuration, true);
+            }
+            break;
+        }
+    }
 
     config.youtube.description.forEach((line) => {
         var d = new Date();
-        var demo_date = new Date(demo.demo_info.date * 1000);
+        var demo_date = new Date(demo.demo.date * 1000);
         line = line
             .replace("$MAP_URL", "https://tempus.xyz/maps/" + demo.map.name)
             .replace("$MAP", demo.map.name)
-            .replace("$NAME", demo.player_info.name)
+            .replace("$NAME", demo.player.name)
             .replace("$TIME", utils.secondsToTimeStamp(demo.duration))
             .replace("$SPLIT", wrSplit ? `(${wrSplit})` : "")
-            .replace("$CLASS", demo.class === 3 ? "Soldier" : "Demoman")
+            .replace("$CLASS", `${demo.class === "SOLDIER" ? "Soldier" : "Demoman"}`)
             .replace("$DATETIME", d.toUTCString())
             .replace("$DATE", demo_date.toUTCString())
-            .replace("$DEMO_URL", "https://tempus.xyz/demos/" + demo.demo_info.id);
+            .replace("$DEMO_URL", "https://tempus.xyz/demos/" + demo.demo.id);
 
         description += line + "\n";
     });
@@ -349,10 +400,10 @@ async function upload(file, demo) {
     var mapParts = demo.map.name.split("_");
     tags.push(...mapParts);
     if (mapParts.length > 1) tags.push(`${mapParts[0]}_${mapParts[1]}`);
-    tags.push(demo.class === 3 ? ["soldier", "solly"] : ["demoman", "demo"]);
+    tags.push(demo.class === "SOLDIER" ? ["soldier", "solly"] : ["demoman", "demo"]);
 
     // Commas in player name will break youtube tags
-    var playerName = demo.player_info.name;
+    var playerName = demo.player.name;
     playerName = playerName.replace(",", "");
     tags.push(playerName);
 
@@ -363,7 +414,7 @@ async function upload(file, demo) {
             resource: {
                 snippet: {
                     title: config.youtube.title
-                        .replace("$NAME", demo.player_info.name)
+                        .replace("$NAME", demo.player.name)
                         .replace("$MAP", demo.map.name)
                         .replace("$TIME", utils.secondsToTimeStamp(demo.duration)),
                     description: description,
@@ -406,7 +457,7 @@ async function upload(file, demo) {
                     resource: {
                         snippet: {
                             playlistId:
-                                demo.class === 3
+                                demo.class === "SOLDIER"
                                     ? "PL_D9J2bYWXyLFs5OJcTugl_70HqzDN9nv"
                                     : "PL_D9J2bYWXyIeRkUq099oCV8wf5Omf9Fe",
                             resourceId: {
@@ -549,8 +600,8 @@ async function uploadBonusCollection() {
                 let timestamp = `${timeElapsed.getMinutes()}:${
                     timeElapsed.getSeconds() < 10 ? "0" : ""
                 }${timeElapsed.getSeconds()}`;
-                description += `${timestamp} ${run.map.name} Bonus ${run.bonusNumber} by ${run.player_info.name} (${
-                    run.class === 3 ? "Soldier" : "Demoman"
+                description += `${timestamp} ${run.map.name} Bonus ${run.zone.zoneindex} by ${run.player.name} (${
+                    run.class === "SOLDIER" ? "Soldier" : "Demoman"
                 })\n`;
                 seconds += duration;
             } catch (err) {
@@ -562,8 +613,8 @@ async function uploadBonusCollection() {
         }
 
         if (!useTimestamps) {
-            description += `${run.map.name} Bonus ${run.bonusNumber} by ${run.player_info.name} (${
-                run.class === 3 ? "Soldier" : "Demoman"
+            description += `${run.map.name} Bonus ${run.zone.zoneindex} by ${run.player.name} (${
+                run.class === "SOLDIER" ? "Soldier" : "Demoman"
             })\n`;
         }
     }

@@ -83,13 +83,21 @@ function getLatestFile(directory, cb) {
     });
 }
 
-function secondsToTimeStamp(seconds) {
+function secondsToTimeStamp(seconds, showPlusSign = false) {
+    var sign = "";
+    if (seconds < 0) {
+        sign = "-";
+    } else if (showPlusSign) {
+        sign = "+";
+    }
+    seconds = Math.abs(seconds);
+
     var hours = Math.floor(seconds / 3600);
     var minutes = Math.floor((seconds % 3600) / 60);
     var milliseconds = Math.floor((seconds - Math.floor(seconds)) * 1000);
     seconds = Math.floor(seconds % 60);
 
-    var timeStamp = "";
+    var timeStamp = sign;
 
     if (hours > 0) {
         if (hours >= 10) timeStamp += hours + ":";
@@ -127,6 +135,30 @@ const sleep = (milliseconds) => {
     return new Promise((resolve) => setTimeout(resolve, milliseconds));
 };
 
+function getAlphaFade(startTime, displayDuration, fadeInDuration, fadeOutDuration, maxAlpha) {
+    let fadeInStart = startTime;
+    let fadeInEnd = fadeInStart + fadeInDuration;
+    let fadeOutStart = fadeInEnd + displayDuration;
+    let fadeOutEnd = fadeOutStart + fadeOutDuration;
+    return `
+        min(
+            ${maxAlpha},
+            if(lt(t,${fadeInStart}),
+                0,
+                if(lt(t,${fadeInEnd}),
+                    (t-${fadeInStart})*${maxAlpha},
+                    if(lt(t,${fadeOutStart}),
+                        ${maxAlpha},
+                        if(lt(t,${fadeOutEnd}),
+                            (${maxAlpha}-(t-${fadeOutStart}))*${maxAlpha}
+                        )
+                    )
+                )
+            )
+        )                        
+    `;
+}
+
 module.exports.launchSVR = launchSVR;
 module.exports.launchTF2 = launchTF2;
 module.exports.killSVR = killSVR;
@@ -136,3 +168,4 @@ module.exports.secondsToTimeStamp = secondsToTimeStamp;
 module.exports.readJson = readJson;
 module.exports.writeJson = writeJson;
 module.exports.sleep = sleep;
+module.exports.getAlphaFade = getAlphaFade;

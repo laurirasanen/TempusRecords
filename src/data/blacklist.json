@@ -1,12 +1,12 @@
 [
     {
         "name": "jump_strikapult_v11",
-        "3": {
+        "SOLDIER": {
             "map": false,
             "courses": [],
             "bonuses": []
         },
-        "4": {
+        "DEMOMAN": {
             "map": true,
             "courses": [],
             "bonuses": []
@@ -14,14 +14,14 @@
     },
     {
         "name": "jump_airships_v2",
-        "3": {
+        "SOLDIER": {
             "map": false,
             "courses": [],
             "bonuses": [
                 1
             ]
         },
-        "4": {
+        "DEMOMAN": {
             "map": false,
             "courses": [],
             "bonuses": []
@@ -29,15 +29,28 @@
     },
     {
         "name": "jump_ante",
-        "3": {
+        "SOLDIER": {
             "map": false,
             "courses": [],
             "bonuses": [
                 9
             ]
         },
-        "4": {
+        "DEMOMAN": {
             "map": false,
+            "courses": [],
+            "bonuses": []
+        }
+    },
+    {
+        "name": "jump_scorpion_b1",
+        "SOLDIER": {
+            "map": false,
+            "courses": [],
+            "bonuses": []
+        },
+        "DEMOMAN": {
+            "map": true,
             "courses": [],
             "bonuses": []
         }

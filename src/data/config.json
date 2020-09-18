@@ -2,8 +2,8 @@
     "youtube": {
         "oauth": {
             "type": "oauth",
-            "client_id": "",
-            "client_secret": "",
+            "client_id": "1089425010756-19vhsndi754io9uqpo1msefbel85nfij.apps.googleusercontent.com",
+            "client_secret": "lm87UNnRbpoGBLOmYpv9LZNO",
             "redirect_url": "http://localhost:5000/oauth2callback"
         },
         "title": "$NAME on $MAP - $TIME",
@@ -22,11 +22,7 @@
             "https://github.com/laurirasanen/tempusrecords",
             "",
             "Recorded with Source Video Render by crashfort",
-            "https://github.com/crashfort/SourceDemoRender",
-            "",
-            "WR time splits provided by Hona",
-            "https://github.com/TheRealHona/TempusHub",
-            "https://tempushub.xyz/"
+            "https://github.com/crashfort/SourceDemoRender"
         ],
         "bonusDescription": [
             "This video was automatically generated on $DATETIME",
@@ -45,11 +41,13 @@
     "video": {
         "deleteCompressed": false,
         "deleteUncompressed": true,
-        "maxBonusesInCollection": 30,
+        "maxBonusesInCollection": 35,
         "maxDuration": 30,
         "bonusMaxDuration": 1,
         "bonusMinAge": 3,
         "mapMinAge": 7,
+        "startPadding": 3,
+        "endPadding": 3,
         "text": {
             "ffmpegOptions": {
                 "font": "Segoe UI Light",
@@ -59,8 +57,12 @@
             "position": {
                 "map": {
                     "time": {
-                        "x": "w/15",
+                        "x": "0",
                         "y": "h - h/7.5"
+                    },
+                    "timeSplit": {
+                        "x": "0",
+                        "y": "h - h/15"
                     }
                 },
                 "bonus": {

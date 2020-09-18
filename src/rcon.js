@@ -32,17 +32,17 @@ var srv = net.createServer(function (sock) {
                                 // copy and unlink old file instead.
                                 try {
                                     fs.copyFileSync(
-                                        `${config.tf2.path}/${demoObj.demo_info.filename}_${
-                                            isBonusCollection ? "bonus" + demoObj.bonusNumber : "map"
-                                        }_${demoObj.class === 3 ? "soldier" : "demoman"}.wav`,
-                                        `${config.svr.recordingFolder}/${demoObj.demo_info.filename}_${
-                                            isBonusCollection ? "bonus" + demoObj.bonusNumber : "map"
-                                        }_${demoObj.class === 3 ? "soldier" : "demoman"}.wav`
+                                        `${config.tf2.path}/${demoObj.demo.filename}_${
+                                            demoObj.zone.type + demoObj.zone.zoneindex
+                                        }_${demoObj.class}.wav`,
+                                        `${config.svr.recordingFolder}/${demoObj.demo.filename}_${
+                                            demoObj.zone.type + demoObj.zone.zoneindex
+                                        }_${demoObj.class}.wav`
                                     );
                                     fs.unlinkSync(
-                                        `${config.tf2.path}/${demoObj.demo_info.filename}_${
-                                            isBonusCollection ? "bonus" + demoObj.bonusNumber : "map"
-                                        }_${demoObj.class === 3 ? "soldier" : "demoman"}.wav`
+                                        `${config.tf2.path}/${demoObj.demo.filename}_${
+                                            demoObj.zone.type + demoObj.zone.zoneindex
+                                        }_${demoObj.class}.wav`
                                     );
                                 } catch (err) {
                                     console.log("[FILE] Could not movie audio file!");
@@ -55,7 +55,7 @@ var srv = net.createServer(function (sock) {
                                 var listenConfig =
                                     "sv_allow_wait_command 1\n" +
                                     "meta load addons/picmip; wait 100; picmip set -10; " +
-                                    `wait 100; playdemo ${demoObj.demo_info.filename}; ` +
+                                    `wait 100; playdemo ${demoObj.demo.filename}; ` +
                                     // Starting a listen server does some weird shit with rcon,
                                     // need to change rcon_address to something else and back again..
                                     `rcon_address 0.0.0.0:0; rcon_address ${config.rcon.listenAddress}:${config.rcon.listenPort}`;
@@ -70,7 +70,7 @@ var srv = net.createServer(function (sock) {
 
                                     // Write PlayerCommands for controlling the demo
                                     let commands = demo.getPlayCommands(demoObj, true);
-                                    demo.savePlayCommands(demoObj.demo_info.filename, commands, (success) => {
+                                    demo.savePlayCommands(demoObj.demo.filename, commands, (success) => {
                                         if (success) {
                                             return utils.launchSVR();
                                         }
@@ -95,9 +95,9 @@ var srv = net.createServer(function (sock) {
                     (demoObj) => {
                         utils.killSVR();
 
-                        var filename = `${config.svr.recordingFolder}/${demoObj.demo_info.filename}_${
-                            isBonusCollection ? "bonus" + demoObj.bonusNumber : "map"
-                        }_${demoObj.class === 3 ? "soldier" : "demoman"}.mp4`;
+                        var filename = `${config.svr.recordingFolder}/${demoObj.demo.filename}_${
+                            demoObj.zone.type + demoObj.zone.zoneindex
+                        }_${demoObj.class}.mp4`;
 
                         // Compress
                         youtube.compress(filename, `${filename.split(".mp4")[0]}.wav`, demoObj, (result, name) => {
