@@ -2,8 +2,8 @@
     "youtube": {
         "oauth": {
             "type": "oauth",
-            "client_id": "1089425010756-19vhsndi754io9uqpo1msefbel85nfij.apps.googleusercontent.com",
-            "client_secret": "lm87UNnRbpoGBLOmYpv9LZNO",
+            "client_id": "",
+            "client_secret": "",
             "redirect_url": "http://localhost:5000/oauth2callback"
         },
         "title": "$NAME on $MAP - $TIME",
