@@ -3,6 +3,7 @@ const { schema } = require("tempus-api-graphql");
 const nicknames = require("./data/nicknames.json");
 const blacklist = require("./data/blacklist.json");
 const config = require("./data/config.json");
+const uploaded = require("./data/uploaded.json");
 
 async function getMapWRs(mapList) {
   let wrs = [];
@@ -183,7 +184,7 @@ async function getRecentMapWRs() {
 
 function filterRuns(runs) {
   var wasArray = true;
-  if (Array.isArray(runs)) {
+  if (!Array.isArray(runs)) {
     runs = [runs];
     wasArray = false;
   }
@@ -191,7 +192,7 @@ function filterRuns(runs) {
   // Sanity check
   runs = runs.filter((run) => run != null);
 
-  for (var i = runs.length; i >= 0; i--) {
+  for (var i = runs.length - 1; i >= 0; i--) {
     // TODO: handle bonuses
 
     // Remove already uploaded runs
