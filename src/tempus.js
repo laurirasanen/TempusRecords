@@ -11,7 +11,6 @@ async function getMapWRs(mapList) {
     wrs.push(await getMapWR(map, "SOLDIER"));
     wrs.push(await getMapWR(map, "DEMOMAN"));
   }
-  wrs = wrs.filter((wr) => wr != null).sort((a, b) => a.date - b.date);
   return filterRuns(wrs);
 }
 
@@ -70,7 +69,6 @@ async function getBonusWRs(mapList) {
       wrs.push(await getZoneWR(map.name, "BONUS", zone.id, "DEMOMAN"));
     }
   }
-  wrs = wrs.filter((wr) => wr != null).sort((a, b) => a.date - b.date);
   return filterRuns(wrs);
 }
 
@@ -178,7 +176,6 @@ async function getRecentMapWRs() {
     console.log(`Getting recent WRs ${wrs.length + 1}/${result.data.activity.mapWrs.length}`);
     wrs.push(await getMapWR(wr.map.name, wr.class));
   }
-  wrs = wrs.filter((wr) => wr != null).sort((a, b) => a.date - b.date);
   return filterRuns(wrs);
 }
 
@@ -202,7 +199,7 @@ function filterRuns(runs) {
     }
 
     // Make sure demo is uploaded
-    if (!runs[i].demo.url) {
+    if (!runs[i].demo || !runs[i].demo.url) {
       runs.splice(i, 1);
       continue;
     }
@@ -214,12 +211,15 @@ function filterRuns(runs) {
       continue;
     }
 
-    // Remove runs that are too recent
-    if (Date.now() - runs[i].demo.date * 1000 < 1000 * 60 * 60 * 24 * config.video.mapMinAge) {
-      console.log(`Removing run newer than ${config.video.mapMinAge} days: ${runs[i].map.name} (${runs[i].class})`);
+    // TODO: date_added is not included in tempus-api-graphql yet
+    /*
+    // Remove maps that are too recent
+    if (Date.now() - runs[i].map.dateAdded * 1000 < 1000 * 60 * 60 * 24 * config.video.mapMinAge) {
+      console.log(`Removing run for map newer than ${config.video.mapMinAge} days: ${runs[i].map.name} (${runs[i].class})`);
       runs.splice(i, 1);
       continue;
     }
+    */
 
     // Remove blacklisted runs
     let cont = false;

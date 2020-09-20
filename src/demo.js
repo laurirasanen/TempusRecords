@@ -168,7 +168,7 @@ function startDemo(run) {
   // This cannot be done via rcon because the steamId needs quotes around it and source does not like that.
 
   // Write the .cfg
-  fs.writeFile(config.tf2.path + "/cfg/tmps_records_spec_player.cfg", `spec_player "${steamId}"`, (err) => {
+  fs.writeFile(config.tf2.path + "/cfg/tmps_records_spec_player.cfg", `spec_player "${run.player.steamId}"`, (err) => {
     if (err) {
       console.log("[FILE] Could not write tmps_records_spec_player.cfg!");
       console.log(err);
