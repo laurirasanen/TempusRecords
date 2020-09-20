@@ -14,8 +14,8 @@ This project is made much simpler and the output quality increased thanks to sev
 * [Source Video Renderer](https://github.com/crashfort/SourceDemoRender) by [crashfort](https://github.com/crashfort)
   * A high quality, performant video renderer for Source engine games.
 
-* [tempus-api](https://github.com/arispoloway/tempus-api) by [Aris Poloway](https://github.com/arispoloway)
-  * A JavaScript library for interacting with the Tempus API.
+* [tempus-api-graphql](https://github.com/arispoloway/tempus-api-graphql) by [Aris Poloway](https://github.com/arispoloway)
+  * A GraphQL wrapper for the tempus.xyz API.
 
 * [Tempus Hub](https://github.com/TheRealHona/TempusHub/) by [Luke Parker](https://github.com/TheRealHona)
   * A complimentary website and API to the official Tempus one, adds features such as recent world record time splits.
