@@ -24,7 +24,7 @@
     "youtube-api": "^2.0.10"
   },
   "scripts": {
-    "prettier": "prettier --write ."
+    "prettier": "prettier --write src/."
   },
   "devDependencies": {
     "prettier": "^2.0.5"

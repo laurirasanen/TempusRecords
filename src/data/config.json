@@ -1,119 +1,119 @@
 {
-    "youtube": {
-        "oauth": {
-            "type": "oauth",
-            "client_id": "",
-            "client_secret": "",
-            "redirect_url": "http://localhost:5000/oauth2callback"
+  "youtube": {
+    "oauth": {
+      "type": "oauth",
+      "client_id": "1089425010756-19vhsndi754io9uqpo1msefbel85nfij.apps.googleusercontent.com",
+      "client_secret": "NM9U_f2Tc6HhBB-0pnxWRwiA",
+      "redirect_url": "http://localhost:5000/oauth2callback"
+    },
+    "title": "$NAME on $MAP - $TIME",
+    "bonusTitle": "Bonus collection #$NUMBER",
+    "description": [
+      "Player: $NAME",
+      "Map: $MAP",
+      "Class: $CLASS",
+      "Time: $TIME $SPLIT",
+      "Date: $DATE",
+      "",
+      "Map download: $MAP_URL",
+      "Demo download: $DEMO_URL",
+      "",
+      "This video was automatically generated on $DATETIME",
+      "https://github.com/laurirasanen/tempusrecords",
+      "",
+      "Recorded with Source Video Render by crashfort",
+      "https://github.com/crashfort/SourceDemoRender"
+    ],
+    "bonusDescription": [
+      "This video was automatically generated on $DATETIME",
+      "https://github.com/laurirasanen/tempusrecords",
+      "",
+      "Recorded with Source Video Render by crashfort",
+      "https://github.com/crashfort/SourceDemoRender",
+      "",
+      "WR time splits provided by Hona",
+      "https://github.com/TheRealHona/TempusHub",
+      "https://tempushub.xyz/"
+    ],
+    "video_limit": 65,
+    "publishDelay": 60
+  },
+  "video": {
+    "deleteCompressed": false,
+    "deleteUncompressed": false,
+    "maxBonusesInCollection": 35,
+    "mapMaxDuration": 30,
+    "bonusMaxDuration": 1,
+    "bonusMinAge": 3,
+    "mapMinAge": 7,
+    "startPadding": 3,
+    "endPadding": 3,
+    "text": {
+      "ffmpegOptions": {
+        "font": "Segoe UI Light",
+        "fontsize": "h/15",
+        "fontcolor": "#FFFFFF"
+      },
+      "position": {
+        "map": {
+          "time": {
+            "x": "0",
+            "y": "h - h/7.5"
+          },
+          "timeSplit": {
+            "x": "0",
+            "y": "h - h/15"
+          }
         },
-        "title": "$NAME on $MAP - $TIME",
-        "bonusTitle": "Bonus collection #$NUMBER",
-        "description": [
-            "Player: $NAME",
-            "Map: $MAP",
-            "Class: $CLASS",
-            "Time: $TIME $SPLIT",
-            "Date: $DATE",
-            "",
-            "Map download: $MAP_URL",
-            "Demo download: $DEMO_URL",
-            "",
-            "This video was automatically generated on $DATETIME",
-            "https://github.com/laurirasanen/tempusrecords",
-            "",
-            "Recorded with Source Video Render by crashfort",
-            "https://github.com/crashfort/SourceDemoRender"
-        ],
-        "bonusDescription": [
-            "This video was automatically generated on $DATETIME",
-            "https://github.com/laurirasanen/tempusrecords",
-            "",
-            "Recorded with Source Video Render by crashfort",
-            "https://github.com/crashfort/SourceDemoRender",
-            "",
-            "WR time splits provided by Hona",
-            "https://github.com/TheRealHona/TempusHub",
-            "https://tempushub.xyz/"
-        ],
-        "video_limit": 65,
-        "publishDelay": 60
+        "bonus": {
+          "time": {
+            "x": "0",
+            "y": "h - h/7.5"
+          },
+          "player": {
+            "x": "0",
+            "y": "h - h/15"
+          },
+          "bonus": {
+            "x": "w - tw",
+            "y": "h - h/7.5"
+          },
+          "map": {
+            "x": "w - tw",
+            "y": "h - h/15"
+          }
+        }
+      },
+      "displayDuration": 3,
+      "fadeInDuration": 0.5,
+      "fadeOutDuration": 0.5,
+      "endPadding": 0,
+      "startPadding": 0,
+      "maxAlpha": 0.8
     },
-    "video": {
-        "deleteCompressed": false,
-        "deleteUncompressed": true,
-        "maxBonusesInCollection": 35,
-        "maxDuration": 30,
-        "bonusMaxDuration": 1,
-        "bonusMinAge": 3,
-        "mapMinAge": 7,
-        "startPadding": 3,
-        "endPadding": 3,
-        "text": {
-            "ffmpegOptions": {
-                "font": "Segoe UI Light",
-                "fontsize": "h/15",
-                "fontcolor": "#FFFFFF"
-            },
-            "position": {
-                "map": {
-                    "time": {
-                        "x": "0",
-                        "y": "h - h/7.5"
-                    },
-                    "timeSplit": {
-                        "x": "0",
-                        "y": "h - h/15"
-                    }
-                },
-                "bonus": {
-                    "time": {
-                        "x": "0",
-                        "y": "h - h/7.5"
-                    },
-                    "player": {
-                        "x": "0",
-                        "y": "h - h/15"
-                    },
-                    "bonus": {
-                        "x": "w - tw",
-                        "y": "h - h/7.5"
-                    },
-                    "map": {
-                        "x": "w - tw",
-                        "y": "h - h/15"
-                    }
-                }
-            },
-            "displayDuration": 3,
-            "fadeInDuration": 0.5,
-            "fadeOutDuration": 0.5,
-            "endPadding": 0,
-            "startPadding": 0,
-            "maxAlpha": 0.8
-        },
-        "fadeInDuration": 0.25,
-        "fadeOutDuration": 0.5
-    },
-    "audio": {
-        "fadeInDuration": 1,
-        "fadeOutDuration": 1.5
-    },
-    "rcon": {
-        "address": "127.0.0.1",
-        "port": 27015,
-        "password": "bananaman",
-        "listenAddress": "127.0.0.1",
-        "listenPort": 3002
-    },
-    "tf2": {
-        "path": "C:/Program Files (x86)/Steam/steamapps/common/Team Fortress 2/tf/",
-        "launch": "C:/Program Files (x86)/Steam/steamapps/common/Team Fortress 2/hl2.exe",
-        "args": "-game tf -dxlevel 98 -novid -windowed -w 1280 -h 720 +exec cinema +volume 0 +stopsound +rcon_address 127.0.0.1:3002 +rcon_password bananaman"
-    },
-    "svr": {
-        "path": "../svr",
-        "launch": "../svr/svr_game_launcher_cli.exe",
-        "args": "tf2-win",
-        "recordingFolder": "../svr/data/movies"
-    }
+    "fadeInDuration": 0.25,
+    "fadeOutDuration": 0.5
+  },
+  "audio": {
+    "fadeInDuration": 1,
+    "fadeOutDuration": 1.5
+  },
+  "rcon": {
+    "address": "127.0.0.1",
+    "port": 27015,
+    "password": "bananaman",
+    "listenAddress": "127.0.0.1",
+    "listenPort": 3002
+  },
+  "tf2": {
+    "path": "C:/Program Files (x86)/Steam/steamapps/common/Team Fortress 2/tf/",
+    "launch": "C:/Program Files (x86)/Steam/steamapps/common/Team Fortress 2/hl2.exe",
+    "args": "-game tf -dxlevel 98 -novid -windowed -w 1280 -h 720 +exec cinema +volume 0 +stopsound +rcon_address 127.0.0.1:3002 +rcon_password bananaman"
+  },
+  "svr": {
+    "path": "../svr",
+    "launch": "../svr/svr_game_launcher_cli.exe",
+    "args": "tf2-win",
+    "recordingFolder": "../svr/data/movies"
+  }
 }

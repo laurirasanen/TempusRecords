@@ -1,58 +1,54 @@
 [
-    {
-        "name": "jump_strikapult_v11",
-        "SOLDIER": {
-            "map": false,
-            "courses": [],
-            "bonuses": []
-        },
-        "DEMOMAN": {
-            "map": true,
-            "courses": [],
-            "bonuses": []
-        }
+  {
+    "name": "jump_strikapult_v11",
+    "SOLDIER": {
+      "map": false,
+      "courses": [],
+      "bonuses": []
     },
-    {
-        "name": "jump_airships_v2",
-        "SOLDIER": {
-            "map": false,
-            "courses": [],
-            "bonuses": [
-                1
-            ]
-        },
-        "DEMOMAN": {
-            "map": false,
-            "courses": [],
-            "bonuses": []
-        }
-    },
-    {
-        "name": "jump_ante",
-        "SOLDIER": {
-            "map": false,
-            "courses": [],
-            "bonuses": [
-                9
-            ]
-        },
-        "DEMOMAN": {
-            "map": false,
-            "courses": [],
-            "bonuses": []
-        }
-    },
-    {
-        "name": "jump_scorpion_b1",
-        "SOLDIER": {
-            "map": false,
-            "courses": [],
-            "bonuses": []
-        },
-        "DEMOMAN": {
-            "map": true,
-            "courses": [],
-            "bonuses": []
-        }
+    "DEMOMAN": {
+      "map": true,
+      "courses": [],
+      "bonuses": []
     }
+  },
+  {
+    "name": "jump_airships_v2",
+    "SOLDIER": {
+      "map": false,
+      "courses": [],
+      "bonuses": [1]
+    },
+    "DEMOMAN": {
+      "map": false,
+      "courses": [],
+      "bonuses": []
+    }
+  },
+  {
+    "name": "jump_ante",
+    "SOLDIER": {
+      "map": false,
+      "courses": [],
+      "bonuses": [9]
+    },
+    "DEMOMAN": {
+      "map": false,
+      "courses": [],
+      "bonuses": []
+    }
+  },
+  {
+    "name": "jump_scorpion_b1",
+    "SOLDIER": {
+      "map": false,
+      "courses": [],
+      "bonuses": []
+    },
+    "DEMOMAN": {
+      "map": true,
+      "courses": [],
+      "bonuses": []
+    }
+  }
 ]
