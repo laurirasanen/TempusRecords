@@ -4,6 +4,7 @@
   Lien = require("lien"),
   prettyBytes = require("pretty-bytes"),
   config = require("./data/config.json"),
+  oauthConfig = require("./data/oauth.json"),
   opn = require("opn"),
   utils = require("./utils.js"),
   splitjs = require("./split.js"),
@@ -22,7 +23,7 @@ let server = new Lien({
   port: "5000",
 });
 
-let oauth = youtube_api.authenticate(config.youtube.oauth);
+let oauth = youtube_api.authenticate(oauthConfig);
 
 opn(
   oauth.generateAuthUrl({
