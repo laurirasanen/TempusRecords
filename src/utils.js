@@ -125,7 +125,7 @@ function readJson(path, cb) {
 }
 
 function writeJson(path, data, cb) {
-  fs.writeFile(path, JSON.stringify(data, null, 4), (err) => {
+  fs.writeFile(path, JSON.stringify(data, null, 2), (err) => {
     if (err) cb(err);
     else cb(null);
   });
