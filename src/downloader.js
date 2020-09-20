@@ -2,7 +2,7 @@
   fs = require("fs"),
   unzipper = require("unzipper"),
   bz2 = require("unbzip2-stream"),
-  demojs = require("./demo.js"),
+  demo = require("./demo.js"),
   config = require("./data/config.json");
 
 // Download demo file from AWS
@@ -37,7 +37,7 @@ function getDemoFile(run, cb) {
     } else {
       var stream = fs.createWriteStream(dest);
 
-      download(run.demo.url, false, run, (resp, run) => {
+      download(run.demo.url, run, (resp, run) => {
         resp
           .pipe(unzipper.Parse())
           .on("entry", (entry) => {
@@ -110,7 +110,7 @@ function getMap(mapName, cb) {
       var stream = fs.createWriteStream(config.tf2.path + `download/maps/${mapName}.bsp`);
       var mapUrl = `http://tempus.site.nfoservers.com/server/maps/${mapName}.bsp.bz2`;
 
-      download(mapUrl, true, currentDemo, (resp, run) => {
+      download(mapUrl, currentDemo, (resp, run) => {
         resp
           .pipe(
             bz2().on("error", (err) => {
@@ -153,27 +153,15 @@ function getMap(mapName, cb) {
   });
 }
 
-function download(url, map, run, callback) {
-  var request = http
-    .get(url, function (response) {
-      var data;
-
-      response.on("data", function (chunk) {
-        data += chunk;
-      });
-
-      request.on("error", function (e) {
-        console.log("[DL] Error downloading");
-        console.log(e.message);
-        demojs.skip();
-      });
-
+function download(url, run, callback) {
+  http
+    .get(url, (response) => {
       callback(response, run);
     })
     .on("error", (err) => {
       console.log("[DL] Error downloading");
       console.log(err.message);
-      demojs.skip();
+      demo.skip();
     });
 }
 
