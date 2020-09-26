@@ -439,7 +439,7 @@ async function upload(file, run) {
         }),
       },
     },
-    (err, data) => {
+    (err, response) => {
       if (err) {
         console.log("Failed to upload video");
         console.log(err);
@@ -447,7 +447,6 @@ async function upload(file, run) {
       } else {
         console.log("Done uploading");
       }
-
       // Add video to class playlist
       youtube_api.playlistItems.insert(
         {
@@ -457,13 +456,13 @@ async function upload(file, run) {
                 run.class === "SOLDIER" ? "PL_D9J2bYWXyLFs5OJcTugl_70HqzDN9nv" : "PL_D9J2bYWXyIeRkUq099oCV8wf5Omf9Fe",
               resourceId: {
                 kind: "youtube#video",
-                videoId: data.id,
+                videoId: response.data.id,
               },
             },
           },
           part: "snippet",
         },
-        (err, data) => {
+        (err, response) => {
           if (err) {
             console.log("Failed to add video to playlist");
             console.log(err);
@@ -665,7 +664,7 @@ async function uploadBonusCollection() {
         }),
       },
     },
-    (err, data) => {
+    (err, response) => {
       if (err) {
         console.log("Failed to upload video");
         console.log(err);
@@ -689,13 +688,13 @@ async function uploadBonusCollection() {
                 playlistId: "PL_D9J2bYWXyJBc0YvjRpqpFc5hY-ieU-B",
                 resourceId: {
                   kind: "youtube#video",
-                  videoId: data.id,
+                  videoId: response.data.id,
                 },
               },
             },
             part: "snippet",
           },
-          (err, data) => {
+          (err, response) => {
             if (err) {
               console.log("Failed to add video to playlist");
               console.log(err);
