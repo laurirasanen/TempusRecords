@@ -54,8 +54,8 @@ async function getMapWR(mapName, className) {
     }`;
 
   const result = await graphql(schema, query);
-  if (result.error) {
-    throw result.error;
+  if (result.errors) {
+    throw result.errors[0];
   }
   return filterRuns(result.data.map.wr);
 }
@@ -65,30 +65,29 @@ async function getBonusWRs(mapList) {
   for (const map of mapList) {
     let bonusZones = await getTypeZones(map.name, "bonus");
     for (const zone of bonusZones) {
-      wrs.push(await getZoneWR(map.name, "BONUS", zone.id, "SOLDIER"));
-      wrs.push(await getZoneWR(map.name, "BONUS", zone.id, "DEMOMAN"));
+      wrs.push(await getZoneWR(map.name, "BONUS", zone.zoneindex, "SOLDIER"));
+      wrs.push(await getZoneWR(map.name, "BONUS", zone.zoneindex, "DEMOMAN"));
     }
   }
   return filterRuns(wrs);
 }
 
 async function getTypeZones(mapName, zoneType) {
-  // TODO: these aren't supported yet
-  if (zoneType === "bonus") throw "not supported";
   const query = `
     {
       map(name: "${mapName}") {
         zones {
           ${zoneType} {
             id
+            zoneindex
           }
         }
       }
     }`;
 
   const result = await graphql(schema, query);
-  if (result.error) {
-    throw result.error;
+  if (result.errors) {
+    throw result.errors[0];
   }
   return result.data.map.zones[zoneType];
 }
@@ -127,12 +126,17 @@ async function getZoneWR(mapName, zoneType, zoneId, className) {
     }`;
 
   const result = await graphql(schema, query);
-  if (result.error) {
-    throw result.error;
+  if (result.errors) {
+    throw result.errors[0];
   }
   if (!result.data.map.records.length) {
     return null;
   }
+
+  // Workaround for tempus-api-graphql issue #28
+  // TODO: remove when fixed
+  result.data.map.records[0].class = className;
+
   return result.data.map.records[0];
 }
 
@@ -145,8 +149,8 @@ async function getMapList() {
     }`;
 
   const result = await graphql(schema, query);
-  if (result.error) {
-    throw result.error;
+  if (result.errors) {
+    throw result.errors[0];
   }
   return result.data.maps;
 }
@@ -165,8 +169,8 @@ async function getRecentMapWRs() {
     }`;
 
   const result = await graphql(schema, query);
-  if (result.error) {
-    throw result.error;
+  if (result.errors) {
+    throw result.errors[0];
   }
 
   // Activity doesn't include splits,

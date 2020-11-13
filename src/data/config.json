@@ -56,7 +56,7 @@
           },
           "timeSplit": {
             "x": "0",
-            "y": "h - h/15"
+            "y": "h - th - 5"
           }
         },
         "bonus": {
@@ -66,15 +66,15 @@
           },
           "player": {
             "x": "0",
-            "y": "h - h/15"
+            "y": "h - th - 5"
           },
           "bonus": {
-            "x": "w - tw",
+            "x": "w - tw - 5",
             "y": "h - h/7.5"
           },
           "map": {
-            "x": "w - tw",
-            "y": "h - h/15"
+            "x": "w - tw - 5",
+            "y": "h - th - 5"
           }
         }
       },
@@ -102,7 +102,7 @@
   "tf2": {
     "path": "C:/Program Files (x86)/Steam/steamapps/common/Team Fortress 2/tf/",
     "launch": "C:/Program Files (x86)/Steam/steamapps/common/Team Fortress 2/hl2.exe",
-    "args": "-game tf -dxlevel 98 -novid -windowed -w 1280 -h 720 +exec cinema +volume 0 +stopsound +rcon_address 127.0.0.1:3002 +rcon_password bananaman"
+    "args": "-game tf -dxlevel 98 -novid -windowed -w 1280 -h 720 +exec cinema +volume 0 +stopsound +rcon_address 127.0.0.1:3002 +rcon_password bananaman -nomouse"
   },
   "svr": {
     "path": "../svr",

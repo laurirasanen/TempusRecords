@@ -116,19 +116,9 @@ async function compress(video, audio, run, cb) {
     config.video.text.fadeOutDuration -
     config.video.text.displayDuration -
     config.video.text.fadeInDuration;
-  let maxAlpha = config.video.text.maxAlpha;
 
   // Modify alpha to fade text in and out
   let alphaTimeSplit = utils.getAlphaFade(
-    fadeInStart,
-    config.video.text.displayDuration,
-    config.video.text.fadeInDuration,
-    config.video.text.fadeOutDuration,
-    config.video.text.maxAlpha
-  );
-
-  fadeInStart = config.video.text.startPadding;
-  let alphaName = utils.getAlphaFade(
     fadeInStart,
     config.video.text.displayDuration,
     config.video.text.fadeInDuration,
@@ -213,6 +203,15 @@ async function compress(video, audio, run, cb) {
 
   if (isBonusCollection) {
     // Add map name, bonus number, and player name to video
+    let displayDuration =
+      duration - config.video.text.startPadding - config.video.text.fadeInDuration - config.video.text.fadeOutDuration;
+    let alphaName = utils.getAlphaFade(
+      config.video.text.startPadding,
+      displayDuration,
+      config.video.text.fadeInDuration,
+      config.video.text.fadeOutDuration,
+      config.video.text.maxAlpha
+    );
 
     // Player
     videoFilters.push({

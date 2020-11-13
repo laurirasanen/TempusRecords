@@ -30,7 +30,7 @@ async function init(recent, mapName, className, bonus) {
     let mapList = await tempus.getMapList();
     // splice bonus runs manually for now so we can get through all maps
     // TODO: remove
-    mapList = mapList.splice(300, 50);
+    mapList = mapList.splice(335, 50);
     runs = await tempus.getBonusWRs(mapList);
 
     // TODO: move this to tempus.js
