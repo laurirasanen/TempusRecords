@@ -50,5 +50,44 @@
       "courses": [],
       "bonuses": []
     }
+  },
+  {
+    "name": "jump_crunch",
+    "SOLDIER": {
+      "map": true,
+      "courses": [],
+      "bonuses": []
+    },
+    "DEMOMAN": {
+      "map": false,
+      "courses": [],
+      "bonuses": []
+    }
+  },
+  {
+    "name": "jump_mire",
+    "SOLDIER": {
+      "map": true,
+      "courses": [],
+      "bonuses": []
+    },
+    "DEMOMAN": {
+      "map": false,
+      "courses": [],
+      "bonuses": []
+    }
+  },
+  {
+    "name": "jump_jabroni",
+    "SOLDIER": {
+      "map": false,
+      "courses": [],
+      "bonuses": []
+    },
+    "DEMOMAN": {
+      "map": true,
+      "courses": [],
+      "bonuses": []
+    }
   }
 ]
