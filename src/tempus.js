@@ -69,7 +69,7 @@ async function getBonusWRs(mapList) {
       wrs.push(await getZoneWR(map.name, "BONUS", zone.zoneindex, "DEMOMAN"));
     }
   }
-  return filterRuns(wrs);
+  return filterRuns(wrs, true);
 }
 
 async function getTypeZones(mapName, zoneType) {
@@ -183,7 +183,7 @@ async function getRecentMapWRs() {
   return filterRuns(wrs);
 }
 
-function filterRuns(runs) {
+function filterRuns(runs, bonus = false) {
   var wasArray = true;
   if (!Array.isArray(runs)) {
     runs = [runs];
@@ -194,12 +194,17 @@ function filterRuns(runs) {
   runs = runs.filter((run) => run != null);
 
   for (var i = runs.length - 1; i >= 0; i--) {
-    // TODO: handle bonuses
-
     // Remove already uploaded runs
-    if (uploaded.maps.includes(runs[i].id)) {
-      runs.splice(i, 1);
-      continue;
+    if (bonus) {
+      if (uploaded.bonuses.includes(runs[i].id)) {
+        runs.splice(i, 1);
+        continue;
+      }
+    } else {
+      if (uploaded.maps.includes(runs[i].id)) {
+        runs.splice(i, 1);
+        continue;
+      }
     }
 
     // Make sure demo is uploaded
@@ -209,30 +214,62 @@ function filterRuns(runs) {
     }
 
     // Remove runs that are too long
-    if (runs[i].duration / 60 > config.video.mapMaxDuration) {
-      console.log(`Removing run too long: ${runs[i].map.name} (${runs[i].class})`);
-      runs.splice(i, 1);
-      continue;
+    if (bonus) {
+      if (runs[i].duration / 60 > config.video.bonusMaxDuration) {
+        console.log(`Removing run too long: ${runs[i].map.name} bonus ${runs[i].zone.zoneindex} (${runs[i].class})`);
+        runs.splice(i, 1);
+        continue;
+      }
+    } else {
+      if (runs[i].duration / 60 > config.video.mapMaxDuration) {
+        console.log(`Removing run too long: ${runs[i].map.name} (${runs[i].class})`);
+        runs.splice(i, 1);
+        continue;
+      }
     }
 
     // TODO: date_added is not included in tempus-api-graphql yet
     /*
     // Remove maps that are too recent
     if (Date.now() - runs[i].map.dateAdded * 1000 < 1000 * 60 * 60 * 24 * config.video.mapMinAge) {
-      console.log(`Removing run for map newer than ${config.video.mapMinAge} days: ${runs[i].map.name} (${runs[i].class})`);
+      console.log(`Removing run newer than ${config.video.mapMinAge} days: ${runs[i].map.name} (${runs[i].class})`);
       runs.splice(i, 1);
       continue;
     }
     */
 
+    if (bonus) {
+      // Remove too recent runs,
+      // bonus wrs can get broken a lot...
+      if ((Date.now() - runs[i].date * 1000) / (1000 * 60 * 60 * 24) < config.video.bonusMinAge) {
+        console.log(
+          `Removing run newer than ${config.video.bonusMinAge} days: ${runs[i].map.name} bonus ${runs[i].zone.zoneindex} (${runs[i].class})`
+        );
+        runs.splice(i, 1);
+        continue;
+      }
+    }
+
     // Remove blacklisted runs
     let cont = false;
     for (var j = 0; j < blacklist.length; j++) {
-      if (blacklist[j].name === runs[i].map.name && blacklist[j][runs[i].class].map) {
-        console.log(`Removing blacklisted: ${runs[i].map.name} (${runs[i].class})`);
-        runs.splice(i, 1);
-        cont = true;
-        break;
+      if (bonus) {
+        if (
+          blacklist[j].name === runs[i].map.name &&
+          blacklist[j][runs[i].class].bonuses.includes(runs[i].zone.zoneindex)
+        ) {
+          console.log(`Removing blacklisted: ${runs[i].map.name} bonus ${runs[i].zone.zoneindex} (${runs[i].class})`);
+          runs.splice(i, 1);
+          cont = true;
+          break;
+        }
+      } else {
+        if (blacklist[j].name === runs[i].map.name && blacklist[j][runs[i].class].map) {
+          console.log(`Removing blacklisted: ${runs[i].map.name} (${runs[i].class})`);
+          runs.splice(i, 1);
+          cont = true;
+          break;
+        }
       }
     }
     if (cont) continue;
@@ -250,8 +287,10 @@ function filterRuns(runs) {
     }
   }
 
-  // Upload oldest runs first
-  runs = runs.sort((a, b) => a.date - b.date);
+  if (!bonus) {
+    // Upload oldest runs first
+    runs = runs.sort((a, b) => a.date - b.date);
+  }
 
   if (!wasArray) {
     runs = runs.length && runs[0];
