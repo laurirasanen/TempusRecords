@@ -277,7 +277,7 @@
   },
   {
     "steamId": "STEAM_0:1:61775391",
-    "name": "vi"
+    "name": "sleepy"
   },
   {
     "steamId": "STEAM_0:1:79534036",
@@ -362,5 +362,13 @@
   {
     "steamId": "STEAM_0:1:42756355",
     "name": "MEGAWOP"
-  } 
+  },
+  {
+    "steamId": "STEAM_0:1:106170882",
+    "name": "vi"
+  },
+  {
+    "steamId": "STEAM_0:0:65201339",
+    "name": "Rellort"
+  }
 ]
