@@ -56,6 +56,9 @@ function getDuration(file) {
       if (err) {
         reject(err);
       }
+      if (!data) {
+        reject("no data");
+      }
       resolve(data.format.duration);
     });
   });
@@ -515,9 +518,14 @@ async function concatBonusRuns(cb) {
 
   console.log("Concatenating bonus videos");
 
-  let prevProgress = 0;
-  let completed = false;
+  for (let i = bonusRuns.length - 1; i >= 0; i--) {
+    if (!fs.existsSync(bonusRuns[i].outputFile)) {
+      bonusRuns.splice(i, 1);
+    }
+  }
+
   let duration = 0;
+
   for (let run of bonusRuns) {
     try {
       duration += await getDuration(run.outputFile);
@@ -525,17 +533,16 @@ async function concatBonusRuns(cb) {
       console.log(err);
     }
   }
-  let frameCount = duration * 60;
 
+  let frameCount = duration * 60;
+  let prevProgress = 0;
+  let completed = false;
   let ff = ffmpeg();
-  for (let i = bonusRuns.length - 1; i >= 0; i--) {
-    if (!fs.existsSync(bonusRuns[i].outputFile)) {
-      bonusRuns.splice(i, 1);
-    }
-  }
+
   for (let i = 0; i < bonusRuns.length; i++) {
     ff.input(bonusRuns[i].outputFile);
   }
+
   ff.on("error", (err) => {
     console.log("Failed to concatenate files");
     console.error(err);
