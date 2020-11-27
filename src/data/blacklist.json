@@ -76,5 +76,18 @@
       "courses": [],
       "bonuses": []
     }
+  },
+  {
+    "name": "jump_silly_fin",
+    "SOLDIER": {
+      "map": false,
+      "courses": [],
+      "bonuses": [4]
+    },
+    "DEMOMAN": {
+      "map": false,
+      "courses": [],
+      "bonuses": []
+    }
   }
 ]
