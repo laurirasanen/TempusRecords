@@ -110,7 +110,7 @@ function getMap(mapName, cb) {
       var stream = fs.createWriteStream(config.tf2.path + `download/maps/${mapName}.bsp`);
       var mapUrl = `http://tempus.site.nfoservers.com/server/maps/${mapName}.bsp.bz2`;
 
-      download(mapUrl, currentDemo, (resp, run) => {
+      download(mapUrl, currentRun, (resp, run) => {
         resp
           .pipe(
             bz2().on("error", (err) => {
