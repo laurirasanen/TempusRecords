@@ -55,9 +55,11 @@ function getDuration(file) {
     ffmpeg(file).ffprobe((err, data) => {
       if (err) {
         reject(err);
+        return;
       }
       if (!data) {
         reject("no data");
+        return;
       }
       resolve(data.format.duration);
     });
