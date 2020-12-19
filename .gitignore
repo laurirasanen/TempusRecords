@@ -8,6 +8,7 @@ svr/data/profiles/*
 !svr/data/profiles/tempus.json
 
 __pycache__
+*.pyc
 
 # vs
 .vs
