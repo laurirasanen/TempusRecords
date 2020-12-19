@@ -8,8 +8,8 @@ const uploaded = require("./data/uploaded.json");
 async function getMapWRs(mapList) {
   let wrs = [];
   for (const map of mapList) {
-    wrs.push(await getMapWR(map, "SOLDIER"));
-    wrs.push(await getMapWR(map, "DEMOMAN"));
+    wrs.push(await getMapWR(map.name, "SOLDIER"));
+    wrs.push(await getMapWR(map.name, "DEMOMAN"));
   }
   return filterRuns(wrs);
 }
