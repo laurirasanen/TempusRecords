@@ -14,7 +14,7 @@ global.bonusRuns = [];
 async function init(recent, mapName, className, bonus) {
   if (mapName && className) {
     // Upload specific run
-    let wr = await tempus.getMapWR(mapName, className);
+    let wr = await tempus.getMapWR(mapName, className, false);
     if (!wr) {
       console.log(`Couldn't find WR for map ${mapName} as ${className}`);
       return;

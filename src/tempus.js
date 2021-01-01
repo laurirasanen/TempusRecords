@@ -14,7 +14,7 @@ async function getMapWRs(mapList) {
   return filterRuns(wrs);
 }
 
-async function getMapWR(mapName, className) {
+async function getMapWR(mapName, className, filter = true) {
   const query = `
     {
       map(name: "${mapName}") {
@@ -57,7 +57,11 @@ async function getMapWR(mapName, className) {
   if (result.errors) {
     throw result.errors[0];
   }
-  return filterRuns(result.data.map.wr);
+  if (filter) {
+    return filterRuns(result.data.map.wr);
+  } else {
+    return result.data.map.wr;
+  }
 }
 
 async function getBonusWRs(mapList) {
