@@ -6,7 +6,7 @@
         "video-encoder": "libx264",
         "video-pixel-format": "yuv420",
         "video-color-space": "601",
-        "video-x264-crf": 15,
+        "video-x264-crf": 18,
         "video-x264-preset": "veryfast",
         "video-x264-intra": false
     },
