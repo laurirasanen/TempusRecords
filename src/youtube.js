@@ -281,33 +281,16 @@ async function compress(video, audio, run, cb) {
     .input(audio)
     .videoFilters(videoFilters)
     .audioFilters(audioFilters)
-    .fps(60)
-    .size("3840x2160")
-    .outputOptions([
-      "-movflags faststart",
-      "-c:v libx264",
-      "-crf 18",
-      "-profile:v high",
-      "-level:v 4.2",
-      "-preset:v veryfast",
-      "-tune:v film",
-      "-bf 2",
-      "-g 30",
-      "-coder 1",
-      "-pix_fmt yuv420p",
-      "-map 0:v:0",
-      "-map 1:a:0",
-      "-c:a aac",
-      "-profile:a aac_low",
-      "-b:a 384k",
-    ])
+    .fps(config.ffmpeg.fps)
+    .size(config.ffmpeg.size)
+    .outputOptions(config.ffmpeg.options)
     .on("start", () => {
       console.log(`Started compressing ${video}`);
     })
     .on("progress", (progress) => {
       // Progress has no percentage with the settings used,
       // make our own percentage with blackjack and hookers.
-      let frameCount = duration * 60;
+      let frameCount = duration * config.ffmpeg.fps;
       let percentage = (100 * progress.frames) / frameCount;
 
       if (percentage > prevProgress + 5) {
