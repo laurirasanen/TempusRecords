@@ -281,16 +281,16 @@ async function compress(video, audio, run, cb) {
     .input(audio)
     .videoFilters(videoFilters)
     .audioFilters(audioFilters)
-    .fps(config.ffmpeg.fps)
-    .size(config.ffmpeg.size)
-    .outputOptions(config.ffmpeg.options)
+    .fps(config.video.ffmpeg.fps)
+    .size(config.video.ffmpeg.size)
+    .outputOptions(config.video.ffmpeg.options)
     .on("start", () => {
       console.log(`Started compressing ${video}`);
     })
     .on("progress", (progress) => {
       // Progress has no percentage with the settings used,
       // make our own percentage with blackjack and hookers.
-      let frameCount = duration * config.ffmpeg.fps;
+      let frameCount = duration * config.video.ffmpeg.fps;
       let percentage = (100 * progress.frames) / frameCount;
 
       if (percentage > prevProgress + 5) {
