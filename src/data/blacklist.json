@@ -63,5 +63,18 @@
       "courses": [],
       "bonuses": []
     }
+  },
+  {
+    "name": "jump_when_b2_fix",
+    "SOLDIER": {
+      "map": false,
+      "courses": [],
+      "bonuses": []
+    },
+    "DEMOMAN": {
+      "map": false,
+      "courses": [],
+      "bonuses": [8]
+    }
   }
 ]
