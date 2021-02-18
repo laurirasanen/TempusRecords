@@ -83,6 +83,8 @@ function recordRun(run) {
     return;
   }
 
+  youtube.init();
+
   // Get quality options
   let runLength = run.duration / 60;
   quality.forEach((opt) => {

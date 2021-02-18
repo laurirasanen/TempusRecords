@@ -17,38 +17,44 @@
   });
 
 let hasTokens = false;
+let initialized = false;
 
-let server = new Lien({
-  host: "localhost",
-  port: "5000",
-});
+function init() {
+  if (initialized) return;
+  initialized = true;
 
-let oauth = youtube_api.authenticate(oauthConfig);
-
-opn(
-  oauth.generateAuthUrl({
-    access_type: "offline",
-    scope: ["https://www.googleapis.com/auth/youtube"],
-  })
-);
-
-server.addPage("/oauth2callback", (lien) => {
-  console.log("Trying to get the token using the following code: " + lien.query.code);
-  oauth.getToken(lien.query.code, (err, tokens) => {
-    if (err) {
-      lien.end(err, 400);
-      return console.log(err);
-    }
-
-    console.log("Got the tokens.");
-
-    oauth.setCredentials(tokens);
-
-    lien.end("Uploads authorized.");
-
-    hasTokens = true;
+  let server = new Lien({
+    host: "localhost",
+    port: "5000",
   });
-});
+
+  let oauth = youtube_api.authenticate(oauthConfig);
+
+  opn(
+    oauth.generateAuthUrl({
+      access_type: "offline",
+      scope: ["https://www.googleapis.com/auth/youtube"],
+    })
+  );
+
+  server.addPage("/oauth2callback", (lien) => {
+    console.log("Trying to get the token using the following code: " + lien.query.code);
+    oauth.getToken(lien.query.code, (err, tokens) => {
+      if (err) {
+        lien.end(err, 400);
+        return console.log(err);
+      }
+
+      console.log("Got the tokens.");
+
+      oauth.setCredentials(tokens);
+
+      lien.end("Uploads authorized.");
+
+      hasTokens = true;
+    });
+  });
+}
 
 function getDuration(file) {
   return new Promise((resolve, reject) => {
@@ -726,5 +732,6 @@ async function uploadBonusCollection() {
   );
 }
 
+module.exports.init = init;
 module.exports.compress = compress;
 module.exports.upload = upload;
