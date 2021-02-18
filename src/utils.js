@@ -131,6 +131,19 @@ function writeJson(path, data, cb) {
   });
 }
 
+function writeSVRProfile(quality, cb) {
+  const profilePath = config.svr.path + "/data/profiles/tempus.json";
+  readJson(profilePath, (err, data) => {
+    if (err) {
+      cb(err);
+      return;
+    }
+    data["movie"]["video-fps"] = quality.fps;
+    data["motion-blur"]["fps-mult"] = quality.sampling;
+    writeJson(profilePath, data, cb);
+  });
+}
+
 const sleep = (milliseconds) => {
   return new Promise((resolve) => setTimeout(resolve, milliseconds));
 };
@@ -167,5 +180,6 @@ module.exports.getLatestFile = getLatestFile;
 module.exports.secondsToTimeStamp = secondsToTimeStamp;
 module.exports.readJson = readJson;
 module.exports.writeJson = writeJson;
+module.exports.writeSVRProfile = writeSVRProfile;
 module.exports.sleep = sleep;
 module.exports.getAlphaFade = getAlphaFade;

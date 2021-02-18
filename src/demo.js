@@ -3,7 +3,8 @@
   fs = require("fs"),
   utils = require("./utils.js"),
   config = require("./data/config.json"),
-  youtube = require("./youtube.js");
+  youtube = require("./youtube.js"),
+  quality = require("./data/quality.json");
 
 let runs = [];
 
@@ -30,7 +31,7 @@ async function init(recent, mapName, className, bonus) {
     let mapList = await tempus.getMapList();
     // splice bonus runs manually for now so we can get through all maps
     // TODO: remove
-    mapList = mapList.splice(335, 50);
+    mapList = mapList.splice(485, mapList.length - 485);
     runs = await tempus.getBonusWRs(mapList);
 
     // TODO: move this to tempus.js
@@ -97,68 +98,85 @@ function recordRun(run) {
     return;
   }
 
-  // Check for existing video if we crashed before, etc
-  var video = `${config.svr.recordingFolder}/${run.demo.filename}_${run.zone.type + run.zone.zoneindex}_${
-    run.class
-  }.mp4`;
-  var audio = `${config.svr.recordingFolder}/${run.demo.filename}_${run.zone.type + run.zone.zoneindex}_${
-    run.class
-  }.wav`;
+  // Get quality options
+  let runLength = run.demo.duration / 60;
+  quality.forEach((opt) => {
+    if (runLength > opt.minDuration) {
+      run.quality = opt;
+    }
+  });
 
-  if (fs.existsSync(video) && fs.existsSync(audio)) {
-    console.log(`WARNING: Using existing video '${video}'`);
-    console.log(`Make sure to delete existing videos if they're corrupted, etc.`);
+  // Modify tempus profile for SVR
+  utils.writeSVRProfile(run.quality, (err) => {
+    if (err) {
+      console.log(err);
+      console.log("skipping");
+      skip();
+    }
 
-    // Compress
-    youtube.compress(video, audio, run, (result, name) => {
-      if (result === true) {
-        // Upload final output
-        if (result === true && (!isBonusCollection || isLastRun(run))) {
-          youtube.upload(name, run);
+    // Check for existing video if we crashed before, etc
+    var video = `${config.svr.recordingFolder}/${run.demo.filename}_${run.zone.type + run.zone.zoneindex}_${
+      run.class
+    }.mp4`;
+    var audio = `${config.svr.recordingFolder}/${run.demo.filename}_${run.zone.type + run.zone.zoneindex}_${
+      run.class
+    }.wav`;
+
+    if (fs.existsSync(video) && fs.existsSync(audio)) {
+      console.log(`WARNING: Using existing video '${video}'`);
+      console.log(`Make sure to delete existing videos if they're corrupted, etc.`);
+
+      // Compress
+      youtube.compress(video, audio, run, (result, name) => {
+        if (result === true) {
+          // Upload final output
+          if (result === true && (!isBonusCollection || isLastRun(run))) {
+            youtube.upload(name, run);
+          }
         }
+      });
+
+      skip();
+      return;
+    }
+
+    // Check for already compressed version
+    video = `${config.svr.recordingFolder}/${run.demo.filename}_${run.zone.type + run.zone.zoneindex}_${
+      run.class
+    }_compressed.mp4`;
+    if (fs.existsSync(video)) {
+      if (!isBonusCollection || isLastRun(run)) {
+        console.log(`WARNING: Uploading existing video '${video}'`);
+        console.log(`Make sure to delete existing videos if they're corrupted, etc.`);
+        youtube.upload(video, run);
+      }
+
+      skip();
+      return;
+    }
+
+    if (!run.demo.url) {
+      skip();
+      return;
+    }
+
+    // Get map file
+    downloader.getMap(run.map.name, (res) => {
+      if (res !== null) {
+        // Get demo file
+        downloader.getDemoFile(run, (result) => {
+          if (result === null) {
+            console.log("[DL] Error getting demo");
+            skip();
+            return;
+          } else if (result === false) {
+            console.log(`[DL] Demo file ${run.demo.filename} exists already!`);
+          }
+
+          startDemo(run);
+        });
       }
     });
-
-    skip();
-    return;
-  }
-
-  // Check for already compressed version
-  video = `${config.svr.recordingFolder}/${run.demo.filename}_${run.zone.type + run.zone.zoneindex}_${
-    run.class
-  }_compressed.mp4`;
-  if (fs.existsSync(video)) {
-    if (!isBonusCollection || isLastRun(run)) {
-      console.log(`WARNING: Uploading existing video '${video}'`);
-      console.log(`Make sure to delete existing videos if they're corrupted, etc.`);
-      youtube.upload(video, run);
-    }
-
-    skip();
-    return;
-  }
-
-  if (!run.demo.url) {
-    skip();
-    return;
-  }
-
-  // Get map file
-  downloader.getMap(run.map.name, (res) => {
-    if (res !== null) {
-      // Get demo file
-      downloader.getDemoFile(run, (result) => {
-        if (result === null) {
-          console.log("[DL] Error getting demo");
-          skip();
-          return;
-        } else if (result === false) {
-          console.log(`[DL] Demo file ${run.demo.filename} exists already!`);
-        }
-
-        startDemo(run);
-      });
-    }
   });
 }
 

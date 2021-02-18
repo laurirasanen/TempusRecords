@@ -42,28 +42,24 @@
     "mapMinAge": 7,
     "startPadding": 3,
     "endPadding": 3,
-    "ffmpeg": {
-      "fps": 60,
-      "size": "3840x2160",
-      "options": [
-        "-movflags faststart",
-        "-c:v libx264",
-        "-crf 20",
-        "-profile:v high",
-        "-level:v 4.2",
-        "-preset:v veryfast",
-        "-tune:v film",
-        "-bf 2",
-        "-g 30",
-        "-coder 1",
-        "-pix_fmt yuv420p",
-        "-map 0:v:0",
-        "-map 1:a:0",
-        "-c:a aac",
-        "-profile:a aac_low",
-        "-b:a 384k"
-      ]
-    },
+    "ffmpegOptions": [
+      "-movflags faststart",
+      "-c:v libx264",
+      "-crf 20",
+      "-profile:v high",
+      "-level:v 4.2",
+      "-preset:v veryfast",
+      "-tune:v film",
+      "-bf 2",
+      "-g 30",
+      "-coder 1",
+      "-pix_fmt yuv420p",
+      "-map 0:v:0",
+      "-map 1:a:0",
+      "-c:a aac",
+      "-profile:a aac_low",
+      "-b:a 384k"
+    ],
     "text": {
       "ffmpegOptions": {
         "font": "Segoe UI Light",
