@@ -1,0 +1,3 @@
+"Resource/UI/HudObjectiveStatus.res"
+{	
+}

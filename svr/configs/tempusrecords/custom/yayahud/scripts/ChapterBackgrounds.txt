@@ -1,0 +1,10 @@
+"chapters"
+{
+	1	"background_blu1"
+	2	"background_blu2"
+}
+"BackgroundMaps"
+{
+	1	"background_blu1"
+	2	"background_blu2"
+}
