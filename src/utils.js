@@ -213,7 +213,10 @@ function copyConfig(srcFolder, dstFolder) {
     const from = srcFolder + "/" + f;
     const to = dstFolder + "/" + f;
     console.log(`Copying ${from} --> ${to}`);
-    fs.copySync(from, to, { overwrite: true });
+    if (fs.existsSync(to)) {
+      fs.rmSync(to, { recursive: true });
+    }
+    fs.copySync(from, to);
   });
 }
 
