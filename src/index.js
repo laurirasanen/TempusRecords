@@ -1,9 +1,8 @@
 const rcon = require("./rcon.js"),
-  demo = require("./demo.js");
+  demo = require("./demo.js"),
+  utils = require("./utils");
 
 function start() {
-  rcon.init();
-
   // Default to just checking recent WR activity,
   // instead of checking all maps.
   var recent = true;
@@ -12,6 +11,14 @@ function start() {
   var bonus = false;
 
   if (process.argv.length > 2) {
+    if (process.argv[2] == "restore") {
+      utils.restoreConfig();
+      return;
+    }
+
+    utils.backupConfig();
+    utils.applyConfig();
+
     if (process.argv[2] == "all") {
       recent = false;
     } else if (process.argv[2] == "bonus") {
@@ -29,6 +36,7 @@ function start() {
     }
   }
 
+  rcon.init();
   demo.init(recent, mapName, className, bonus);
 }
 

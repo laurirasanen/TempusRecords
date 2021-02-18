@@ -1,6 +1,6 @@
 ﻿const exec = require("child_process").exec,
   tasklist = require("tasklist"),
-  fs = require("fs"),
+  fs = require("fs-extra"),
   config = require("./data/config.json");
 
 global.tf2Proc = null;
@@ -172,6 +172,51 @@ function getAlphaFade(startTime, displayDuration, fadeInDuration, fadeOutDuratio
     `;
 }
 
+function backupConfig() {
+  console.log("backing up user config...");
+  const srcFolder = config.tf2.path;
+  const dstFolder = config.svr.path + "/configs/user";
+
+  if (!fs.existsSync(dstFolder)) {
+    fs.mkdirSync(dstFolder);
+  } else {
+    // Something is already backed up.
+    // Copy in case user runs the program twice without 'restore' param inbetween.
+    // (overwrites user cfg with recording cfg from tf dir)
+    const dateString = new Date(Date.now()).toISOString().replace(":", "-").replace(".", "-");
+    const dstExisting = dstFolder + "_" + dateString;
+    console.log(`Copying existing backup ${dstFolder} --> ${dstExisting}`);
+    fs.copySync(dstFolder, dstExisting, { overwrite: true });
+  }
+
+  copyConfig(srcFolder, dstFolder);
+}
+
+function applyConfig() {
+  console.log("applying recording config...");
+  const srcFolder = config.svr.path + "/configs/tempusrecords";
+  const dstFolder = config.tf2.path;
+  copyConfig(srcFolder, dstFolder);
+}
+
+function restoreConfig() {
+  console.log("restoring user config...");
+  const srcFolder = config.svr.path + "/configs/user";
+  const dstFolder = config.tf2.path;
+  copyConfig(srcFolder, dstFolder);
+}
+
+function copyConfig(srcFolder, dstFolder) {
+  const folders = ["cfg", "custom"];
+
+  folders.forEach((f) => {
+    const from = srcFolder + "/" + f;
+    const to = dstFolder + "/" + f;
+    console.log(`Copying ${from} --> ${to}`);
+    fs.copySync(from, to, { overwrite: true });
+  });
+}
+
 module.exports.launchSVR = launchSVR;
 module.exports.launchTF2 = launchTF2;
 module.exports.killSVR = killSVR;
@@ -183,3 +228,6 @@ module.exports.writeJson = writeJson;
 module.exports.writeSVRProfile = writeSVRProfile;
 module.exports.sleep = sleep;
 module.exports.getAlphaFade = getAlphaFade;
+module.exports.backupConfig = backupConfig;
+module.exports.restoreConfig = restoreConfig;
+module.exports.applyConfig = applyConfig;
