@@ -4,7 +4,6 @@ const nicknames = require("./data/nicknames.json");
 const blacklist = require("./data/blacklist.json");
 const config = require("./data/config.json");
 const uploaded = require("./data/uploaded.json");
-const config = require("./data/config.json");
 
 async function getMapWRs(mapList) {
   let wrs = [];
