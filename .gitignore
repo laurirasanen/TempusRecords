@@ -7,7 +7,8 @@ svr/data/*
 svr/data/profiles/*
 !svr/data/profiles/tempus.json
 !svr/configs
-svr/configs/user
+svr/configs/*
+!svr/configs/tempusrecords
 
 # node
 node_modules/
