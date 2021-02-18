@@ -27,7 +27,11 @@
     "youtube-api": "^3.0.1"
   },
   "scripts": {
-    "prettier": "prettier --write src/."
+    "prettier": "prettier --write src/.",
+    "start": "cd src && node index.js",
+    "upload": "npm run start",
+    "upload:all": "npm run start -- all",
+    "upload:bonus": "npm run start -- bonus"
   },
   "devDependencies": {
     "prettier": "^2.0.5"
