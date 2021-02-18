@@ -30,13 +30,13 @@
       "https://tempushub.xyz/"
     ],
     "video_limit": 65,
-    "publishDelay": 60
+    "publishDelay": 30
   },
   "video": {
     "deleteCompressed": false,
     "deleteUncompressed": true,
     "maxBonusesInCollection": 35,
-    "mapMaxDuration": 30,
+    "mapMaxDuration": 90,
     "bonusMaxDuration": 1,
     "bonusMinAge": 3,
     "mapMinAge": 7,
