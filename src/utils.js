@@ -183,7 +183,7 @@ function backupConfig() {
     // Something is already backed up.
     // Copy in case user runs the program twice without 'restore' param inbetween.
     // (overwrites user cfg with recording cfg from tf dir)
-    const dateString = new Date(Date.now()).toISOString().replace(":", "-").replace(".", "-");
+    const dateString = new Date(Date.now()).toISOString().replace(":", "_").replace(".", "_");
     const dstExisting = dstFolder + "_" + dateString;
     console.log(`Copying existing backup ${dstFolder} --> ${dstExisting}`);
     fs.copySync(dstFolder, dstExisting, { overwrite: true });
