@@ -1,1 +1,0 @@
-These go into your tf/custom/yourfoldername/resource/ui folder.

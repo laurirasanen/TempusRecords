@@ -1,3 +1,0 @@
-Merge the materials folder with your current on in /custom/hudname/materials.
-
-Apply the chosen theme before applying a different main menu background, for UI colors.

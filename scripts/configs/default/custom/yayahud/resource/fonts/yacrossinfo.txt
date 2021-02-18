@@ -1,4 +1,0 @@
-These crosshairs are designed to be used in the same method as Ell's Crosshairs are.
-They should work with every resolution because of this.
-
-Please don't use them in a public HUD release without asking me first.

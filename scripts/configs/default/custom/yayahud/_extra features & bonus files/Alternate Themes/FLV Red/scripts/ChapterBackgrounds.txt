@@ -1,8 +1,0 @@
-"chapters"
-{
-	1	"background_flvred"
-}
-"BackgroundMaps"
-{
-	1	"background_flvred"
-}

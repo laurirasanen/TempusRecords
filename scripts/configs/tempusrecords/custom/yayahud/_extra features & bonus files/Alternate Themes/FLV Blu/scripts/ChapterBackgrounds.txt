@@ -1,8 +1,0 @@
-"chapters"
-{
-	1	"background_flvblu"
-}
-"BackgroundMaps"
-{
-	1	"background_flvblu"
-}
