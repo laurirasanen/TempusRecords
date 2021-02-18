@@ -1,95 +1,95 @@
 {
-    "games": [
-        {
-            "id": "css-win",
-            "display-name": "Counter-Strike: Source",
-            "exe-path": "",
-            "dir-path": "",
-            "args": ""
-        },
-        {
-            "id": "hl2-win",
-            "display-name": "Half-Life 2",
-            "exe-path": "",
-            "dir-path": "",
-            "args": ""
-        },
-        {
-            "id": "hl2-ep1-win",
-            "display-name": "Half-Life 2: Episode One",
-            "exe-path": "",
-            "dir-path": "",
-            "args": ""
-        },
-        {
-            "id": "hl2-ep2-win",
-            "display-name": "Half-Life 2: Episode Two",
-            "exe-path": "",
-            "dir-path": "",
-            "args": ""
-        },
-        {
-            "id": "tf2-win",
-            "display-name": "Team Fortress 2",
-            "exe-path": "C:/Program Files (x86)/Steam/steamapps/common/Team Fortress 2/hl2.exe",
-            "dir-path": "C:/Program Files (x86)/Steam/steamapps/common/Team Fortress 2/tf",
-            "args": "-game tf -novid -high -windowed -noborder -nocrashdialog -w 1920 -h 1080 -dxlevel 98 +rcon_address 127.0.0.1:3002 +rcon_password bananaman +volume 0 +exec cinema +r_drawvgui 0 +map itemtest -nomouse"
-        },
-        {
-            "id": "mom-win",
-            "display-name": "Momentum",
-            "exe-path": "",
-            "dir-path": "",
-            "args": ""
-        },
-        {
-            "id": "dod-win",
-            "display-name": "Day of Defeat: Source",
-            "exe-path": "",
-            "dir-path": "",
-            "args": ""
-        },
-        {
-            "id": "gmod-win",
-            "display-name": "Garry's Mod",
-            "exe-path": "",
-            "dir-path": "",
-            "args": ""
-        },
-        {
-            "id": "bm-win",
-            "display-name": "Black Mesa",
-            "exe-path": "",
-            "dir-path": "",
-            "args": ""
-        },
-        {
-            "id": "hl2-update-win",
-            "display-name": "Half-Life 2: Update",
-            "exe-path": "",
-            "dir-path": "",
-            "args": ""
-        },
-        {
-            "id": "hl2-mp-win",
-            "display-name": "Half-Life 2: Deathmatch",
-            "exe-path": "",
-            "dir-path": "",
-            "args": ""
-        },
-        {
-            "id": "portal-win",
-            "display-name": "Portal",
-            "exe-path": "",
-            "dir-path": "",
-            "args": ""
-        },
-        {
-            "id": "csgo-win",
-            "display-name": "Counter-Strike: Global Offensive",
-            "exe-path": "",
-            "dir-path": "",
-            "args": ""
-        }
-    ]
+  "games": [
+    {
+      "id": "css-win",
+      "display-name": "Counter-Strike: Source",
+      "exe-path": "",
+      "dir-path": "",
+      "args": ""
+    },
+    {
+      "id": "hl2-win",
+      "display-name": "Half-Life 2",
+      "exe-path": "",
+      "dir-path": "",
+      "args": ""
+    },
+    {
+      "id": "hl2-ep1-win",
+      "display-name": "Half-Life 2: Episode One",
+      "exe-path": "",
+      "dir-path": "",
+      "args": ""
+    },
+    {
+      "id": "hl2-ep2-win",
+      "display-name": "Half-Life 2: Episode Two",
+      "exe-path": "",
+      "dir-path": "",
+      "args": ""
+    },
+    {
+      "id": "tf2-win",
+      "display-name": "Team Fortress 2",
+      "exe-path": "C:/Program Files (x86)/Steam/steamapps/common/Team Fortress 2/hl2.exe",
+      "dir-path": "C:/Program Files (x86)/Steam/steamapps/common/Team Fortress 2/tf",
+      "args": "-game tf -novid -high -windowed -noborder -nocrashdialog -dxlevel 98 +rcon_address 127.0.0.1:3002 +rcon_password bananaman +volume 0 +exec cinema +r_drawvgui 0 +map itemtest -nomouse -w 1920 -h 1080"
+    },
+    {
+      "id": "mom-win",
+      "display-name": "Momentum",
+      "exe-path": "",
+      "dir-path": "",
+      "args": ""
+    },
+    {
+      "id": "dod-win",
+      "display-name": "Day of Defeat: Source",
+      "exe-path": "",
+      "dir-path": "",
+      "args": ""
+    },
+    {
+      "id": "gmod-win",
+      "display-name": "Garry's Mod",
+      "exe-path": "",
+      "dir-path": "",
+      "args": ""
+    },
+    {
+      "id": "bm-win",
+      "display-name": "Black Mesa",
+      "exe-path": "",
+      "dir-path": "",
+      "args": ""
+    },
+    {
+      "id": "hl2-update-win",
+      "display-name": "Half-Life 2: Update",
+      "exe-path": "",
+      "dir-path": "",
+      "args": ""
+    },
+    {
+      "id": "hl2-mp-win",
+      "display-name": "Half-Life 2: Deathmatch",
+      "exe-path": "",
+      "dir-path": "",
+      "args": ""
+    },
+    {
+      "id": "portal-win",
+      "display-name": "Portal",
+      "exe-path": "",
+      "dir-path": "",
+      "args": ""
+    },
+    {
+      "id": "csgo-win",
+      "display-name": "Counter-Strike: Global Offensive",
+      "exe-path": "",
+      "dir-path": "",
+      "args": ""
+    }
+  ]
 }

@@ -94,7 +94,7 @@ function recordRun(run) {
   });
 
   // Modify tempus profile for SVR
-  utils.writeSVRProfile(run.quality, (err) => {
+  utils.writeSVRConfigs(run.quality, (err) => {
     if (err) {
       console.log(err);
       console.log("skipping");

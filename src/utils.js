@@ -131,6 +131,12 @@ function writeJson(path, data, cb) {
   });
 }
 
+function writeSVRConfigs(quality, cb) {
+  writeSVRProfile(quality, () => {
+    writeSVRLauncherConfig(quality, cb);
+  });
+}
+
 function writeSVRProfile(quality, cb) {
   const profilePath = config.svr.path + "/data/profiles/tempus.json";
   readJson(profilePath, (err, data) => {
@@ -141,6 +147,27 @@ function writeSVRProfile(quality, cb) {
     data["movie"]["video-fps"] = quality.fps;
     data["motion-blur"]["fps-mult"] = quality.sampling;
     writeJson(profilePath, data, cb);
+  });
+}
+
+function writeSVRLauncherConfig(quality, cb) {
+  const configPath = config.svr.path + "/data/launcher-config.json";
+  readJson(configPath, (err, data) => {
+    if (err) {
+      cb(err);
+      return;
+    }
+
+    const index = data.games.findIndex((game) => game.id === "tf2-win");
+    if (index < 0) {
+      throw `Could not find tf2-win in ${configPath}`;
+    }
+
+    data.games[index].args = data.games[index].args.split(/-w [0-9]/g)[0];
+    data.games[index].args += "-w " + quality.recordingRes.split("x")[0];
+    data.games[index].args += " -h " + quality.recordingRes.split("x")[1];
+
+    writeJson(configPath, data, cb);
   });
 }
 
@@ -228,7 +255,7 @@ module.exports.getLatestFile = getLatestFile;
 module.exports.secondsToTimeStamp = secondsToTimeStamp;
 module.exports.readJson = readJson;
 module.exports.writeJson = writeJson;
-module.exports.writeSVRProfile = writeSVRProfile;
+module.exports.writeSVRConfigs = writeSVRConfigs;
 module.exports.sleep = sleep;
 module.exports.getAlphaFade = getAlphaFade;
 module.exports.backupConfig = backupConfig;
