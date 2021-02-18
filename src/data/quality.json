@@ -3,21 +3,18 @@
     "minDuration": 0,
     "fps": 60,
     "sampling": 16,
-    "recordingRes": "1920x1080",
     "outputRes": "3840x2160"
   },
   {
     "minDuration": 5,
     "fps": 60,
     "sampling": 8,
-    "recordingRes": "1920x1080",
     "outputRes": "2560x1440"
   },
   {
     "minDuration": 10,
     "fps": 60,
     "sampling": 4,
-    "recordingRes": "1920x1080",
     "outputRes": "1920x1080"
   }
 ]
