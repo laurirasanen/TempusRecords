@@ -99,7 +99,7 @@ function recordRun(run) {
   }
 
   // Get quality options
-  let runLength = run.demo.duration / 60;
+  let runLength = run.duration / 60;
   quality.forEach((opt) => {
     if (runLength > opt.minDuration) {
       run.quality = opt;

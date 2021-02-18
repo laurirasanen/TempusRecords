@@ -16,9 +16,6 @@ function start() {
       return;
     }
 
-    utils.backupConfig();
-    utils.applyConfig();
-
     if (process.argv[2] == "all") {
       recent = false;
     } else if (process.argv[2] == "bonus") {
@@ -35,6 +32,9 @@ function start() {
       }
     }
   }
+
+  utils.backupConfig();
+  utils.applyConfig();
 
   rcon.init();
   demo.init(recent, mapName, className, bonus);
