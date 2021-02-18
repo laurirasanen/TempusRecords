@@ -31,7 +31,8 @@
     "start": "cd src && node index.js",
     "upload": "npm run start",
     "upload:all": "npm run start -- all",
-    "upload:bonus": "npm run start -- bonus"
+    "upload:bonus": "npm run start -- bonus",
+    "restore": "npm run start -- restore"
   },
   "devDependencies": {
     "prettier": "^2.0.5"

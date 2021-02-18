@@ -13,7 +13,7 @@ function start() {
   if (process.argv.length > 2) {
     if (process.argv[2] == "restore") {
       utils.restoreConfig();
-      return;
+      process.exit();
     }
 
     if (process.argv[2] == "all") {
