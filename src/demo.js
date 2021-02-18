@@ -29,22 +29,7 @@ async function init(recent, mapName, className, bonus) {
     // Upload bonus runs
     isBonusCollection = true;
     let mapList = await tempus.getMapList();
-    // splice bonus runs manually for now so we can get through all maps
-    // TODO: remove
-    mapList = mapList.splice(485, mapList.length - 485);
     runs = await tempus.getBonusWRs(mapList);
-
-    // TODO: move this to tempus.js
-    // Check for max number of runs
-    if (runs.length > config.video.maxBonusesInCollection) {
-      let firstDeleted = runs[config.video.maxBonusesInCollection].map.name;
-      runs = runs.splice(0, config.video.maxBonusesInCollection);
-
-      // Let's not end the collection midway through a map...
-      while (runs[runs.length - 1].map.name === firstDeleted) {
-        runs.splice(runs.length - 1, 1);
-      }
-    }
 
     if (runs.length <= 0) {
       console.log("No new runs.");

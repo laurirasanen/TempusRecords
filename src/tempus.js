@@ -4,6 +4,7 @@ const nicknames = require("./data/nicknames.json");
 const blacklist = require("./data/blacklist.json");
 const config = require("./data/config.json");
 const uploaded = require("./data/uploaded.json");
+const config = require("./data/config.json");
 
 async function getMapWRs(mapList) {
   let wrs = [];
@@ -71,6 +72,11 @@ async function getBonusWRs(mapList) {
     for (const zone of bonusZones) {
       wrs.push(await getZoneWR(map.name, "BONUS", zone.zoneindex, "SOLDIER"));
       wrs.push(await getZoneWR(map.name, "BONUS", zone.zoneindex, "DEMOMAN"));
+    }
+    // Check for max number of runs,
+    // this may be off by 1 since we add 2 at a time.
+    if (wrs.length >= config.video.maxBonusesInCollection) {
+      break;
     }
   }
   return filterRuns(wrs, true);
