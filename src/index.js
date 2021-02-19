@@ -2,7 +2,7 @@ const rcon = require("./rcon.js"),
   demo = require("./demo.js"),
   utils = require("./utils");
 
-function start() {
+async function start() {
   // Default to just checking recent WR activity,
   // instead of checking all maps.
   var recent = true;
@@ -31,6 +31,11 @@ function start() {
         mapName = "jump_" + mapName;
       }
     }
+  }
+
+  if (!(await utils.isProcessRunning("steam.exe"))) {
+    console.log("steam must be running");
+    process.exit();
   }
 
   utils.backupConfig();

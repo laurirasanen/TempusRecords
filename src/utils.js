@@ -247,6 +247,17 @@ function copyConfig(srcFolder, dstFolder) {
   });
 }
 
+function isProcessRunning(proc) {
+  return new Promise(function (resolve, reject) {
+    if (proc === "") {
+      resolve(false);
+    }
+    exec("tasklist", (err, stdout, stderr) => {
+      resolve(stdout.toLowerCase().indexOf(proc.toLowerCase()) > -1);
+    });
+  });
+}
+
 module.exports.launchSVR = launchSVR;
 module.exports.launchTF2 = launchTF2;
 module.exports.killSVR = killSVR;
@@ -261,3 +272,4 @@ module.exports.getAlphaFade = getAlphaFade;
 module.exports.backupConfig = backupConfig;
 module.exports.restoreConfig = restoreConfig;
 module.exports.applyConfig = applyConfig;
+module.exports.isProcessRunning = isProcessRunning;
