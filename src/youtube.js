@@ -89,8 +89,10 @@ async function compress(video, audio, run, cb) {
   }
 
   let duration = 0;
+  let audioDuration = 0;
   try {
     duration = await getDuration(video);
+    audioDuration = await getDuration(audio);
   } catch (err) {
     console.log(`Failed to get the duration of ${video}`);
     console.log(err);
@@ -271,7 +273,13 @@ async function compress(video, audio, run, cb) {
   );
 
   // Add audio fade in/out
+  // + stretching to match video length
+  console.log(`audio/video ratio: ${audioDuration / duration}`);
   audioFilters.push(
+    {
+      filter: "atempo",
+      options: `${audioDuration / duration}`,
+    },
     {
       filter: "afade",
       options: `in:st=0:d=${config.audio.fadeInDuration}`,
