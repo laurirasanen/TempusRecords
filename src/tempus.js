@@ -69,8 +69,14 @@ async function getBonusWRs(mapList) {
   for (const map of mapList) {
     let bonusZones = await getTypeZones(map.name, "bonus");
     for (const zone of bonusZones) {
-      wrs.push(await getZoneWR(map.name, "BONUS", zone.zoneindex, "SOLDIER"));
-      wrs.push(await getZoneWR(map.name, "BONUS", zone.zoneindex, "DEMOMAN"));
+      let swr = await getZoneWR(map.name, "BONUS", zone.zoneindex, "SOLDIER");
+      let dwr = await getZoneWR(map.name, "BONUS", zone.zoneindex, "DEMOMAN");
+      if (shouldUploadBonus(swr)) {
+        wrs.push(swr);
+      }
+      if (shouldUploadBonus(dwr)) {
+        wrs.push(dwr);
+      }
     }
     // Check for max number of runs,
     // this may be off by 1 since we add 2 at a time.
@@ -78,7 +84,8 @@ async function getBonusWRs(mapList) {
       break;
     }
   }
-  return filterRuns(wrs, true);
+  replaceNames(wrs);
+  return wrs;
 }
 
 async function getTypeZones(mapName, zoneType) {
@@ -192,7 +199,7 @@ async function getRecentMapWRs() {
   return filterRuns(wrs);
 }
 
-function filterRuns(runs, bonus = false) {
+function filterRuns(runs) {
   var wasArray = true;
   if (!Array.isArray(runs)) {
     runs = [runs];
@@ -204,16 +211,9 @@ function filterRuns(runs, bonus = false) {
 
   for (var i = runs.length - 1; i >= 0; i--) {
     // Remove already uploaded runs
-    if (bonus) {
-      if (uploaded.bonuses.includes(runs[i].id)) {
-        runs.splice(i, 1);
-        continue;
-      }
-    } else {
-      if (uploaded.maps.includes(runs[i].id)) {
-        runs.splice(i, 1);
-        continue;
-      }
+    if (uploaded.maps.includes(runs[i].id)) {
+      runs.splice(i, 1);
+      continue;
     }
 
     // Make sure demo is uploaded
@@ -223,18 +223,10 @@ function filterRuns(runs, bonus = false) {
     }
 
     // Remove runs that are too long
-    if (bonus) {
-      if (runs[i].duration / 60 > config.video.bonusMaxDuration) {
-        console.log(`Removing run too long: ${runs[i].map.name} bonus ${runs[i].zone.zoneindex} (${runs[i].class})`);
-        runs.splice(i, 1);
-        continue;
-      }
-    } else {
-      if (runs[i].duration / 60 > config.video.mapMaxDuration) {
-        console.log(`Removing run too long: ${runs[i].map.name} (${runs[i].class})`);
-        runs.splice(i, 1);
-        continue;
-      }
+    if (runs[i].duration / 60 > config.video.mapMaxDuration) {
+      console.log(`Removing run too long: ${runs[i].map.name} (${runs[i].class})`);
+      runs.splice(i, 1);
+      continue;
     }
 
     // TODO: date_added is not included in tempus-api-graphql yet
@@ -247,43 +239,32 @@ function filterRuns(runs, bonus = false) {
     }
     */
 
-    if (bonus) {
-      // Remove too recent runs,
-      // bonus wrs can get broken a lot...
-      if ((Date.now() - runs[i].date * 1000) / (1000 * 60 * 60 * 24) < config.video.bonusMinAge) {
-        console.log(
-          `Removing run newer than ${config.video.bonusMinAge} days: ${runs[i].map.name} bonus ${runs[i].zone.zoneindex} (${runs[i].class})`
-        );
-        runs.splice(i, 1);
-        continue;
-      }
-    }
-
     // Remove blacklisted runs
     let cont = false;
     for (var j = 0; j < blacklist.length; j++) {
-      if (bonus) {
-        if (
-          blacklist[j].name === runs[i].map.name &&
-          blacklist[j][runs[i].class].bonuses.includes(runs[i].zone.zoneindex)
-        ) {
-          console.log(`Removing blacklisted: ${runs[i].map.name} bonus ${runs[i].zone.zoneindex} (${runs[i].class})`);
-          runs.splice(i, 1);
-          cont = true;
-          break;
-        }
-      } else {
-        if (blacklist[j].name === runs[i].map.name && blacklist[j][runs[i].class].map) {
-          console.log(`Removing blacklisted: ${runs[i].map.name} (${runs[i].class})`);
-          runs.splice(i, 1);
-          cont = true;
-          break;
-        }
+      if (blacklist[j].name === runs[i].map.name && blacklist[j][runs[i].class].map) {
+        console.log(`Removing blacklisted: ${runs[i].map.name} (${runs[i].class})`);
+        runs.splice(i, 1);
+        cont = true;
+        break;
       }
     }
     if (cont) continue;
+  }
 
-    // Replace names
+  replaceNames(runs);
+
+  // Upload oldest runs first
+  runs = runs.sort((a, b) => a.date - b.date);
+
+  if (!wasArray) {
+    runs = runs.length && runs[0];
+  }
+  return runs;
+}
+
+function replaceNames(runs) {
+  for (let i = 0; i < runs.length; i++) {
     for (var j = 0; j < nicknames.length; j++) {
       if (runs[i].player.steamId === nicknames[j].steamId) {
         runs[i].player.name = nicknames[j].name;
@@ -295,16 +276,37 @@ function filterRuns(runs, bonus = false) {
       }
     }
   }
+}
 
-  if (!bonus) {
-    // Upload oldest runs first
-    runs = runs.sort((a, b) => a.date - b.date);
+function shouldUploadBonus(run) {
+  if (!run) {
+    return false;
   }
 
-  if (!wasArray) {
-    runs = runs.length && runs[0];
+  if (uploaded.bonuses.includes(run.id)) {
+    return false;
   }
-  return runs;
+
+  if (run.duration / 60 > config.video.bonusMaxDuration) {
+    console.log(`Removing run too long: ${run.map.name} bonus ${run.zone.zoneindex} (${run.class})`);
+    return false;
+  }
+
+  if ((Date.now() - run.date * 1000) / (1000 * 60 * 60 * 24) < config.video.bonusMinAge) {
+    console.log(
+      `Removing run newer than ${config.video.bonusMinAge} days: ${run.map.name} bonus ${run.zone.zoneindex} (${run.class})`
+    );
+    return false;
+  }
+
+  for (var j = 0; j < blacklist.length; j++) {
+    if (blacklist[j].name === run.map.name && blacklist[j][run.class].bonuses.includes(run.zone.zoneindex)) {
+      console.log(`Removing blacklisted: ${run.map.name} bonus ${run.zone.zoneindex} (${run.class})`);
+      return false;
+    }
+  }
+
+  return true;
 }
 
 exports.getMapWRs = getMapWRs;
