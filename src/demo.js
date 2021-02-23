@@ -109,6 +109,19 @@ function recordRun(run) {
       run.class
     }.wav`;
 
+    // Check for already compressed version
+    if (fs.existsSync(video.split(".mp4") + "_compressed.mp4")) {
+      if (!isBonusCollection || isLastRun(run)) {
+        console.log(`WARNING: Uploading existing video '${video}'`);
+        console.log(`Make sure to delete existing videos if they're corrupted, etc.`);
+        youtube.upload(video, run);
+      }
+
+      skip();
+      return;
+    }
+
+    // Check for video and audio
     if (fs.existsSync(video) && fs.existsSync(audio)) {
       console.log(`WARNING: Using existing video '${video}'`);
       console.log(`Make sure to delete existing videos if they're corrupted, etc.`);
@@ -121,24 +134,13 @@ function recordRun(run) {
             youtube.upload(name, run);
           }
         }
+
+        // Let's wait until we're done in case we're compressing a bunch
+        // of existing files. Spawning too many ffmpeg processes means trouble.
+        // TODO: add a proper queue for compressions
+        skip();
       });
 
-      skip();
-      return;
-    }
-
-    // Check for already compressed version
-    video = `${config.svr.recordingFolder}/${run.demo.filename}_${run.zone.type + run.zone.zoneindex}_${
-      run.class
-    }_compressed.mp4`;
-    if (fs.existsSync(video)) {
-      if (!isBonusCollection || isLastRun(run)) {
-        console.log(`WARNING: Uploading existing video '${video}'`);
-        console.log(`Make sure to delete existing videos if they're corrupted, etc.`);
-        youtube.upload(video, run);
-      }
-
-      skip();
       return;
     }
 
