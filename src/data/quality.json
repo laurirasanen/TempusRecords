@@ -25,6 +25,6 @@
     "fps": 60,
     "sampling": 2,
     "recordingRes": "1280x720",
-    "outputRes": "1280x720"
+    "outputRes": "1920x1080"
   }
 ]
