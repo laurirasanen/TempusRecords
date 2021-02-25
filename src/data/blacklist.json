@@ -26,19 +26,6 @@
     }
   },
   {
-    "name": "jump_ante",
-    "SOLDIER": {
-      "map": false,
-      "courses": [],
-      "bonuses": [9]
-    },
-    "DEMOMAN": {
-      "map": false,
-      "courses": [],
-      "bonuses": []
-    }
-  },
-  {
     "name": "jump_jabroni",
     "SOLDIER": {
       "map": false,
@@ -47,19 +34,6 @@
     },
     "DEMOMAN": {
       "map": true,
-      "courses": [],
-      "bonuses": []
-    }
-  },
-  {
-    "name": "jump_silly_fin",
-    "SOLDIER": {
-      "map": false,
-      "courses": [],
-      "bonuses": [4]
-    },
-    "DEMOMAN": {
-      "map": false,
       "courses": [],
       "bonuses": []
     }
