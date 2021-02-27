@@ -9,10 +9,10 @@
 let runs = [];
 
 global.currentRun = null;
-global.isBonusCollection = false;
-global.bonusRuns = [];
+global.isCollection = false;
+global.collectionRuns = [];
 
-async function init(recent, mapName, className, bonus) {
+async function init(recent, mapName, className, bonus, trick) {
   if (mapName && className) {
     // Upload specific run
     let wr = await tempus.getMapWR(mapName, className, false);
@@ -25,11 +25,11 @@ async function init(recent, mapName, className, bonus) {
     return;
   }
 
-  if (bonus) {
-    // Upload bonus runs
-    isBonusCollection = true;
+  if (bonus || trick) {
+    // Upload collection
+    isCollection = true;
     let mapList = await tempus.getMapList();
-    runs = await tempus.getBonusWRs(mapList);
+    runs = await tempus.getExtraWRs(mapList, bonus ? "bonus" : "trick");
 
     if (runs.length <= 0) {
       console.log("No new runs.");
@@ -37,11 +37,11 @@ async function init(recent, mapName, className, bonus) {
     }
 
     for (let i = 0; i < runs.length; i++) {
-      // This is used for concatenating bonus video files before upload
+      // This is used for concatenating video files before upload
       runs[
         i
-      ].outputFile = `${config.svr.recordingFolder}/${runs[i].demo.filename}_bonus${runs[i].zone.zoneindex}_${runs[i].class}_compressed.mp4`;
-      bonusRuns.push(runs[i]);
+      ].outputFile = `${config.svr.recordingFolder}/${runs[i].demo.filename}_${runs[i].zone.type}${runs[i].zone.zoneindex}_${runs[i].class}_compressed.mp4`;
+      collectionRuns.push(runs[i]);
     }
 
     recordRun(runs[0]);
@@ -111,7 +111,7 @@ function recordRun(run) {
 
     // Check for already compressed version
     if (fs.existsSync(video.split(".mp4") + "_compressed.mp4")) {
-      if (!isBonusCollection || isLastRun(run)) {
+      if (!isCollection || isLastRun(run)) {
         console.log(`WARNING: Uploading existing video '${video}'`);
         console.log(`Make sure to delete existing videos if they're corrupted, etc.`);
         youtube.upload(video, run);
@@ -130,7 +130,7 @@ function recordRun(run) {
       youtube.compress(video, audio, run, (result, name) => {
         if (result === true) {
           // Upload final output
-          if (result === true && (!isBonusCollection || isLastRun(run))) {
+          if (result === true && (!isCollection || isLastRun(run))) {
             youtube.upload(name, run);
           }
         }

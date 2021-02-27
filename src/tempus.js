@@ -48,6 +48,7 @@ async function getMapWR(mapName, className, filter = true) {
             id
             type
             zoneindex
+            customName
           }
         }
       }
@@ -64,23 +65,23 @@ async function getMapWR(mapName, className, filter = true) {
   }
 }
 
-async function getBonusWRs(mapList) {
+async function getExtraWRs(mapList, zoneType) {
   let wrs = [];
   for (const map of mapList) {
-    let bonusZones = await getTypeZones(map.name, "bonus");
-    for (const zone of bonusZones) {
-      let swr = await getZoneWR(map.name, "BONUS", zone.zoneindex, "SOLDIER");
-      let dwr = await getZoneWR(map.name, "BONUS", zone.zoneindex, "DEMOMAN");
-      if (shouldUploadBonus(swr)) {
+    let zones = await getTypeZones(map.name, zoneType);
+    for (const zone of zones) {
+      let swr = await getZoneWR(map.name, zoneType.toUpperCase(), zone.zoneindex, "SOLDIER");
+      let dwr = await getZoneWR(map.name, zoneType.toUpperCase(), zone.zoneindex, "DEMOMAN");
+      if (shouldUploadExtra(swr)) {
         wrs.push(swr);
       }
-      if (shouldUploadBonus(dwr)) {
+      if (shouldUploadExtra(dwr)) {
         wrs.push(dwr);
       }
     }
     // Check for max number of runs,
     // this may be off by 1 since we add 2 at a time.
-    if (wrs.length >= config.video.maxBonusesInCollection) {
+    if (wrs.length >= config.video.maxRunsInCollection) {
       break;
     }
   }
@@ -278,30 +279,32 @@ function replaceNames(runs) {
   }
 }
 
-function shouldUploadBonus(run) {
+function shouldUploadExtra(run) {
   if (!run) {
     return false;
   }
 
-  if (uploaded.bonuses.includes(run.id)) {
+  const accessor = runs.zone.type === "bonus" ? "bonuses" : "tricks";
+
+  if (uploaded[accessor].includes(run.id)) {
     return false;
   }
 
-  if (run.duration / 60 > config.video.bonusMaxDuration) {
-    console.log(`Removing run too long: ${run.map.name} bonus ${run.zone.zoneindex} (${run.class})`);
+  if (run.duration / 60 > config.video.extraMaxDuration) {
+    console.log(`Removing run too long: ${run.map.name} ${runs.zone.type} ${run.zone.zoneindex} (${run.class})`);
     return false;
   }
 
-  if ((Date.now() - run.date * 1000) / (1000 * 60 * 60 * 24) < config.video.bonusMinAge) {
+  if ((Date.now() - run.date * 1000) / (1000 * 60 * 60 * 24) < config.video.extraMinAge) {
     console.log(
-      `Removing run newer than ${config.video.bonusMinAge} days: ${run.map.name} bonus ${run.zone.zoneindex} (${run.class})`
+      `Removing run newer than ${config.video.extraMinAge} days: ${run.map.name} ${runs.zone.type} ${run.zone.zoneindex} (${run.class})`
     );
     return false;
   }
 
   for (var j = 0; j < blacklist.length; j++) {
-    if (blacklist[j].name === run.map.name && blacklist[j][run.class].bonuses.includes(run.zone.zoneindex)) {
-      console.log(`Removing blacklisted: ${run.map.name} bonus ${run.zone.zoneindex} (${run.class})`);
+    if (blacklist[j].name === run.map.name && blacklist[j][run.class][accessor].includes(run.zone.zoneindex)) {
+      console.log(`Removing blacklisted: ${run.map.name} ${runs.zone.type} ${run.zone.zoneindex} (${run.class})`);
       return false;
     }
   }
@@ -311,6 +314,6 @@ function shouldUploadBonus(run) {
 
 exports.getMapWRs = getMapWRs;
 exports.getMapWR = getMapWR;
-exports.getBonusWRs = getBonusWRs;
+exports.getExtraWRs = getExtraWRs;
 exports.getMapList = getMapList;
 exports.getRecentMapWRs = getRecentMapWRs;

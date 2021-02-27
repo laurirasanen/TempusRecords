@@ -1,7 +1,7 @@
 {
   "youtube": {
     "title": "$NAME on $MAP - $TIME",
-    "bonusTitle": "Bonus collection #$NUMBER",
+    "bonusTitle": "$ZONETYPE collection #$NUMBER",
     "description": [
       "Player: $NAME",
       "Map: $MAP",
@@ -35,10 +35,10 @@
   "video": {
     "deleteCompressed": false,
     "deleteUncompressed": true,
-    "maxBonusesInCollection": 35,
+    "maxRunsInCollection": 35,
     "mapMaxDuration": 90,
-    "bonusMaxDuration": 1,
-    "bonusMinAge": 3,
+    "extraMaxDuration": 1,
+    "extraMinAge": 0,
     "mapMinAge": 7,
     "startPadding": 3,
     "endPadding": 3,

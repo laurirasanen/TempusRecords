@@ -79,7 +79,7 @@ async function compress(video, audio, run, cb) {
   let prevProgress = 0;
 
   let wrSplits = [];
-  if (isBonusCollection) {
+  if (isCollection) {
     let split = await splitjs.getWRSplit(run.map.id, run.class, "bonus", run.zone.zoneindex);
     if (split) {
       wrSplits.push(split);
@@ -140,7 +140,7 @@ async function compress(video, audio, run, cb) {
   );
 
   // Add splits
-  if (isBonusCollection) {
+  if (isCollection) {
     if (wrSplits.length) {
       // Escape semicolon and wrap in quotes for ffmpeg
       let text = `'${wrSplits[0].replace(/:/g, "\\:")}'`;
@@ -149,7 +149,7 @@ async function compress(video, audio, run, cb) {
         filter: "drawtext",
         options: {
           ...config.video.text.ffmpegOptions,
-          ...(isBonusCollection ? config.video.text.position.bonus.time : config.video.text.position.map.time),
+          ...(isCollection ? config.video.text.position.bonus.time : config.video.text.position.map.time),
           text: text,
           alpha: alphaTimeSplit,
         },
@@ -214,7 +214,7 @@ async function compress(video, audio, run, cb) {
     }
   }
 
-  if (isBonusCollection) {
+  if (isCollection) {
     // Add map name, bonus number, and player name to video
     let displayDuration =
       duration - config.video.text.startPadding - config.video.text.fadeInDuration - config.video.text.fadeOutDuration;
@@ -254,7 +254,7 @@ async function compress(video, audio, run, cb) {
       options: {
         ...config.video.text.ffmpegOptions,
         ...config.video.text.position.bonus.bonus,
-        text: "bonus " + run.zone.zoneindex,
+        text: run.zone.type + " " + run.zone.zoneindex,
         alpha: alphaName,
       },
     });
@@ -344,9 +344,9 @@ async function compress(video, audio, run, cb) {
 }
 
 async function upload(file, run) {
-  if (isBonusCollection) {
-    concatBonusRuns(() => {
-      uploadBonusCollection();
+  if (isCollection) {
+    concatCollection(() => {
+      uploadCollection();
     });
     return;
   }
@@ -510,22 +510,22 @@ async function upload(file, run) {
   );
 }
 
-async function concatBonusRuns(cb) {
+async function concatCollection(cb) {
   if (typeof cb !== "function") {
     throw "callback is not a function";
   }
 
-  console.log("Concatenating bonus videos");
+  console.log("Concatenating videos");
 
-  for (let i = bonusRuns.length - 1; i >= 0; i--) {
-    if (!fs.existsSync(bonusRuns[i].outputFile)) {
-      bonusRuns.splice(i, 1);
+  for (let i = collectionRuns.length - 1; i >= 0; i--) {
+    if (!fs.existsSync(collectionRuns[i].outputFile)) {
+      collectionRuns.splice(i, 1);
     }
   }
 
   let duration = 0;
 
-  for (let run of bonusRuns) {
+  for (let run of collectionRuns) {
     try {
       duration += await getDuration(run.outputFile);
     } catch (err) {
@@ -538,8 +538,8 @@ async function concatBonusRuns(cb) {
   let completed = false;
   let ff = ffmpeg();
 
-  for (let i = 0; i < bonusRuns.length; i++) {
-    ff.input(bonusRuns[i].outputFile);
+  for (let i = 0; i < collectionRuns.length; i++) {
+    ff.input(collectionRuns[i].outputFile);
   }
 
   ff.on("error", (err) => {
@@ -565,21 +565,23 @@ async function concatBonusRuns(cb) {
       console.log("Finished concatenating");
       cb();
     })
-    .mergeToFile(config.svr.recordingFolder + "/bonuscollection.mp4", config.svr.recordingFolder);
+    .mergeToFile(config.svr.recordingFolder + "/collection.mp4", config.svr.recordingFolder);
 }
 
-async function uploadBonusCollection() {
+async function uploadCollection() {
   if (!hasTokens) {
     console.log("Awaiting tokens");
     setTimeout(() => {
-      uploadBonusCollection();
+      uploadCollection();
     }, 5000);
     return;
   }
 
-  console.log(`Uploading bonus collection`);
+  const isBonus = runs[0].zone.type === "bonus";
 
-  var file = config.svr.recordingFolder + "/bonuscollection.mp4";
+  console.log(`Uploading collection`);
+
+  var file = config.svr.recordingFolder + "/collection.mp4";
   var description = "";
   var stats = fs.statSync(file);
   var fileSize = stats.size;
@@ -590,7 +592,7 @@ async function uploadBonusCollection() {
   let useTimestamps = true;
   let seconds = 0;
   description = "Runs:\n";
-  for (let run of bonusRuns) {
+  for (let run of collectionRuns) {
     if (useTimestamps) {
       try {
         let duration = await getDuration(run.outputFile);
@@ -599,9 +601,9 @@ async function uploadBonusCollection() {
         let timestamp = `${timeElapsed.getMinutes()}:${
           timeElapsed.getSeconds() < 10 ? "0" : ""
         }${timeElapsed.getSeconds()}`;
-        description += `${timestamp} ${run.map.name} Bonus ${run.zone.zoneindex} by ${run.player.name} (${
-          run.class === "SOLDIER" ? "Soldier" : "Demoman"
-        })\n`;
+        description += `${timestamp} ${run.map.name} ${isBonus ? "Bonus" : "Trick"} ${run.zone.zoneindex}${
+          run.zone.customName ? " (" + run.zone.customName + ")" : ""
+        } by ${run.player.name} (${run.class === "SOLDIER" ? "Soldier" : "Demoman"})\n`;
         seconds += duration;
       } catch (err) {
         console.log(`Error getting duration of ${run.outputFile}!`);
@@ -612,7 +614,7 @@ async function uploadBonusCollection() {
     }
 
     if (!useTimestamps) {
-      description += `${run.map.name} Bonus ${run.zone.zoneindex} by ${run.player.name} (${
+      description += `${run.map.name} ${isBonus ? "Bonus" : "Trick"} ${run.zone.zoneindex} by ${run.player.name} (${
         run.class === "SOLDIER" ? "Soldier" : "Demoman"
       })\n`;
     }
@@ -625,19 +627,13 @@ async function uploadBonusCollection() {
   });
 
   // Common tags for all videos
-  var tags = [
-    "Team Fortress 2",
-    "TF2",
-    "rocketjump",
-    "speedrun",
-    "tempus",
-    "record",
-    "bonus",
-    "bonuses",
-    "bonus collection",
-    "soldier",
-    "demoman",
-  ];
+  var tags = ["Team Fortress 2", "TF2", "rocketjump", "speedrun", "tempus", "record", "soldier", "demoman"];
+
+  if (isBonus) {
+    tags.push(...["bonus", "bonuses", "bonus collection"]);
+  } else {
+    tags.push(...["trick", "tricks", "trick collection"]);
+  }
 
   let previousProgress = 0;
 
@@ -645,7 +641,9 @@ async function uploadBonusCollection() {
     {
       resource: {
         snippet: {
-          title: config.youtube.bonusTitle.replace("$NUMBER", uploaded.bonusCollections + 1),
+          title: config.youtube.bonusTitle
+            .replace("$ZONETYPE", isBonus ? "Bonus" : "Trick")
+            .replace("$NUMBER", isBonus ? uploaded.bonusCollections + 1 : uploaded.trickCollections + 1),
           description: description,
           tags: tags,
         },
@@ -681,16 +679,16 @@ async function uploadBonusCollection() {
       rl.question("Was youtube processing succesful? Y/n", (answer) => {
         if (answer === "n") {
           // Reupload
-          uploadBonusCollection();
+          uploadCollection();
           return;
         }
 
-        // Add video to bonus playlist
+        // Add video to playlist
         youtube_api.playlistItems.insert(
           {
             resource: {
               snippet: {
-                playlistId: "PL_D9J2bYWXyJBc0YvjRpqpFc5hY-ieU-B",
+                playlistId: isBonus ? "PL_D9J2bYWXyJBc0YvjRpqpFc5hY-ieU-B" : "PL_D9J2bYWXyJYdkfuv8s0kTvQygJQkW8_",
                 resourceId: {
                   kind: "youtube#video",
                   videoId: response.data.id,
@@ -717,13 +715,15 @@ async function uploadBonusCollection() {
             return;
           }
 
-          for (let run of bonusRuns) {
-            if (!uploaded.bonuses.includes(run.id)) {
-              uploaded.bonuses.push(run.id);
+          let accessor = isBonus ? "bonuses" : "tricks";
+          for (let run of collectionRuns) {
+            if (!uploaded[accessor].includes(run.id)) {
+              uploaded[accessor].push(run.id);
             }
           }
 
-          uploaded.bonusCollections += 1;
+          accessor = isBonus ? "bonusCollections" : "trickCollections";
+          uploaded[accessor] += 1;
 
           utils.writeJson("./data/uploaded.json", uploaded, (err) => {
             if (err !== null) {

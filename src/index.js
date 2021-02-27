@@ -5,10 +5,12 @@ const rcon = require("./rcon.js"),
 async function start() {
   // Default to just checking recent WR activity,
   // instead of checking all maps.
+  // TODO: this sucks, just use commander or something for args
   var recent = true;
   var mapName = null;
   var className = null;
   var bonus = false;
+  var trick = false;
 
   if (process.argv.length > 2) {
     if (process.argv[2] == "restore") {
@@ -20,6 +22,8 @@ async function start() {
       recent = false;
     } else if (process.argv[2] == "bonus") {
       bonus = true;
+    } else if (process.argv[2] == "trick") {
+      trick = true;
     }
 
     if (process.argv.length > 3) {
@@ -42,7 +46,7 @@ async function start() {
   utils.applyConfig();
 
   rcon.init();
-  demo.init(recent, mapName, className, bonus);
+  demo.init(recent, mapName, className, bonus, trick);
 }
 
 start();

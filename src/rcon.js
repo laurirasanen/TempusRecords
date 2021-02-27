@@ -100,7 +100,7 @@ var srv = net.createServer(function (sock) {
               youtube.compress(filename, `${filename.split(".mp4")[0]}.wav`, run, (result, name) => {
                 if (result === true) {
                   // Upload final output
-                  if (result === true && (!isBonusCollection || demo.isLastRun(run))) {
+                  if (result === true && (!isCollection || demo.isLastRun(run))) {
                     youtube.upload(name, run);
                   }
                 }
@@ -108,7 +108,7 @@ var srv = net.createServer(function (sock) {
 
               // Limit number of recordings
               recorded_runs++;
-              if (recorded_runs < config.youtube.video_limit || isBonusCollection) {
+              if (recorded_runs < config.youtube.video_limit || isCollection) {
                 finishedInstances = 0;
                 demo.skip();
               } else {
