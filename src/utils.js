@@ -239,6 +239,9 @@ function copyConfig(srcFolder, dstFolder) {
   folders.forEach((f) => {
     const from = srcFolder + "/" + f;
     const to = dstFolder + "/" + f;
+
+    if (!fs.existsSync(from)) return;
+
     console.log(`Copying ${from} --> ${to}`);
     if (fs.existsSync(to)) {
       fs.rmSync(to, { recursive: true });
