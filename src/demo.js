@@ -35,6 +35,7 @@ async function init(recent, mapName, className, bonus, trick) {
       console.log("No new runs.");
       return;
     }
+    console.log(`Recording ${runs.length} runs for collection`);
 
     for (let i = 0; i < runs.length; i++) {
       // This is used for concatenating video files before upload
@@ -72,6 +73,7 @@ function skip() {
       return recordRun(runs[i + 1]);
     }
   }
+  throw "No run to skip to";
 }
 
 function isLastRun(run) {
@@ -79,7 +81,10 @@ function isLastRun(run) {
 }
 
 function recordRun(run) {
-  if (!run || !run.player || !run.demo) {
+  if (!run || !run.player || !run.demo || !run.demo.url || !run.demo.filename) {
+    console.log("Missing info in run");
+    console.log(run);
+    skip();
     return;
   }
 
@@ -93,79 +98,74 @@ function recordRun(run) {
     }
   });
 
-  // Modify tempus profile for SVR
-  utils.writeSVRConfigs(run.quality, (err) => {
-    if (err) {
-      console.log(err);
-      console.log("skipping");
-      skip();
+  // Check for existing video if we crashed before, etc
+  var video = `${config.svr.recordingFolder}/${run.demo.filename}_${run.zone.type + run.zone.zoneindex}_${
+    run.class
+  }.mp4`;
+  var audio = `${config.svr.recordingFolder}/${run.demo.filename}_${run.zone.type + run.zone.zoneindex}_${
+    run.class
+  }.wav`;
+
+  // Check for already compressed version
+  if (fs.existsSync(video.split(".mp4")[0] + "_compressed.mp4")) {
+    if (!isCollection || isLastRun(run)) {
+      console.log(`WARNING: Uploading existing video '${video}'`);
+      console.log(`Make sure to delete existing videos if they're corrupted, etc.`);
+      youtube.upload(video, run);
     }
 
-    // Check for existing video if we crashed before, etc
-    var video = `${config.svr.recordingFolder}/${run.demo.filename}_${run.zone.type + run.zone.zoneindex}_${
-      run.class
-    }.mp4`;
-    var audio = `${config.svr.recordingFolder}/${run.demo.filename}_${run.zone.type + run.zone.zoneindex}_${
-      run.class
-    }.wav`;
+    skip();
+    return;
+  }
 
-    // Check for already compressed version
-    if (fs.existsSync(video.split(".mp4") + "_compressed.mp4")) {
-      if (!isCollection || isLastRun(run)) {
-        console.log(`WARNING: Uploading existing video '${video}'`);
-        console.log(`Make sure to delete existing videos if they're corrupted, etc.`);
-        youtube.upload(video, run);
+  // Check for video and audio
+  if (fs.existsSync(video) && fs.existsSync(audio)) {
+    console.log(`WARNING: Using existing video '${video}'`);
+    console.log(`Make sure to delete existing videos if they're corrupted, etc.`);
+
+    // Compress
+    youtube.compress(video, audio, run, (result, name) => {
+      if (result === true) {
+        // Upload final output
+        if (result === true && (!isCollection || isLastRun(run))) {
+          youtube.upload(name, run);
+        }
       }
 
+      // Let's wait until we're done in case we're compressing a bunch
+      // of existing files. Spawning too many ffmpeg processes means trouble.
+      // TODO: add a proper queue for compressions
       skip();
-      return;
-    }
+    });
 
-    // Check for video and audio
-    if (fs.existsSync(video) && fs.existsSync(audio)) {
-      console.log(`WARNING: Using existing video '${video}'`);
-      console.log(`Make sure to delete existing videos if they're corrupted, etc.`);
+    return;
+  }
 
-      // Compress
-      youtube.compress(video, audio, run, (result, name) => {
-        if (result === true) {
-          // Upload final output
-          if (result === true && (!isCollection || isLastRun(run))) {
-            youtube.upload(name, run);
-          }
+  // Get map file
+  downloader.getMap(run.map.name, (res) => {
+    if (res !== null) {
+      // Get demo file
+      downloader.getDemoFile(run, (result) => {
+        if (result === null) {
+          console.log("[DL] Error getting demo");
+          skip();
+          return;
+        } else if (result === false) {
+          console.log(`[DL] Demo file ${run.demo.filename} exists already!`);
         }
 
-        // Let's wait until we're done in case we're compressing a bunch
-        // of existing files. Spawning too many ffmpeg processes means trouble.
-        // TODO: add a proper queue for compressions
-        skip();
-      });
-
-      return;
-    }
-
-    if (!run.demo.url) {
-      skip();
-      return;
-    }
-
-    // Get map file
-    downloader.getMap(run.map.name, (res) => {
-      if (res !== null) {
-        // Get demo file
-        downloader.getDemoFile(run, (result) => {
-          if (result === null) {
-            console.log("[DL] Error getting demo");
+        // Modify tempus profile for SVR
+        utils.writeSVRConfigs(run.quality, (err) => {
+          if (err) {
+            console.log(err);
+            console.log("skipping");
             skip();
-            return;
-          } else if (result === false) {
-            console.log(`[DL] Demo file ${run.demo.filename} exists already!`);
           }
 
           startDemo(run);
         });
-      }
-    });
+      });
+    }
   });
 }
 

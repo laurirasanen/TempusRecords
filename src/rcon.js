@@ -98,11 +98,9 @@ var srv = net.createServer(function (sock) {
 
               // Compress
               youtube.compress(filename, `${filename.split(".mp4")[0]}.wav`, run, (result, name) => {
-                if (result === true) {
-                  // Upload final output
-                  if (result === true && (!isCollection || demo.isLastRun(run))) {
-                    youtube.upload(name, run);
-                  }
+                // Upload final output
+                if (result === true && (!isCollection || demo.isLastRun(run))) {
+                  youtube.upload(name, run);
                 }
               });
 
