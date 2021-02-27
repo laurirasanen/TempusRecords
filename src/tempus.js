@@ -284,27 +284,27 @@ function shouldUploadExtra(run) {
     return false;
   }
 
-  const accessor = runs.zone.type === "bonus" ? "bonuses" : "tricks";
+  const accessor = run.zone.type === "bonus" ? "bonuses" : "tricks";
 
   if (uploaded[accessor].includes(run.id)) {
     return false;
   }
 
   if (run.duration / 60 > config.video.extraMaxDuration) {
-    console.log(`Removing run too long: ${run.map.name} ${runs.zone.type} ${run.zone.zoneindex} (${run.class})`);
+    console.log(`Removing run too long: ${run.map.name} ${run.zone.type} ${run.zone.zoneindex} (${run.class})`);
     return false;
   }
 
   if ((Date.now() - run.date * 1000) / (1000 * 60 * 60 * 24) < config.video.extraMinAge) {
     console.log(
-      `Removing run newer than ${config.video.extraMinAge} days: ${run.map.name} ${runs.zone.type} ${run.zone.zoneindex} (${run.class})`
+      `Removing run newer than ${config.video.extraMinAge} days: ${run.map.name} ${run.zone.type} ${run.zone.zoneindex} (${run.class})`
     );
     return false;
   }
 
   for (var j = 0; j < blacklist.length; j++) {
     if (blacklist[j].name === run.map.name && blacklist[j][run.class][accessor].includes(run.zone.zoneindex)) {
-      console.log(`Removing blacklisted: ${run.map.name} ${runs.zone.type} ${run.zone.zoneindex} (${run.class})`);
+      console.log(`Removing blacklisted: ${run.map.name} ${run.zone.type} ${run.zone.zoneindex} (${run.class})`);
       return false;
     }
   }
