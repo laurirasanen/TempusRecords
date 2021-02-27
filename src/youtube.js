@@ -207,7 +207,7 @@ async function compress(video, audio, run, cb) {
       filter: "drawtext",
       options: {
         ...config.video.text.ffmpegOptions,
-        ...config.video.text.position.bonus.player,
+        ...config.video.text.position.extra.player,
         text: run.player.name,
         alpha: alphaName,
       },
@@ -218,7 +218,7 @@ async function compress(video, audio, run, cb) {
       filter: "drawtext",
       options: {
         ...config.video.text.ffmpegOptions,
-        ...config.video.text.position.bonus.map,
+        ...config.video.text.position.extra.map,
         text: run.map.name,
         alpha: alphaName,
       },
@@ -229,8 +229,19 @@ async function compress(video, audio, run, cb) {
       filter: "drawtext",
       options: {
         ...config.video.text.ffmpegOptions,
-        ...config.video.text.position.bonus.bonus,
+        ...config.video.text.position.extra.zone,
         text: run.zone.type + " " + run.zone.zoneindex,
+        alpha: alphaName,
+      },
+    });
+
+    // Custom name
+    videoFilters.push({
+      filter: "drawtext",
+      options: {
+        ...config.video.text.ffmpegOptions,
+        ...config.video.text.position.extra.customName,
+        text: run.zone.customName || "",
         alpha: alphaName,
       },
     });
@@ -597,7 +608,7 @@ async function uploadCollection() {
   }
   description += "\n";
 
-  config.youtube.bonusDescription.forEach((line) => {
+  config.youtube.collectionDescription.forEach((line) => {
     line = line.replace("$DATETIME", date.toUTCString());
     description += line + "\n";
   });
@@ -617,7 +628,7 @@ async function uploadCollection() {
     {
       resource: {
         snippet: {
-          title: config.youtube.bonusTitle
+          title: config.youtube.collectionTitle
             .replace("$ZONETYPE", isBonus ? "Bonus" : "Trick")
             .replace("$NUMBER", isBonus ? uploaded.bonusCollections + 1 : uploaded.trickCollections + 1),
           description: description,

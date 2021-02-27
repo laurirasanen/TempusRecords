@@ -1,7 +1,6 @@
 {
   "youtube": {
     "title": "$NAME on $MAP - $TIME",
-    "bonusTitle": "$ZONETYPE collection #$NUMBER",
     "description": [
       "Player: $NAME",
       "Map: $MAP",
@@ -18,7 +17,8 @@
       "Recorded with Source Video Render by crashfort",
       "https://github.com/crashfort/SourceDemoRender"
     ],
-    "bonusDescription": [
+    "collectionTitle": "$ZONETYPE collection #$NUMBER",
+    "collectionDescription": [
       "This video was automatically generated on $DATETIME",
       "https://github.com/laurirasanen/tempusrecords",
       "",
@@ -73,8 +73,8 @@
             "y": "h - th - 5"
           }
         },
-        "bonus": {
-          "time": {
+        "extra": {
+          "customName": {
             "x": "5",
             "y": "h - h/7.5"
           },
@@ -82,7 +82,7 @@
             "x": "5",
             "y": "h - th - 5"
           },
-          "bonus": {
+          "zone": {
             "x": "w - tw - 5",
             "y": "h - h/7.5"
           },
