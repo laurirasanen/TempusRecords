@@ -224,6 +224,19 @@ async function compress(video, audio, run, cb) {
       },
     });
 
+    // Custom name
+    if (run.zone.customName) {
+      videoFilters.push({
+        filter: "drawtext",
+        options: {
+          ...config.video.text.ffmpegOptions,
+          ...config.video.text.position.extra.customName,
+          text: run.zone.customName,
+          alpha: alphaName,
+        },
+      });
+    }
+
     // Zone
     videoFilters.push({
       filter: "drawtext",
@@ -231,17 +244,6 @@ async function compress(video, audio, run, cb) {
         ...config.video.text.ffmpegOptions,
         ...config.video.text.position.extra.zone,
         text: run.zone.type + " " + run.zone.zoneindex,
-        alpha: alphaName,
-      },
-    });
-
-    // Custom name
-    videoFilters.push({
-      filter: "drawtext",
-      options: {
-        ...config.video.text.ffmpegOptions,
-        ...config.video.text.position.extra.customName,
-        text: run.zone.customName || "",
         alpha: alphaName,
       },
     });

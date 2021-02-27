@@ -74,19 +74,19 @@
           }
         },
         "extra": {
-          "customName": {
-            "x": "5",
-            "y": "h - h/7.5"
-          },
           "player": {
             "x": "5",
-            "y": "h - th - 5"
-          },
-          "zone": {
-            "x": "w - tw - 5",
             "y": "h - h/7.5"
           },
           "map": {
+            "x": "5",
+            "y": "h - th - 5"
+          },
+          "customName": {
+            "x": "w - tw - 5",
+            "y": "h - h/7.5"
+          },
+          "zone": {
             "x": "w - tw - 5",
             "y": "h - th - 5"
           }
