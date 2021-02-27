@@ -137,6 +137,7 @@ async function getZoneWR(mapName, zoneType, zoneId, className) {
             id
             type
             zoneindex
+            customName
           }
         }
       }
@@ -149,10 +150,6 @@ async function getZoneWR(mapName, zoneType, zoneId, className) {
   if (!result.data.map.records.length) {
     return null;
   }
-
-  // Workaround for tempus-api-graphql issue #28
-  // TODO: remove when fixed
-  result.data.map.records[0].class = className;
 
   return result.data.map.records[0];
 }
