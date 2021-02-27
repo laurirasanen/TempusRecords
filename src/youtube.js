@@ -577,7 +577,7 @@ async function uploadCollection() {
     return;
   }
 
-  const isBonus = runs[0].zone.type === "bonus";
+  const isBonus = collectionRuns[0].zone.type === "bonus";
 
   console.log(`Uploading collection`);
 
