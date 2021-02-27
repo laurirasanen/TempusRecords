@@ -261,6 +261,19 @@ function isProcessRunning(proc) {
   });
 }
 
+function sanitize(str) {
+  const replace = [
+    [/:/g, "\\:"],
+    [/'/g, "\\'"],
+    [/\[/g, "\\["],
+    [/]/g, "\\]"],
+  ];
+  replace.forEach((r) => {
+    str = str.replace(r[0], r[1]);
+  });
+  return str;
+}
+
 module.exports.launchSVR = launchSVR;
 module.exports.launchTF2 = launchTF2;
 module.exports.killSVR = killSVR;
@@ -276,3 +289,4 @@ module.exports.backupConfig = backupConfig;
 module.exports.restoreConfig = restoreConfig;
 module.exports.applyConfig = applyConfig;
 module.exports.isProcessRunning = isProcessRunning;
+module.exports.sanitize = sanitize;

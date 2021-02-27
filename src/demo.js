@@ -73,7 +73,6 @@ function skip() {
       return recordRun(runs[i + 1]);
     }
   }
-  throw "No run to skip to";
 }
 
 function isLastRun(run) {

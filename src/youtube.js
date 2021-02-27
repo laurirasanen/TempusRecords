@@ -160,8 +160,8 @@ async function compress(video, audio, run, cb) {
           throw `Unhandled zone type ${split.type}`;
       }
 
-      let text = utils.secondsToTimeStamp(split.duration);
-      text = `'${zone}\\: ${text.replace(/:/g, "\\:")}'`;
+      let text = `${zone}: ${utils.secondsToTimeStamp(split.duration)}`;
+      text = utils.sanitize(text);
 
       videoFilters.push({
         filter: "drawtext",
@@ -174,8 +174,8 @@ async function compress(video, audio, run, cb) {
       });
 
       if (split.comparedDuration) {
-        text = utils.secondsToTimeStamp(split.duration - split.comparedDuration, true);
-        text = `'(${text.replace(/:/g, "\\:")})'`;
+        text = `(${utils.secondsToTimeStamp(split.duration - split.comparedDuration, true)})`;
+        text = utils.sanitize(text);
 
         videoFilters.push({
           filter: "drawtext",
@@ -208,7 +208,7 @@ async function compress(video, audio, run, cb) {
       options: {
         ...config.video.text.ffmpegOptions,
         ...config.video.text.position.topLeft,
-        text: run.player.name,
+        text: utils.sanitize(run.player.name),
         alpha: alphaName,
       },
     });
@@ -219,7 +219,7 @@ async function compress(video, audio, run, cb) {
       options: {
         ...config.video.text.ffmpegOptions,
         ...config.video.text.position.bottomLeft,
-        text: run.map.name,
+        text: utils.sanitize(run.map.name),
         alpha: alphaName,
       },
     });
@@ -231,7 +231,7 @@ async function compress(video, audio, run, cb) {
         options: {
           ...config.video.text.ffmpegOptions,
           ...config.video.text.position.bottomRight,
-          text: run.zone.customName,
+          text: utils.sanitize(run.zone.customName),
           alpha: alphaName,
         },
       });
@@ -242,7 +242,7 @@ async function compress(video, audio, run, cb) {
         options: {
           ...config.video.text.ffmpegOptions,
           ...config.video.text.position.topRight,
-          text: run.zone.type + " " + run.zone.zoneindex,
+          text: utils.sanitize(run.zone.type + " " + run.zone.zoneindex),
           alpha: alphaName,
         },
       });
@@ -253,7 +253,7 @@ async function compress(video, audio, run, cb) {
         options: {
           ...config.video.text.ffmpegOptions,
           ...config.video.text.position.bottomRight,
-          text: run.zone.type + " " + run.zone.zoneindex,
+          text: utils.sanitize(run.zone.type + " " + run.zone.zoneindex),
           alpha: alphaName,
         },
       });
