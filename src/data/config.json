@@ -38,7 +38,7 @@
     "maxBonusesInCollection": 35,
     "mapMaxDuration": 90,
     "bonusMaxDuration": 1,
-    "bonusMinAge": 0,
+    "bonusMinAge": 3,
     "mapMinAge": 7,
     "startPadding": 3,
     "endPadding": 3,
