@@ -277,7 +277,8 @@ function replaceNames(runs) {
 }
 
 function shouldUploadExtra(run) {
-  if (!run) {
+  // Make sure demo is uploaded
+  if (!run || !run.demo || !run.demo.url) {
     return false;
   }
 
