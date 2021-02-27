@@ -7,7 +7,6 @@
   oauthConfig = require("./data/oauth.json"),
   opn = require("opn"),
   utils = require("./utils.js"),
-  splitjs = require("./split.js"),
   fullbright = require("./data/fullbright_maps.json"),
   uploaded = require("./data/uploaded.json"),
   readline = require("readline"),
@@ -79,12 +78,7 @@ async function compress(video, audio, run, cb) {
   let prevProgress = 0;
 
   let wrSplits = [];
-  if (isCollection) {
-    let split = await splitjs.getWRSplit(run.map.id, run.class, "bonus", run.zone.zoneindex);
-    if (split) {
-      wrSplits.push(split);
-    }
-  } else {
+  if (!isCollection) {
     wrSplits = run.splits;
   }
 
@@ -139,83 +133,65 @@ async function compress(video, audio, run, cb) {
     config.video.text.maxAlpha
   );
 
-  // Add splits
-  if (isCollection) {
-    if (wrSplits.length) {
-      // Escape semicolon and wrap in quotes for ffmpeg
-      let text = `'${wrSplits[0].replace(/:/g, "\\:")}'`;
+  for (const split of wrSplits) {
+    if (split.duration) {
+      let alpha = utils.getAlphaFade(
+        config.video.startPadding + split.duration - config.video.text.fadeInDuration,
+        config.video.text.displayDuration,
+        config.video.text.fadeInDuration,
+        config.video.text.fadeOutDuration,
+        config.video.text.maxAlpha
+      );
+      let zone = "";
+      switch (split.type) {
+        case "checkpoint":
+          zone = `CP${split.zoneindex}`;
+          break;
+
+        case "course":
+          zone = `Course ${split.zoneindex}`;
+          break;
+
+        case "map":
+          zone = "Map";
+          break;
+
+        default:
+          throw `Unhandled zone type ${split.type}`;
+      }
+
+      let text = utils.secondsToTimeStamp(split.duration);
+      text = `'${zone}\\: ${text.replace(/:/g, "\\:")}'`;
 
       videoFilters.push({
         filter: "drawtext",
         options: {
           ...config.video.text.ffmpegOptions,
-          ...(isCollection ? config.video.text.position.bonus.time : config.video.text.position.map.time),
+          ...config.video.text.position.map.time,
           text: text,
-          alpha: alphaTimeSplit,
+          alpha: alpha,
         },
       });
-    }
-  } else {
-    for (const split of wrSplits) {
-      if (split.duration) {
-        let alpha = utils.getAlphaFade(
-          config.video.startPadding + split.duration - config.video.text.fadeInDuration,
-          config.video.text.displayDuration,
-          config.video.text.fadeInDuration,
-          config.video.text.fadeOutDuration,
-          config.video.text.maxAlpha
-        );
-        let zone = "";
-        switch (split.type) {
-          case "checkpoint":
-            zone = `CP${split.zoneindex}`;
-            break;
 
-          case "course":
-            zone = `Course ${split.zoneindex}`;
-            break;
-
-          case "map":
-            zone = "Map";
-            break;
-
-          default:
-            throw `Unhandled zone type ${split.type}`;
-        }
-
-        let text = utils.secondsToTimeStamp(split.duration);
-        text = `'${zone}\\: ${text.replace(/:/g, "\\:")}'`;
+      if (split.comparedDuration) {
+        text = utils.secondsToTimeStamp(split.duration - split.comparedDuration, true);
+        text = `'(${text.replace(/:/g, "\\:")})'`;
 
         videoFilters.push({
           filter: "drawtext",
           options: {
             ...config.video.text.ffmpegOptions,
-            ...config.video.text.position.map.time,
+            ...config.video.text.position.map.timeSplit,
             text: text,
             alpha: alpha,
           },
         });
-
-        if (split.comparedDuration) {
-          text = utils.secondsToTimeStamp(split.duration - split.comparedDuration, true);
-          text = `'(${text.replace(/:/g, "\\:")})'`;
-
-          videoFilters.push({
-            filter: "drawtext",
-            options: {
-              ...config.video.text.ffmpegOptions,
-              ...config.video.text.position.map.timeSplit,
-              text: text,
-              alpha: alpha,
-            },
-          });
-        }
       }
     }
   }
 
   if (isCollection) {
-    // Add map name, bonus number, and player name to video
+    // Add map name, zone, and player name to video
     let displayDuration =
       duration - config.video.text.startPadding - config.video.text.fadeInDuration - config.video.text.fadeOutDuration;
     let alphaName = utils.getAlphaFade(
@@ -248,7 +224,7 @@ async function compress(video, audio, run, cb) {
       },
     });
 
-    // Bonus
+    // Zone
     videoFilters.push({
       filter: "drawtext",
       options: {
