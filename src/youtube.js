@@ -167,7 +167,7 @@ async function compress(video, audio, run, cb) {
         filter: "drawtext",
         options: {
           ...config.video.text.ffmpegOptions,
-          ...config.video.text.position.map.time,
+          ...config.video.text.position.topLeft,
           text: text,
           alpha: alpha,
         },
@@ -181,7 +181,7 @@ async function compress(video, audio, run, cb) {
           filter: "drawtext",
           options: {
             ...config.video.text.ffmpegOptions,
-            ...config.video.text.position.map.timeSplit,
+            ...config.video.text.position.bottomLeft,
             text: text,
             alpha: alpha,
           },
@@ -207,7 +207,7 @@ async function compress(video, audio, run, cb) {
       filter: "drawtext",
       options: {
         ...config.video.text.ffmpegOptions,
-        ...config.video.text.position.extra.player,
+        ...config.video.text.position.topLeft,
         text: run.player.name,
         alpha: alphaName,
       },
@@ -218,35 +218,46 @@ async function compress(video, audio, run, cb) {
       filter: "drawtext",
       options: {
         ...config.video.text.ffmpegOptions,
-        ...config.video.text.position.extra.map,
+        ...config.video.text.position.bottomLeft,
         text: run.map.name,
         alpha: alphaName,
       },
     });
 
-    // Custom name
     if (run.zone.customName) {
+      // Custom name in bottom right
       videoFilters.push({
         filter: "drawtext",
         options: {
           ...config.video.text.ffmpegOptions,
-          ...config.video.text.position.extra.customName,
+          ...config.video.text.position.bottomRight,
           text: run.zone.customName,
           alpha: alphaName,
         },
       });
-    }
 
-    // Zone
-    videoFilters.push({
-      filter: "drawtext",
-      options: {
-        ...config.video.text.ffmpegOptions,
-        ...config.video.text.position.extra.zone,
-        text: run.zone.type + " " + run.zone.zoneindex,
-        alpha: alphaName,
-      },
-    });
+      // Move zone above name
+      videoFilters.push({
+        filter: "drawtext",
+        options: {
+          ...config.video.text.ffmpegOptions,
+          ...config.video.text.position.topRight,
+          text: run.zone.type + " " + run.zone.zoneindex,
+          alpha: alphaName,
+        },
+      });
+    } else {
+      // Zone in bottom right
+      videoFilters.push({
+        filter: "drawtext",
+        options: {
+          ...config.video.text.ffmpegOptions,
+          ...config.video.text.position.bottomRight,
+          text: run.zone.type + " " + run.zone.zoneindex,
+          alpha: alphaName,
+        },
+      });
+    }
   }
 
   // Add video fade in/out

@@ -63,33 +63,21 @@
         "fontcolor": "#FFFFFF"
       },
       "position": {
-        "map": {
-          "time": {
-            "x": "5",
-            "y": "h - h/7.5"
-          },
-          "timeSplit": {
-            "x": "5",
-            "y": "h - th - 5"
-          }
+        "bottomLeft": {
+          "x": "5",
+          "y": "h - th - 5"
         },
-        "extra": {
-          "player": {
-            "x": "5",
-            "y": "h - h/7.5"
-          },
-          "map": {
-            "x": "5",
-            "y": "h - th - 5"
-          },
-          "customName": {
-            "x": "w - tw - 5",
-            "y": "h - h/7.5"
-          },
-          "zone": {
-            "x": "w - tw - 5",
-            "y": "h - th - 5"
-          }
+        "topLeft": {
+          "x": "5",
+          "y": "h - h/7.5"
+        },
+        "bottomRight": {
+          "x": "w - tw - 5",
+          "y": "h - th - 5"
+        },
+        "topRight": {
+          "x": "w - tw - 5",
+          "y": "h - h/7.5"
         }
       },
       "displayDuration": 3,
