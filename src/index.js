@@ -2,6 +2,10 @@ const rcon = require("./rcon.js"),
   demo = require("./demo.js"),
   utils = require("./utils");
 
+// TODO: remove unnecessary stuff from svr/configs/tempusrecords
+// TODO: prompt for nicknames if not found
+// TODO: dry run launch arg, no youtube upload
+
 async function start() {
   // Default to just checking recent WR activity,
   // instead of checking all maps.

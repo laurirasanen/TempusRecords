@@ -60,29 +60,6 @@ function killTF2() {
   });
 }
 
-function getLatestFile(directory, cb) {
-  if (!cb || typeof cb !== "function") throw "callback is not a function";
-
-  fs.readdir(directory, (err, list) => {
-    if (err) {
-      throw err;
-    }
-
-    var latest_time = 0;
-    var latest = null;
-
-    list.forEach((file) => {
-      var stats = fs.statSync(directory + "/" + file);
-      if (stats.mtimeMs > latest_time) {
-        latest_time = stats.mtimeMs;
-        latest = directory + "/" + file;
-      }
-    });
-
-    return cb(latest);
-  });
-}
-
 function secondsToTimeStamp(seconds, showPlusSign = false) {
   var sign = "";
   if (seconds < 0) {
@@ -180,6 +157,7 @@ function getAlphaFade(startTime, displayDuration, fadeInDuration, fadeOutDuratio
   let fadeInEnd = fadeInStart + fadeInDuration;
   let fadeOutStart = fadeInEnd + displayDuration;
   let fadeOutEnd = fadeOutStart + fadeOutDuration;
+  // TODO: how does this work? should've added comments when i made this
   return `
         min(
             ${maxAlpha},
@@ -278,7 +256,6 @@ module.exports.launchSVR = launchSVR;
 module.exports.launchTF2 = launchTF2;
 module.exports.killSVR = killSVR;
 module.exports.killTF2 = killTF2;
-module.exports.getLatestFile = getLatestFile;
 module.exports.secondsToTimeStamp = secondsToTimeStamp;
 module.exports.readJson = readJson;
 module.exports.writeJson = writeJson;
