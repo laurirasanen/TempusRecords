@@ -106,11 +106,12 @@ function recordRun(run) {
   }.wav`;
 
   // Check for already compressed version
-  if (fs.existsSync(video.split(".mp4")[0] + "_compressed.mp4")) {
+  let compressed = video.split(".mp4")[0] + "_compressed.mp4";
+  if (fs.existsSync(compressed)) {
     if (!isCollection || isLastRun(run)) {
-      console.log(`WARNING: Uploading existing video '${video}'`);
+      console.log(`WARNING: Uploading existing video '${compressed}'`);
       console.log(`Make sure to delete existing videos if they're corrupted, etc.`);
-      youtube.upload(video, run);
+      youtube.upload(compressed, run);
     }
 
     skip();
