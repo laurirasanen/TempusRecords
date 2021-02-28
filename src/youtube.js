@@ -18,6 +18,8 @@
 let hasTokens = false;
 let initialized = false;
 
+// TODO: this file is just full of shit
+
 function init() {
   if (initialized) return;
   initialized = true;

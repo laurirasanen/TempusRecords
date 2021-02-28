@@ -110,6 +110,8 @@ async function getTypeZones(mapName, zoneType) {
 }
 
 async function getZoneWR(mapName, zoneType, zoneId, className) {
+  // TODO: a lot of repeated code with map wrs,
+  // probably a better way to do this with graphql
   const query = `
     {
       map(name: "${mapName}") {

@@ -28,6 +28,8 @@ var srv = net.createServer(function (sock) {
               // Wait a bit to ensure previous instance has exited
               setTimeout(
                 (run) => {
+                  // TODO: move this to a util function, check for cross-device
+
                   // Move audio file to svr directory.
                   // fs.rename will throw EXDEV: cross-device link not permitted,
                   // copy and unlink old file instead.
@@ -46,6 +48,8 @@ var srv = net.createServer(function (sock) {
                     console.error(err);
                     return;
                   }
+
+                  // TODO: remove, not using addons anymore
 
                   // Use listenserver.cfg to load picmip-plugin.
                   // SVR launch options will load itemtest map so we can use metamod.
