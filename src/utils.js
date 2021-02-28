@@ -239,16 +239,21 @@ function isProcessRunning(proc) {
   });
 }
 
-function sanitize(str) {
+function sanitize(str, quote = false) {
   const replace = [
     [/:/g, "\\:"],
     [/'/g, "\\'"],
     [/\[/g, "\\["],
-    [/]/g, "\\]"],
+    [/\]/g, "\\]"],
+    [/\(/g, "\\("],
+    [/\)/g, "\\)"],
   ];
   replace.forEach((r) => {
     str = str.replace(r[0], r[1]);
   });
+  if (quote) {
+    str = `'${str}'`;
+  }
   return str;
 }
 

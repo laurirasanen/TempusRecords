@@ -163,7 +163,7 @@ async function compress(video, audio, run, cb) {
       }
 
       let text = `${zone}: ${utils.secondsToTimeStamp(split.duration)}`;
-      text = utils.sanitize(text);
+      text = utils.sanitize(text, true);
 
       videoFilters.push({
         filter: "drawtext",
@@ -177,7 +177,7 @@ async function compress(video, audio, run, cb) {
 
       if (split.comparedDuration) {
         text = `(${utils.secondsToTimeStamp(split.duration - split.comparedDuration, true)})`;
-        text = utils.sanitize(text);
+        text = utils.sanitize(text, true);
 
         videoFilters.push({
           filter: "drawtext",
