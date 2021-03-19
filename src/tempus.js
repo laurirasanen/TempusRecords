@@ -1,9 +1,11 @@
 const { graphql } = require("graphql");
 const { schema } = require("tempus-api-graphql");
+const { writeJSONSync } = require("fs-extra");
 const nicknames = require("./data/nicknames.json");
 const blacklist = require("./data/blacklist.json");
 const config = require("./data/config.json");
 const uploaded = require("./data/uploaded.json");
+const readlineSync = require("readline-sync");
 
 async function getMapWRs(mapList) {
   let wrs = [];
@@ -272,7 +274,21 @@ function replaceNames(runs) {
       }
 
       if (j >= nicknames.length - 1) {
-        console.log(`Warn: no nickname for player ${runs[i].player.name} (${runs[i].player.steamId})`);
+        let answer = readlineSync.question(
+          `Add nickname for player ${runs[i].player.name} (${runs[i].player.steamId}) or null to skip\n`
+        );
+
+        if (answer == null || answer == "null") {
+          break;
+        }
+
+        runs[i].player.name = answer;
+        nicknames.push({
+          steamId: runs[i].player.steamId,
+          name: runs[i].player.name,
+        });
+
+        writeJSONSync("./data/nicknames.json", nicknames, { spaces: 2, EOL: "\n", replacer: null });
       }
     }
   }
