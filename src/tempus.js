@@ -81,10 +81,12 @@ async function getExtraWRs(mapList, zoneType) {
         wrs.push(dwr);
       }
     }
-    // Check for max number of runs,
-    // this may be off by 1 since we add 2 at a time.
-    if (wrs.length >= config.video.maxRunsInCollection) {
-      break;
+    if (!noUpload) {
+      // Check for max number of runs,
+      // this may be off by 1 since we add 2 at a time.
+      if (wrs.length >= config.video.maxRunsInCollection) {
+        break;
+      }
     }
   }
   replaceNames(wrs);

@@ -346,6 +346,10 @@ async function compress(video, audio, run, cb) {
 }
 
 async function upload(file, run) {
+  if (noUpload) {
+    return;
+  }
+
   if (isCollection) {
     concatCollection(() => {
       uploadCollection();

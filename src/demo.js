@@ -11,8 +11,10 @@ let runs = [];
 global.currentRun = null;
 global.isCollection = false;
 global.collectionRuns = [];
+global.noUpload = false;
 
-async function init(recent, mapName, className, bonus, trick) {
+async function init(recent, mapName, className, bonus, trick, upload = true) {
+  noUpload = !upload;
   if (mapName && className) {
     // Upload specific run
     let wr = await tempus.getMapWR(mapName, className, false);
@@ -87,7 +89,9 @@ function recordRun(run) {
     return;
   }
 
-  youtube.init();
+  if (!noUpload) {
+    youtube.init();
+  }  
 
   // Get quality options
   let runLength = run.duration / 60;

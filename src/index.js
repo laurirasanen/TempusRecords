@@ -15,6 +15,7 @@ async function start() {
   var className = null;
   var bonus = false;
   var trick = false;
+  var upload = true;
 
   if (process.argv.length > 2) {
     if (process.argv[2] == "restore") {
@@ -31,12 +32,16 @@ async function start() {
     }
 
     if (process.argv.length > 3) {
-      recent = false;
-      mapName = process.argv[2];
-      className = process.argv[3];
+      if (process.argv[3] == "noupload") {
+        upload = false;
+      } else {
+        recent = false;
+        mapName = process.argv[2];
+        className = process.argv[3];
 
-      if (!mapName.startsWith("jump_")) {
-        mapName = "jump_" + mapName;
+        if (!mapName.startsWith("jump_")) {
+          mapName = "jump_" + mapName;
+        }
       }
     }
   }
@@ -50,7 +55,7 @@ async function start() {
   utils.applyConfig();
 
   rcon.init();
-  demo.init(recent, mapName, className, bonus, trick);
+  demo.init(recent, mapName, className, bonus, trick, upload);
 }
 
 start();

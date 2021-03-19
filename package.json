@@ -33,6 +33,7 @@
     "upload:all": "npm run start -- all",
     "upload:bonus": "npm run start -- bonus",
     "upload:trick": "npm run start -- trick",
+    "record:bonus": "npm run start -- bonus noupload",
     "restore": "npm run start -- restore"
   },
   "devDependencies": {
