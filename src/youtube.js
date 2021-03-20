@@ -3,17 +3,13 @@
   fs = require("fs"),
   Lien = require("lien"),
   prettyBytes = require("pretty-bytes"),
+  readlineSync = require("readline-sync"),
   config = require("./data/config.json"),
   oauthConfig = require("./data/oauth.json"),
   opn = require("opn"),
   utils = require("./utils.js"),
   fullbright = require("./data/fullbright_maps.json"),
-  uploaded = require("./data/uploaded.json"),
-  readline = require("readline"),
-  rl = readline.createInterface({
-    input: process.stdin,
-    output: process.stdout,
-  });
+  uploaded = require("./data/uploaded.json");
 
 let hasTokens = false;
 let initialized = false;
@@ -682,64 +678,63 @@ async function uploadCollection() {
       }
 
       // Youtube sucks
-      rl.question("Was youtube processing succesful? Y/n", (answer) => {
-        if (answer === "n") {
-          // Reupload
-          uploadCollection();
+      let answer = readlineSync.question("Was youtube processing succesful? Y/n: ");
+      if (answer === "n") {
+        // Reupload
+        uploadCollection();
+        return;
+      }
+
+      // Add video to playlist
+      youtube_api.playlistItems.insert(
+        {
+          resource: {
+            snippet: {
+              playlistId: isBonus ? "PL_D9J2bYWXyJBc0YvjRpqpFc5hY-ieU-B" : "PL_D9J2bYWXyJYdkfuv8s0kTvQygJQkW8_",
+              resourceId: {
+                kind: "youtube#video",
+                videoId: response.data.id,
+              },
+            },
+          },
+          part: "snippet",
+        },
+        (err, response) => {
+          if (err) {
+            console.log("Failed to add video to playlist");
+            console.log(err);
+          } else {
+            console.log("Video added to playlist");
+          }
+        }
+      );
+
+      // Add to uploaded runs
+      utils.readJson("./data/uploaded.json", (err, uploaded) => {
+        if (err !== null) {
+          console.log("Failed to read last uploaded");
+          console.log(err);
           return;
         }
 
-        // Add video to playlist
-        youtube_api.playlistItems.insert(
-          {
-            resource: {
-              snippet: {
-                playlistId: isBonus ? "PL_D9J2bYWXyJBc0YvjRpqpFc5hY-ieU-B" : "PL_D9J2bYWXyJYdkfuv8s0kTvQygJQkW8_",
-                resourceId: {
-                  kind: "youtube#video",
-                  videoId: response.data.id,
-                },
-              },
-            },
-            part: "snippet",
-          },
-          (err, response) => {
-            if (err) {
-              console.log("Failed to add video to playlist");
-              console.log(err);
-            } else {
-              console.log("Video added to playlist");
-            }
+        let accessor = isBonus ? "bonuses" : "tricks";
+        for (let run of collectionRuns) {
+          if (!uploaded[accessor].includes(run.id)) {
+            uploaded[accessor].push(run.id);
           }
-        );
+        }
 
-        // Add to uploaded runs
-        utils.readJson("./data/uploaded.json", (err, uploaded) => {
+        accessor = isBonus ? "bonusCollections" : "trickCollections";
+        uploaded[accessor] += 1;
+
+        utils.writeJson("./data/uploaded.json", uploaded, (err) => {
           if (err !== null) {
-            console.log("Failed to read last uploaded");
+            console.log("Failed to write last uploaded");
             console.log(err);
             return;
           }
 
-          let accessor = isBonus ? "bonuses" : "tricks";
-          for (let run of collectionRuns) {
-            if (!uploaded[accessor].includes(run.id)) {
-              uploaded[accessor].push(run.id);
-            }
-          }
-
-          accessor = isBonus ? "bonusCollections" : "trickCollections";
-          uploaded[accessor] += 1;
-
-          utils.writeJson("./data/uploaded.json", uploaded, (err) => {
-            if (err !== null) {
-              console.log("Failed to write last uploaded");
-              console.log(err);
-              return;
-            }
-
-            console.log("Updated uploaded list");
-          });
+          console.log("Updated uploaded list");
         });
       });
     }
