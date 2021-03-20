@@ -4,7 +4,8 @@
   utils = require("./utils.js"),
   config = require("./data/config.json"),
   youtube = require("./youtube.js"),
-  quality = require("./data/quality.json");
+  quality = require("./data/quality.json"),
+  uploaded = require("./data/uploaded.json");
 
 let runs = [];
 
@@ -31,6 +32,17 @@ async function init(recent, mapName, className, bonus, trick, upload = true) {
     // Upload collection
     isCollection = true;
     let mapList = await tempus.getMapList();
+    if (bonus) {
+      // continue from where we left off last collection
+      let lastMap = await tempus.getRecordMap(uploaded.bonuses[uploaded.bonuses.length - 1]);
+      let lastIndex = mapList.findIndex((m) => m.id === lastMap.id);
+      if (lastIndex > 0) {
+        let tmp = mapList.splice(0, lastIndex);
+        mapList.push(...tmp);
+        console.log(`Starting collection from ${mapList[0].name}`);
+      }
+    }
+
     runs = await tempus.getExtraWRs(mapList, bonus ? "bonus" : "trick");
 
     if (runs.length <= 0) {
@@ -91,7 +103,7 @@ function recordRun(run) {
 
   if (!noUpload) {
     youtube.init();
-  }  
+  }
 
   // Get quality options
   let runLength = run.duration / 60;

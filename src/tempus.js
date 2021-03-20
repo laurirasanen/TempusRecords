@@ -164,6 +164,7 @@ async function getMapList() {
   const query = `
     {
       maps {
+        id
         name
       }
     }`;
@@ -277,7 +278,7 @@ function replaceNames(runs) {
 
       if (j >= nicknames.length - 1) {
         let answer = readlineSync.question(
-          `Add nickname for player ${runs[i].player.name} (${runs[i].player.steamId}) or null to skip\n`
+          `Add nickname for player ${runs[i].player.name} (${runs[i].player.steamId}) or null to skip: `
         );
 
         if (answer == null || answer == "null") {
@@ -330,8 +331,28 @@ function shouldUploadExtra(run) {
   return true;
 }
 
+async function getRecordMap(recordId) {
+  const query = `
+    {
+      record(id: ${recordId}) {
+        map {
+          id
+          name
+        }
+      }
+    }`;
+
+  const result = await graphql(schema, query);
+  if (result.errors) {
+    throw result.errors[0];
+  }
+
+  return result.data.record.map;
+}
+
 exports.getMapWRs = getMapWRs;
 exports.getMapWR = getMapWR;
 exports.getExtraWRs = getExtraWRs;
 exports.getMapList = getMapList;
 exports.getRecentMapWRs = getRecentMapWRs;
+exports.getRecordMap = getRecordMap;
