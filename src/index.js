@@ -3,7 +3,6 @@ const rcon = require("./rcon.js"),
   utils = require("./utils");
 
 // TODO: remove unnecessary stuff from svr/configs/tempusrecords
-// TODO: prompt for nicknames if not found
 // TODO: dry run launch arg, no youtube upload
 
 async function start() {
@@ -41,6 +40,9 @@ async function start() {
 
         if (!mapName.startsWith("jump_")) {
           mapName = "jump_" + mapName;
+        }
+        if (process.argv[4] == "noupload") {
+          upload = false;
         }
       }
     }
