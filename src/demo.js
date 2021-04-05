@@ -43,7 +43,7 @@ async function init(recent, mapName, className, course, bonus, trick, upload = t
       let lastMap = await tempus.getRecordMap(uploaded.bonuses[uploaded.bonuses.length - 1]);
       let lastIndex = mapList.findIndex((m) => m.id === lastMap.id);
       if (lastIndex > 0) {
-        let tmp = mapList.splice(0, lastIndex);
+        let tmp = mapList.splice(0, lastIndex + 1);
         mapList.push(...tmp);
         console.log(`Starting collection from ${mapList[0].name}`);
       }
@@ -101,7 +101,7 @@ async function recordCourses() {
     let lastMap = await tempus.getRecordMap(uploaded.courses[uploaded.courses.length - 1]);
     let lastIndex = mapList.findIndex((m) => m.id === lastMap.id);
     if (lastIndex > 0) {
-      let tmp = mapList.splice(0, lastIndex);
+      let tmp = mapList.splice(0, lastIndex + 1);
       mapList.push(...tmp);
     }
   }  

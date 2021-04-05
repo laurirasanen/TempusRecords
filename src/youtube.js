@@ -542,8 +542,14 @@ async function concatCollection(cb) {
   let ff = ffmpeg();
 
   let targetFile = config.svr.recordingFolder + "/collection.mp4";
-  if (collectionsRuns[0].zone.type == "course") {
-    targetFile = config.svr.recordingFolder + `/${collectionsRuns[0].map.name}_collection.mp4`;
+  if (collectionRuns[0].zone.type == "course") {
+    targetFile = config.svr.recordingFolder + `/${collectionRuns[0].map.name}_collection.mp4`;
+  }
+
+  if (fs.existsSync(targetFile)) {
+    console.log("WARN: Using existing " + targetFile);
+    cb();
+    return;
   }
 
   for (let i = 0; i < collectionRuns.length; i++) {
@@ -592,7 +598,7 @@ async function uploadCollection() {
 
   var file = config.svr.recordingFolder + "/collection.mp4";
   if (isCourse) {
-    file = config.svr.recordingFolder + `/${collectionsRuns[0].map.name}_collection.mp4`;
+    file = config.svr.recordingFolder + `/${collectionRuns[0].map.name}_collection.mp4`;
   }
 
   var description = "";
@@ -613,14 +619,14 @@ async function uploadCollection() {
       let timestamp = `${timeElapsed.getMinutes()}:${
         timeElapsed.getSeconds() < 10 ? "0" : ""
       }${timeElapsed.getSeconds()}`;
-      description += `${timestamp} ${run.map.name} ${util.capitalizeFirst(run.zone.type)} ${run.zone.zoneindex}${
+      description += `${timestamp} ${run.map.name} ${utils.capitalizeFirst(run.zone.type)} ${run.zone.zoneindex}${
         run.zone.customName ? " (" + run.zone.customName + ")" : ""
       } by ${run.player.name} (${run.class === "SOLDIER" ? "Soldier" : "Demoman"})\n`;
       seconds += duration;
     }
 
     if (!useTimestamps) {
-      description += `${run.map.name} ${util.capitalizeFirst(run.zone.type)} ${run.zone.zoneindex} by ${
+      description += `${run.map.name} ${utils.capitalizeFirst(run.zone.type)} ${run.zone.zoneindex} by ${
         run.player.name
       } (${run.class === "SOLDIER" ? "Soldier" : "Demoman"})\n`;
     }
@@ -655,9 +661,9 @@ async function uploadCollection() {
       resource: {
         snippet: {
           title: title
-            .replace("$ZONETYPE", util.capitalizeFirst(run.zone.type))
+            .replace("$ZONETYPE", utils.capitalizeFirst(collectionRuns[0].zone.type))
             .replace("$NUMBER", isBonus ? uploaded.bonusCollections + 1 : uploaded.trickCollections + 1)
-            .replace("$MAP", collectionsRuns[0].map.name),
+            .replace("$MAP", collectionRuns[0].map.name),
           description: description,
           tags: tags,
         },
@@ -735,7 +741,7 @@ async function uploadCollection() {
           return;
         }
 
-        let accessor = collectionRuns[0].zone.type.endsWith("s") ? run.zone.type + "es" : run.zone.type + "s";
+        let accessor = collectionRuns[0].zone.type.endsWith("s") ? collectionRuns[0].zone.type + "es" : collectionRuns[0].zone.type + "s";
         for (let run of collectionRuns) {
           if (!uploaded[accessor].includes(run.id)) {
             uploaded[accessor].push(run.id);
