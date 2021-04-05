@@ -16,6 +16,11 @@ global.noUpload = false;
 
 async function init(recent, mapName, className, course, bonus, trick, upload = true) {
   noUpload = !upload;
+  runs = [];
+  collectionRuns = [];
+  currentRun = null;
+  isCollection = false;
+
   if (mapName && className) {
     // Upload specific run
     let wr = await tempus.getMapWR(mapName, className, false);
