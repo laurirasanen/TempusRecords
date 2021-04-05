@@ -14,7 +14,7 @@ global.isCollection = false;
 global.collectionRuns = [];
 global.noUpload = false;
 
-async function init(recent, mapName, className, bonus, trick, upload = true) {
+async function init(recent, mapName, className, course, bonus, trick, upload = true) {
   noUpload = !upload;
   if (mapName && className) {
     // Upload specific run
@@ -32,6 +32,12 @@ async function init(recent, mapName, className, bonus, trick, upload = true) {
     // Upload collection
     isCollection = true;
     let mapList = await tempus.getMapList();
+    if (bonus) {
+      mapList = mapList.filter(map => map.zones.bonus.length > 0);
+    } else {
+      mapList = mapList.filter(map => map.zones.trick.length > 0);
+    }
+
     if (bonus) {
       // continue from where we left off last collection
       let lastMap = await tempus.getRecordMap(uploaded.bonuses[uploaded.bonuses.length - 1]);
@@ -63,6 +69,11 @@ async function init(recent, mapName, className, bonus, trick, upload = true) {
     return;
   }
 
+  if (course) {
+    recordCourses();
+    return;
+  }
+
   if (recent) {
     // Check most recent runs
     runs = await tempus.getRecentMapWRs();
@@ -75,6 +86,39 @@ async function init(recent, mapName, className, bonus, trick, upload = true) {
   if (!runs.length) {
     console.log("No new runs.");
     return;
+  }
+
+  recordRun(runs[0]);
+}
+
+async function recordCourses() {
+  isCollection = true;
+  let mapList = await tempus.getMapList();
+  mapList = mapList.filter(map => map.zones.course.length > 0);
+
+  if (uploaded.courses.length > 0) {
+    // continue from where we left off last collection
+    let lastMap = await tempus.getRecordMap(uploaded.courses[uploaded.courses.length - 1]);
+    let lastIndex = mapList.findIndex((m) => m.id === lastMap.id);
+    if (lastIndex > 0) {
+      let tmp = mapList.splice(0, lastIndex);
+      mapList.push(...tmp);
+    }
+  }  
+
+  runs = await tempus.getExtraWRs(mapList, "course");
+  if (!runs.length) {
+    console.log("No new runs.");
+    return;
+  }
+  console.log(`Starting collection from ${mapList[0].name}`);
+
+  for (let i = 0; i < runs.length; i++) {
+    // This is used for concatenating video files before upload
+    runs[
+      i
+    ].outputFile = `${config.svr.recordingFolder}/${runs[i].demo.filename}_${runs[i].zone.type}${runs[i].zone.zoneindex}_${runs[i].class}_compressed.mp4`;
+    collectionRuns.push(runs[i]);
   }
 
   recordRun(runs[0]);

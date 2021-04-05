@@ -7,13 +7,17 @@ const config = require("./data/config.json");
 const uploaded = require("./data/uploaded.json");
 const readlineSync = require("readline-sync");
 
-async function getMapWRs(mapList) {
+async function getMapWRs(mapList, filter = true) {
   let wrs = [];
   for (const map of mapList) {
-    wrs.push(await getMapWR(map.name, "SOLDIER"));
-    wrs.push(await getMapWR(map.name, "DEMOMAN"));
+    wrs.push(await getMapWR(map.name, "SOLDIER", filter));
+    wrs.push(await getMapWR(map.name, "DEMOMAN", filter));
   }
-  return filterRuns(wrs);
+  if (filter) {
+    return filterRuns(wrs);
+  } else {
+    return wrs;
+  }
 }
 
 async function getMapWR(mapName, className, filter = true) {
@@ -67,29 +71,58 @@ async function getMapWR(mapName, className, filter = true) {
   }
 }
 
-async function getExtraWRs(mapList, zoneType) {
+async function getExtraWRs(mapList, zoneType, filter = true) {
   let wrs = [];
   for (const map of mapList) {
     let zones = await getTypeZones(map.name, zoneType);
-    for (const zone of zones) {
-      let swr = await getZoneWR(map.name, zoneType.toUpperCase(), zone.zoneindex, "SOLDIER");
-      let dwr = await getZoneWR(map.name, zoneType.toUpperCase(), zone.zoneindex, "DEMOMAN");
-      if (shouldUploadExtra(swr)) {
-        wrs.push(swr);
+
+    if (zoneType == "course") {
+      // courses
+      // don't alternate between classes for each zone
+      for (const zone of zones) {
+        let swr = await getZoneWR(map.name, zoneType.toUpperCase(), zone.zoneindex, "SOLDIER");
+        if (shouldUploadExtra(swr) || !filter) {
+          wrs.push(swr);
+        }
       }
-      if (shouldUploadExtra(dwr)) {
-        wrs.push(dwr);
+      for (const zone of zones) {
+        let dwr = await getZoneWR(map.name, zoneType.toUpperCase(), zone.zoneindex, "DEMOMAN");
+        if (shouldUploadExtra(dwr) || !filter) {
+          wrs.push(dwr);
+        }
       }
-    }
-    if (!noUpload) {
-      // Check for max number of runs,
-      // this may be off by 1 since we add 2 at a time.
-      if (wrs.length >= config.video.maxRunsInCollection) {
+
+      if (wrs.length > 0 && filter) {
+        // Limit to single map at a time
         break;
+      }
+    } else {
+      // bonuses and tricks
+      for (const zone of zones) {
+        let swr = await getZoneWR(map.name, zoneType.toUpperCase(), zone.zoneindex, "SOLDIER");
+        let dwr = await getZoneWR(map.name, zoneType.toUpperCase(), zone.zoneindex, "DEMOMAN");
+        if (shouldUploadExtra(swr) || !filter) {
+          wrs.push(swr);
+        }
+        if (shouldUploadExtra(dwr) || !filter) {
+          wrs.push(dwr);
+        }
+      }
+
+      if (!noUpload && filter) {
+        // Check for max number of runs,
+        // this may be off by 1 since we add 2 at a time.
+        if (wrs.length >= config.video.maxRunsInCollection) {
+          break;
+        }
       }
     }
   }
-  replaceNames(wrs);
+
+  if (filter) {
+    replaceNames(wrs);
+  }
+
   return wrs;
 }
 
@@ -166,6 +199,17 @@ async function getMapList() {
       maps {
         id
         name
+        zones {
+          bonus {
+            zoneindex
+          }
+          course {
+            zoneindex
+          }
+          trick {
+            zoneindex
+          }
+        }
       }
     }`;
 
@@ -303,22 +347,25 @@ function shouldUploadExtra(run) {
     return false;
   }
 
-  const accessor = run.zone.type === "bonus" ? "bonuses" : "tricks";
+  // "courses", "bonuses", "tricks"
+  const accessor = run.zone.type.endsWith("s") ? run.zone.type + "es" : run.zone.type + "s";
 
   if (uploaded[accessor].includes(run.id)) {
     return false;
   }
 
-  if (run.duration / 60 > config.video.extraMaxDuration) {
-    console.log(`Removing run too long: ${run.map.name} ${run.zone.type} ${run.zone.zoneindex} (${run.class})`);
-    return false;
-  }
+  if (accessor == "bonuses" || accessor == "tricks") {
+    if (run.duration / 60 > config.video.extraMaxDuration) {
+      console.log(`Removing run too long: ${run.map.name} ${run.zone.type} ${run.zone.zoneindex} (${run.class})`);
+      return false;
+    }
 
-  if ((Date.now() - run.date * 1000) / (1000 * 60 * 60 * 24) < config.video.extraMinAge) {
-    console.log(
-      `Removing run newer than ${config.video.extraMinAge} days: ${run.map.name} ${run.zone.type} ${run.zone.zoneindex} (${run.class})`
-    );
-    return false;
+    if ((Date.now() - run.date * 1000) / (1000 * 60 * 60 * 24) < config.video.extraMinAge) {
+      console.log(
+        `Removing run newer than ${config.video.extraMinAge} days: ${run.map.name} ${run.zone.type} ${run.zone.zoneindex} (${run.class})`
+      );
+      return false;
+    }
   }
 
   for (var j = 0; j < blacklist.length; j++) {
@@ -350,9 +397,48 @@ async function getRecordMap(recordId) {
   return result.data.record.map;
 }
 
+async function promptAllNames() {
+  // Check all nicknames for all wrs
+  console.log("Getting maplist...");
+  let mapList = await getMapList();
+
+  console.log("Getting map wrs...");
+  let runs = await getMapWRs(mapList, false);
+
+  console.log("Getting course wrs...");
+  runs.push(
+    ...(await getExtraWRs(
+      mapList.filter((map) => map.zones.course.length > 0),
+      "course",
+      false
+    ))
+  );
+
+  console.log("Getting bonus wrs...");
+  runs.push(
+    ...(await getExtraWRs(
+      mapList.filter((map) => map.zones.bonus.length > 0),
+      "bonus",
+      false
+    ))
+  );
+
+  console.log("Getting trick wrs...");
+  runs.push(
+    ...(await getExtraWRs(
+      mapList.filter((map) => map.zones.trick.length > 0),
+      "trick",
+      false
+    ))
+  );
+
+  replaceNames(runs);
+}
+
 exports.getMapWRs = getMapWRs;
 exports.getMapWR = getMapWR;
 exports.getExtraWRs = getExtraWRs;
 exports.getMapList = getMapList;
 exports.getRecentMapWRs = getRecentMapWRs;
 exports.getRecordMap = getRecordMap;
+exports.promptAllNames = promptAllNames;

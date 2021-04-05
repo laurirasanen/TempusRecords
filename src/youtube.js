@@ -8,6 +8,7 @@
   oauthConfig = require("./data/oauth.json"),
   opn = require("opn"),
   utils = require("./utils.js"),
+  demo = require("./demo.js"),
   fullbright = require("./data/fullbright_maps.json"),
   uploaded = require("./data/uploaded.json");
 
@@ -540,6 +541,11 @@ async function concatCollection(cb) {
   let completed = false;
   let ff = ffmpeg();
 
+  let targetFile = config.svr.recordingFolder + "/collection.mp4";
+  if (collectionsRuns[0].zone.type == "course") {
+    targetFile = config.svr.recordingFolder + `/${collectionsRuns[0].map.name}_collection.mp4`;
+  }
+
   for (let i = 0; i < collectionRuns.length; i++) {
     ff.input(collectionRuns[i].outputFile);
   }
@@ -567,7 +573,7 @@ async function concatCollection(cb) {
       console.log("Finished concatenating");
       cb();
     })
-    .mergeToFile(config.svr.recordingFolder + "/collection.mp4", config.svr.recordingFolder);
+    .mergeToFile(targetFile, config.svr.recordingFolder);
 }
 
 async function uploadCollection() {
@@ -580,10 +586,15 @@ async function uploadCollection() {
   }
 
   const isBonus = collectionRuns[0].zone.type === "bonus";
+  const isCourse = collectionRuns[0].zone.type === "course";
 
   console.log(`Uploading collection`);
 
   var file = config.svr.recordingFolder + "/collection.mp4";
+  if (isCourse) {
+    file = config.svr.recordingFolder + `/${collectionsRuns[0].map.name}_collection.mp4`;
+  }
+
   var description = "";
   var stats = fs.statSync(file);
   var fileSize = stats.size;
@@ -596,29 +607,22 @@ async function uploadCollection() {
   description = "Runs:\n";
   for (let run of collectionRuns) {
     if (useTimestamps) {
-      try {
-        let duration = await getDuration(run.outputFile);
-        let timeElapsed = new Date(0);
-        timeElapsed.setSeconds(Math.floor(seconds));
-        let timestamp = `${timeElapsed.getMinutes()}:${
-          timeElapsed.getSeconds() < 10 ? "0" : ""
-        }${timeElapsed.getSeconds()}`;
-        description += `${timestamp} ${run.map.name} ${isBonus ? "Bonus" : "Trick"} ${run.zone.zoneindex}${
-          run.zone.customName ? " (" + run.zone.customName + ")" : ""
-        } by ${run.player.name} (${run.class === "SOLDIER" ? "Soldier" : "Demoman"})\n`;
-        seconds += duration;
-      } catch (err) {
-        console.log(`Error getting duration of ${run.outputFile}!`);
-        console.error(err);
-        // Failing to get the length of 1 video will make all future timestamps inaccurate
-        useTimestamps = false;
-      }
+      let duration = await getDuration(run.outputFile);
+      let timeElapsed = new Date(0);
+      timeElapsed.setSeconds(Math.floor(seconds));
+      let timestamp = `${timeElapsed.getMinutes()}:${
+        timeElapsed.getSeconds() < 10 ? "0" : ""
+      }${timeElapsed.getSeconds()}`;
+      description += `${timestamp} ${run.map.name} ${util.capitalizeFirst(run.zone.type)} ${run.zone.zoneindex}${
+        run.zone.customName ? " (" + run.zone.customName + ")" : ""
+      } by ${run.player.name} (${run.class === "SOLDIER" ? "Soldier" : "Demoman"})\n`;
+      seconds += duration;
     }
 
     if (!useTimestamps) {
-      description += `${run.map.name} ${isBonus ? "Bonus" : "Trick"} ${run.zone.zoneindex} by ${run.player.name} (${
-        run.class === "SOLDIER" ? "Soldier" : "Demoman"
-      })\n`;
+      description += `${run.map.name} ${util.capitalizeFirst(run.zone.type)} ${run.zone.zoneindex} by ${
+        run.player.name
+      } (${run.class === "SOLDIER" ? "Soldier" : "Demoman"})\n`;
     }
   }
   description += "\n";
@@ -629,23 +633,31 @@ async function uploadCollection() {
   });
 
   // Common tags for all videos
-  var tags = ["Team Fortress 2", "TF2", "rocketjump", "speedrun", "tempus", "record", "soldier", "demoman"];
-
-  if (isBonus) {
-    tags.push(...["bonus", "bonuses", "bonus collection"]);
-  } else {
-    tags.push(...["trick", "tricks", "trick collection"]);
-  }
+  var tags = [
+    "Team Fortress 2",
+    "TF2",
+    "rocketjump",
+    "speedrun",
+    "tempus",
+    "record",
+    "soldier",
+    "demoman",
+    collectionRuns[0].zone.type,
+    "collection",
+  ];
 
   let previousProgress = 0;
+
+  let title = isCourse ? config.youtube.courseCollectionTitle : config.youtube.collectionTitle;
 
   var req = youtube_api.videos.insert(
     {
       resource: {
         snippet: {
-          title: config.youtube.collectionTitle
-            .replace("$ZONETYPE", isBonus ? "Bonus" : "Trick")
-            .replace("$NUMBER", isBonus ? uploaded.bonusCollections + 1 : uploaded.trickCollections + 1),
+          title: title
+            .replace("$ZONETYPE", util.capitalizeFirst(run.zone.type))
+            .replace("$NUMBER", isBonus ? uploaded.bonusCollections + 1 : uploaded.trickCollections + 1)
+            .replace("$MAP", collectionsRuns[0].map.name),
           description: description,
           tags: tags,
         },
@@ -677,20 +689,26 @@ async function uploadCollection() {
         console.log("Done uploading");
       }
 
-      // Youtube sucks
-      let answer = readlineSync.question("Was youtube processing succesful? Y/n: ");
-      if (answer === "n") {
-        // Reupload
-        uploadCollection();
-        return;
+      if (!isCourse) {
+        // Youtube sucks
+        let answer = readlineSync.question("Was youtube processing succesful? Y/n: ");
+        if (answer === "n") {
+          // Reupload
+          uploadCollection();
+          return;
+        }
       }
+
+      let playlist = "PL_D9J2bYWXyJYdkfuv8s0kTvQygJQkW8_"; // trick
+      if (isBonus) playlist = "PL_D9J2bYWXyJBc0YvjRpqpFc5hY-ieU-B";
+      if (isCourse) playlist = "PL_D9J2bYWXyI-8Kk7tPKp1ApfnstuWMUn";
 
       // Add video to playlist
       youtube_api.playlistItems.insert(
         {
           resource: {
             snippet: {
-              playlistId: isBonus ? "PL_D9J2bYWXyJBc0YvjRpqpFc5hY-ieU-B" : "PL_D9J2bYWXyJYdkfuv8s0kTvQygJQkW8_",
+              playlistId: playlist,
               resourceId: {
                 kind: "youtube#video",
                 videoId: response.data.id,
@@ -717,15 +735,17 @@ async function uploadCollection() {
           return;
         }
 
-        let accessor = isBonus ? "bonuses" : "tricks";
+        let accessor = collectionRuns[0].zone.type.endsWith("s") ? run.zone.type + "es" : run.zone.type + "s";
         for (let run of collectionRuns) {
           if (!uploaded[accessor].includes(run.id)) {
             uploaded[accessor].push(run.id);
           }
         }
 
-        accessor = isBonus ? "bonusCollections" : "trickCollections";
-        uploaded[accessor] += 1;
+        if (!isCourse) {
+          accessor = collectionRuns[0].zone.type + "Collections";
+          uploaded[accessor] += 1;
+        }
 
         utils.writeJson("./data/uploaded.json", uploaded, (err) => {
           if (err !== null) {
@@ -735,6 +755,8 @@ async function uploadCollection() {
           }
 
           console.log("Updated uploaded list");
+
+          demo.init(false, null, null, isCourse, isBonus, !isCourse && !isBonus, true);
         });
       });
     }

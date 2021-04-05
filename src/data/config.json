@@ -18,6 +18,7 @@
       "https://github.com/crashfort/SourceDemoRender"
     ],
     "collectionTitle": "$ZONETYPE collection #$NUMBER",
+    "courseCollectionTitle": "$MAP course collection",
     "collectionDescription": [
       "This video was automatically generated on $DATETIME",
       "https://github.com/laurirasanen/tempusrecords",
@@ -30,7 +31,7 @@
   },
   "video": {
     "deleteCompressed": false,
-    "deleteUncompressed": true,
+    "deleteUncompressed": false,
     "maxRunsInCollection": 35,
     "mapMaxDuration": 90,
     "extraMaxDuration": 1,

@@ -1,6 +1,7 @@
 const rcon = require("./rcon.js"),
   demo = require("./demo.js"),
-  utils = require("./utils");
+  utils = require("./utils"),
+  tempus = require("./tempus");
 
 // TODO: remove unnecessary stuff from svr/configs/tempusrecords
 // TODO: dry run launch arg, no youtube upload
@@ -12,6 +13,7 @@ async function start() {
   var recent = true;
   var mapName = null;
   var className = null;
+  var course = false;
   var bonus = false;
   var trick = false;
   var upload = true;
@@ -24,10 +26,15 @@ async function start() {
 
     if (process.argv[2] == "all") {
       recent = false;
+    } else if (process.argv[2] == "course") {
+      course = true;
     } else if (process.argv[2] == "bonus") {
       bonus = true;
     } else if (process.argv[2] == "trick") {
       trick = true;
+    } else if (process.argv[2] == "nameprompt") {
+      tempus.promptAllNames();
+      return;
     }
 
     if (process.argv.length > 3) {
@@ -57,7 +64,7 @@ async function start() {
   utils.applyConfig();
 
   rcon.init();
-  demo.init(recent, mapName, className, bonus, trick, upload);
+  demo.init(recent, mapName, className, course, bonus, trick, upload);
 }
 
 start();

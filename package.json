@@ -30,10 +30,12 @@
     "start": "cd src && node index.js",
     "upload": "npm run start",
     "upload:all": "npm run start -- all",
+    "upload:course": "npm run start -- course",
     "upload:bonus": "npm run start -- bonus",
     "upload:trick": "npm run start -- trick",
     "record:bonus": "npm run start -- bonus noupload",
-    "restore": "npm run start -- restore"
+    "restore": "npm run start -- restore",
+    "nameprompt": "npm run start -- nameprompt"
   },
   "devDependencies": {
     "prettier": "^2.0.5"
