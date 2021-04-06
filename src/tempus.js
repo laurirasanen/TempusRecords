@@ -92,6 +92,12 @@ async function getExtraWRs(mapList, zoneType, filter = true) {
       }
 
       if (wrs.length > 0 && filter) {
+        if (wrs.length < zones.length) {
+          // No demo for all courses or already uploaded some, skip map
+          console.log(`Skipping ${map.name} (${wrs.length}/${zones.length} courses)`);
+          wrs = [];
+          continue;
+        }
         // Limit to single map at a time
         break;
       }
@@ -242,6 +248,7 @@ async function getRecentMapWRs() {
   let wrs = [];
   for (const wr of result.data.activity.mapWrs) {
     console.log(`Getting recent WRs ${wrs.length + 1}/${result.data.activity.mapWrs.length}`);
+    // TODO: break if in uploaded
     wrs.push(await getMapWR(wr.map.name, wr.class));
   }
   return filterRuns(wrs);
