@@ -4,7 +4,6 @@ const { writeJSONSync } = require("fs-extra");
 const nicknames = require("./data/nicknames.json");
 const blacklist = require("./data/blacklist.json");
 const config = require("./data/config.json");
-const uploaded = require("./data/uploaded.json");
 const readlineSync = require("readline-sync");
 
 async function getMapWRs(mapList, filter = true) {
@@ -255,6 +254,8 @@ function filterRuns(runs) {
     wasArray = false;
   }
 
+  let uploaded = require("./data/uploaded.json");
+
   // Sanity check
   runs = runs.filter((run) => run != null);
 
@@ -346,6 +347,8 @@ function shouldUploadExtra(run) {
   if (!run || !run.demo || !run.demo.url) {
     return false;
   }
+
+  let uploaded = require("./data/uploaded.json");
 
   // "courses", "bonuses", "tricks"
   const accessor = run.zone.type.endsWith("s") ? run.zone.type + "es" : run.zone.type + "s";

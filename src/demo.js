@@ -4,8 +4,7 @@
   utils = require("./utils.js"),
   config = require("./data/config.json"),
   youtube = require("./youtube.js"),
-  quality = require("./data/quality.json"),
-  uploaded = require("./data/uploaded.json");
+  quality = require("./data/quality.json");
 
 let runs = [];
 
@@ -20,6 +19,12 @@ async function init(recent, mapName, className, course, bonus, trick, upload = t
   collectionRuns = [];
   currentRun = null;
   isCollection = false;
+
+  // delete cache to fetch new value of json files on reinit
+  // todo: replace require with await load for json files
+  delete require.cache[require.resolve("./data/uploaded.json")];
+  delete require.cache[require.resolve("./data/nicknames.json")];
+  let uploaded = require("./data/uploaded.json");
 
   if (mapName && className) {
     // Upload specific run
@@ -38,9 +43,9 @@ async function init(recent, mapName, className, course, bonus, trick, upload = t
     isCollection = true;
     let mapList = await tempus.getMapList();
     if (bonus) {
-      mapList = mapList.filter(map => map.zones.bonus.length > 0);
+      mapList = mapList.filter((map) => map.zones.bonus.length > 0);
     } else {
-      mapList = mapList.filter(map => map.zones.trick.length > 0);
+      mapList = mapList.filter((map) => map.zones.trick.length > 0);
     }
 
     if (bonus) {
@@ -99,8 +104,9 @@ async function init(recent, mapName, className, course, bonus, trick, upload = t
 async function recordCourses() {
   isCollection = true;
   let mapList = await tempus.getMapList();
-  mapList = mapList.filter(map => map.zones.course.length > 0);
+  mapList = mapList.filter((map) => map.zones.course.length > 0);
 
+  let uploaded = require("./data/uploaded.json");
   if (uploaded.courses.length > 0) {
     // continue from where we left off last collection
     let lastMap = await tempus.getRecordMap(uploaded.courses[uploaded.courses.length - 1]);

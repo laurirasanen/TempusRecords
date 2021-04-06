@@ -9,8 +9,7 @@
   opn = require("opn"),
   utils = require("./utils.js"),
   demo = require("./demo.js"),
-  fullbright = require("./data/fullbright_maps.json"),
-  uploaded = require("./data/uploaded.json");
+  fullbright = require("./data/fullbright_maps.json");
 
 let hasTokens = false;
 let initialized = false;
@@ -655,6 +654,7 @@ async function uploadCollection() {
   let previousProgress = 0;
 
   let title = isCourse ? config.youtube.courseCollectionTitle : config.youtube.collectionTitle;
+  let uploaded = require("./data/uploaded.json");
 
   var req = youtube_api.videos.insert(
     {
