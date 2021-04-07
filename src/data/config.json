@@ -89,7 +89,8 @@
       "maxAlpha": 0.8
     },
     "fadeInDuration": 0.25,
-    "fadeOutDuration": 0.5
+    "fadeOutDuration": 0.5,
+    "allowMissingCourses": true
   },
   "audio": {
     "fadeInDuration": 1,
