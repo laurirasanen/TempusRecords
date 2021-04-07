@@ -493,6 +493,11 @@ async function upload(file, run) {
           }
 
           console.log("Updated uploaded list");
+
+          // Continue with courses if last run
+          if(demo.isLastRun(run)) {
+            demo.init(false, null, null, true, false, false, !noUpload);
+          }
         });
 
         // Remove compressed video
