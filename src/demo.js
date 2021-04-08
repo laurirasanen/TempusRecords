@@ -108,7 +108,7 @@ async function recordCourses() {
   if (uploaded.courses.length > 0) {
     // continue from where we left off last collection
     let lastMap = await tempus.getRecordMap(uploaded.courses[uploaded.courses.length - 1]);
-    let lastIndex = mapList.findIndex((m) => m.id === lastMap.id) - 2;
+    let lastIndex = mapList.findIndex((m) => m.id === lastMap.id);
     if (lastIndex >= 0) {
       let tmp = mapList.splice(0, lastIndex + 1);
       mapList.push(...tmp);
@@ -124,7 +124,6 @@ async function recordCourses() {
 
   for (let i = 0; i < runs.length; i++) {
     // This is used for concatenating video files before upload
-    // TODO: ffmpeg fails if this is too long?
     runs[i].outputFile = `${config.svr.recordingFolder}/${utils.recordingFilename(runs[i], false, true)}`;
     collectionRuns.push(runs[i]);
   }
@@ -157,13 +156,19 @@ function recordRun(run) {
     youtube.init();
   }
 
-  // Get quality options
-  let runLength = run.duration / 60;
-  quality.forEach((opt) => {
-    if (runLength > opt.minDuration) {
-      run.quality = opt;
-    }
-  });
+  if (run.zone.type === "course") {
+    // default to max to avoid ffmpeg issues
+    // with different sized frames during concat.
+    run.quality = quality[0];
+  } else {
+    // Get quality options based on duration
+    let runLength = run.duration / 60;
+    quality.forEach((opt) => {
+      if (runLength > opt.minDuration) {
+        run.quality = opt;
+      }
+    });
+  }
 
   // Check for existing video if we crashed before, etc
   var video = `${config.svr.recordingFolder}/${utils.recordingFilename(run)}`;
