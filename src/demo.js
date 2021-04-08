@@ -69,9 +69,7 @@ async function init(recent, mapName, className, course, bonus, trick, upload = t
 
     for (let i = 0; i < runs.length; i++) {
       // This is used for concatenating video files before upload
-      runs[
-        i
-      ].outputFile = `${config.svr.recordingFolder}/${runs[i].demo.filename}_${runs[i].zone.type}${runs[i].zone.zoneindex}_${runs[i].class}_compressed.mp4`;
+      runs[i].outputFile = `${config.svr.recordingFolder}/${utils.recordingFilename(runs[i], false, true)}`;
       collectionRuns.push(runs[i]);
     }
 
@@ -110,7 +108,7 @@ async function recordCourses() {
   if (uploaded.courses.length > 0) {
     // continue from where we left off last collection
     let lastMap = await tempus.getRecordMap(uploaded.courses[uploaded.courses.length - 1]);
-    let lastIndex = mapList.findIndex((m) => m.id === lastMap.id);
+    let lastIndex = mapList.findIndex((m) => m.id === lastMap.id) - 2;
     if (lastIndex >= 0) {
       let tmp = mapList.splice(0, lastIndex + 1);
       mapList.push(...tmp);
@@ -126,9 +124,8 @@ async function recordCourses() {
 
   for (let i = 0; i < runs.length; i++) {
     // This is used for concatenating video files before upload
-    runs[
-      i
-    ].outputFile = `${config.svr.recordingFolder}/${runs[i].demo.filename}_${runs[i].zone.type}${runs[i].zone.zoneindex}_${runs[i].class}_compressed.mp4`;
+    // TODO: ffmpeg fails if this is too long?
+    runs[i].outputFile = `${config.svr.recordingFolder}/${utils.recordingFilename(runs[i], false, true)}`;
     collectionRuns.push(runs[i]);
   }
 
@@ -169,15 +166,11 @@ function recordRun(run) {
   });
 
   // Check for existing video if we crashed before, etc
-  var video = `${config.svr.recordingFolder}/${run.demo.filename}_${run.zone.type + run.zone.zoneindex}_${
-    run.class
-  }.mp4`;
-  var audio = `${config.svr.recordingFolder}/${run.demo.filename}_${run.zone.type + run.zone.zoneindex}_${
-    run.class
-  }.wav`;
+  var video = `${config.svr.recordingFolder}/${utils.recordingFilename(run)}`;
+  var audio = `${config.svr.recordingFolder}/${utils.recordingFilename(run, true)}`;
 
   // Check for already compressed version
-  let compressed = video.split(".mp4")[0] + "_compressed.mp4";
+  let compressed = `${config.svr.recordingFolder}/${utils.recordingFilename(run, false, true)}`;
   if (fs.existsSync(compressed)) {
     if (!isCollection || isLastRun(run)) {
       console.log(`WARNING: Uploading existing video '${compressed}'`);
@@ -281,6 +274,7 @@ function getPlayCommands(run, isVideo = true) {
 
   // Commands used to control the demo playback.
   // Running rcon tmps_records_* commands will trigger events in rcon.js.
+  let filename = utils.recordingFilename(run, !isVideo);
   var commands = [
     {
       tick: 33,
@@ -292,9 +286,7 @@ function getPlayCommands(run, isVideo = true) {
       tick: run.demoStartTick - startPadding,
       commands: `exec tmps_records_spec_player; spec_mode 4; demo_resume; ${
         isVideo ? "" : "volume 0.1;"
-      } rcon tmps_records_run_start; startmovie ${run.demo.filename}_${run.zone.type + run.zone.zoneindex}_${
-        run.class
-      }${isVideo ? ".mp4 tempus" : ".wav wav"}`,
+      } rcon tmps_records_run_start; startmovie ${filename}${isVideo ? " tempus" : " wav"}`,
     },
     { tick: run.demoStartTick, commands: `exec tmps_records_spec_player; spec_mode 4` }, // In case player dead before start_tick
     { tick: run.demoEndTick + endPadding - 33, commands: "rcon tmps_records_run_end" },

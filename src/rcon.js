@@ -35,14 +35,10 @@ var srv = net.createServer(function (sock) {
                   // copy and unlink old file instead.
                   try {
                     fs.copyFileSync(
-                      `${config.tf2.path}/${run.demo.filename}_${run.zone.type + run.zone.zoneindex}_${run.class}.wav`,
-                      `${config.svr.recordingFolder}/${run.demo.filename}_${run.zone.type + run.zone.zoneindex}_${
-                        run.class
-                      }.wav`
+                      `${config.tf2.path}/${utils.recordingFilename(run, true)}`,
+                      `${config.svr.recordingFolder}/${utils.recordingFilename(run, true)}`
                     );
-                    fs.unlinkSync(
-                      `${config.tf2.path}/${run.demo.filename}_${run.zone.type + run.zone.zoneindex}_${run.class}.wav`
-                    );
+                    fs.unlinkSync(`${config.tf2.path}/${utils.recordingFilename(run, true)}`);
                   } catch (err) {
                     console.log("[FILE] Could not movie audio file!");
                     console.error(err);
@@ -96,9 +92,7 @@ var srv = net.createServer(function (sock) {
             (run) => {
               utils.killSVR();
 
-              var filename = `${config.svr.recordingFolder}/${run.demo.filename}_${
-                run.zone.type + run.zone.zoneindex
-              }_${run.class}.mp4`;
+              var filename = `${config.svr.recordingFolder}/${utils.recordingFilename(run)}`;
 
               // Compress
               youtube.compress(filename, `${filename.split(".mp4")[0]}.wav`, run, (result, name) => {

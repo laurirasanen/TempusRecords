@@ -90,7 +90,8 @@
     },
     "fadeInDuration": 0.25,
     "fadeOutDuration": 0.5,
-    "allowMissingCourses": true
+    "allowMissingCourses": true,
+    "filenameIds": false
   },
   "audio": {
     "fadeInDuration": 1,

@@ -261,6 +261,26 @@ function capitalizeFirst(str) {
   return str[0].toUpperCase() + str.substr(1);
 }
 
+function recordingFilename(run, audio = false, compressed = false) {
+  let filename = "";
+
+  if (config.video.filenameIds) {
+    // Long file names might cause issues.
+    // Run ids are short and unique but slightly more annoying to debug, etc.
+    filename += run.id;
+  } else {
+    filename += `${run.demo.filename}_${run.zone.type}${run.zone.zoneindex}_${run.class}`;
+  }
+
+  if (compressed) {
+    filename += "_comp";
+  }
+
+  filename += audio ? ".wav" : ".mp4";
+
+  return filename;
+}
+
 module.exports.launchSVR = launchSVR;
 module.exports.launchTF2 = launchTF2;
 module.exports.killSVR = killSVR;
@@ -277,3 +297,4 @@ module.exports.applyConfig = applyConfig;
 module.exports.isProcessRunning = isProcessRunning;
 module.exports.sanitize = sanitize;
 module.exports.capitalizeFirst = capitalizeFirst;
+module.exports.recordingFilename = recordingFilename;

@@ -72,7 +72,7 @@ function getDuration(file) {
 async function compress(video, audio, run, cb) {
   if (!cb || typeof cb !== "function") throw "callback is not a function";
 
-  const output = video.split(".mp4")[0] + "_compressed.mp4";
+  const output = video.split(".mp4")[0] + "_comp.mp4";
   let prevProgress = 0;
 
   let wrSplits = [];
@@ -495,7 +495,7 @@ async function upload(file, run) {
           console.log("Updated uploaded list");
 
           // Continue with courses if last run
-          if(demo.isLastRun(run)) {
+          if (demo.isLastRun(run)) {
             demo.init(false, null, null, true, false, false, !noUpload);
           }
         });
@@ -746,7 +746,9 @@ async function uploadCollection() {
           return;
         }
 
-        let accessor = collectionRuns[0].zone.type.endsWith("s") ? collectionRuns[0].zone.type + "es" : collectionRuns[0].zone.type + "s";
+        let accessor = collectionRuns[0].zone.type.endsWith("s")
+          ? collectionRuns[0].zone.type + "es"
+          : collectionRuns[0].zone.type + "s";
         for (let run of collectionRuns) {
           if (!uploaded[accessor].includes(run.id)) {
             uploaded[accessor].push(run.id);
