@@ -556,9 +556,12 @@ async function concatCollection(cb) {
     return;
   }
 
+  let fileList = "";
   for (let i = 0; i < collectionRuns.length; i++) {
-    ff.input(collectionRuns[i].outputFile);
+    let parts = collectionRuns[i].outputFile.split("/");
+    fileList += `file '${parts[parts.length - 1]}'\n`;
   }
+  fs.writeFileSync(`${config.svr.recordingFolder}/videolist.txt`, fileList);
 
   ff.on("error", (err) => {
     console.log("Failed to concatenate files");
@@ -583,7 +586,12 @@ async function concatCollection(cb) {
       console.log("Finished concatenating");
       cb();
     })
-    .mergeToFile(targetFile, config.svr.recordingFolder);
+    // Use concat demuxer instead of filter to avoid re-encode:
+    // https://trac.ffmpeg.org/wiki/Concatenate
+    .input(`${config.svr.recordingFolder}/videolist.txt`)
+    .inputOptions(["-f concat"])
+    .outputOptions(["-c copy"])
+    .save(targetFile);
 }
 
 async function uploadCollection() {
