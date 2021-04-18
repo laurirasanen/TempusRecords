@@ -18,6 +18,7 @@
       "https://github.com/crashfort/SourceDemoRender"
     ],
     "collectionTitle": "$ZONETYPE collection #$NUMBER",
+    "bonusCollectionTitle": "$ZONETYPE collection #$NUMBER [$INITIALS]",
     "courseCollectionTitle": "$MAP course collection",
     "collectionDescription": [
       "This video was automatically generated on $DATETIME",

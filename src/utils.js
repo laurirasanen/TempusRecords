@@ -281,6 +281,18 @@ function recordingFilename(run, audio = false, compressed = false) {
   return filename;
 }
 
+function removeMapPrefix(mapName) {
+  const prefixes = ["jump_", "rj_", "sj_"];
+
+  for (const prefix of prefixes) {
+    if (mapName.split(prefix).length > 0) {
+      return mapName.split(prefix)[1];
+    }
+  }
+
+  return mapName;
+}
+
 module.exports.launchSVR = launchSVR;
 module.exports.launchTF2 = launchTF2;
 module.exports.killSVR = killSVR;
@@ -298,3 +310,4 @@ module.exports.isProcessRunning = isProcessRunning;
 module.exports.sanitize = sanitize;
 module.exports.capitalizeFirst = capitalizeFirst;
 module.exports.recordingFilename = recordingFilename;
+module.exports.removeMapPrefix = removeMapPrefix;

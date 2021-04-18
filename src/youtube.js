@@ -665,18 +665,40 @@ async function uploadCollection() {
   ];
 
   let previousProgress = 0;
-
-  let title = isCourse ? config.youtube.courseCollectionTitle : config.youtube.collectionTitle;
   let uploaded = require("./data/uploaded.json");
+  let title = config.youtube.collectionTitle;
+
+  if (isCourse) {
+    title = config.youtube.courseCollectionTitle;
+  } else if (isBonus) {
+    title = config.youtube.bonusCollectionTitle;
+
+    // Add map name initials
+    let initials = [
+      utils.removeMapPrefix(collectionRuns[0].map.name).substr(0, 1).toUpperCase(),
+      utils
+        .removeMapPrefix(collectionRuns[collectionRuns.length - 1].map.name)
+        .substr(0, 1)
+        .toUpperCase(),
+    ];
+
+    let initialsText = `${initials[0]}-${initials[1]}`;
+    if (initials[0] === initials[1]) {
+      initialsText = initials[0];
+    }
+
+    title = title.replace("$INITIALS", initialsText);
+  }
+
+  title = title.replace("$ZONETYPE", utils.capitalizeFirst(collectionRuns[0].zone.type));
+  title = title.replace("$NUMBER", isBonus ? uploaded.bonusCollections + 1 : uploaded.trickCollections + 1);
+  title = title.replace("$MAP", collectionRuns[0].map.name);
 
   var req = youtube_api.videos.insert(
     {
       resource: {
         snippet: {
-          title: title
-            .replace("$ZONETYPE", utils.capitalizeFirst(collectionRuns[0].zone.type))
-            .replace("$NUMBER", isBonus ? uploaded.bonusCollections + 1 : uploaded.trickCollections + 1)
-            .replace("$MAP", collectionRuns[0].map.name),
+          title: title,
           description: description,
           tags: tags,
         },
