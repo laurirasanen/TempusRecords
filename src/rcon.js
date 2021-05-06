@@ -3,7 +3,8 @@
   demo = require("./demo.js"),
   youtube = require("./youtube.js"),
   config = require("./data/config.json"),
-  utils = require("./utils.js");
+  utils = require("./utils.js"),
+  videojs = require("./video.js");
 
 var recorded_runs = 0,
   finishedInstances = 0;
@@ -95,7 +96,7 @@ var srv = net.createServer(function (sock) {
               var filename = `${config.svr.recordingFolder}/${utils.recordingFilename(run)}`;
 
               // Compress
-              youtube.compress(filename, `${filename.split(".mp4")[0]}.wav`, run, (result, name) => {
+              videojs.compress(filename, `${filename.split(".mp4")[0]}.wav`, run, (result, name) => {
                 // Upload final output
                 if (result === true && (!isCollection || demo.isLastRun(run))) {
                   youtube.upload(name, run);

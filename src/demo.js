@@ -4,7 +4,8 @@
   utils = require("./utils.js"),
   config = require("./data/config.json"),
   youtube = require("./youtube.js"),
-  quality = require("./data/quality.json");
+  quality = require("./data/quality.json"),
+  videojs = require("./video.js");
 
 let runs = [];
 
@@ -193,7 +194,7 @@ function recordRun(run) {
     console.log(`Make sure to delete existing videos if they're corrupted, etc.`);
 
     // Compress
-    youtube.compress(video, audio, run, (result, name) => {
+    videojs.compress(video, audio, run, (result, name) => {
       if (result === true) {
         // Upload final output
         if (result === true && (!isCollection || isLastRun(run))) {
