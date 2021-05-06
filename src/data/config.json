@@ -62,24 +62,29 @@
       "ffmpegOptions": {
         "font": "Segoe UI Light",
         "fontsize": "h/15",
-        "fontcolor": "#FFFFFF"
+        "fontcolor": "#FFFFFF",
+        "shadowy": 2
       },
       "position": {
         "bottomLeft": {
           "x": "5",
-          "y": "h - th - 5"
+          "y": "h - th - 5",
+          "shadowx": "-2"
         },
         "topLeft": {
           "x": "5",
-          "y": "h - h/7.5"
+          "y": "h - h/7.5",
+          "shadowx": "-2"
         },
         "bottomRight": {
           "x": "w - tw - 5",
-          "y": "h - th - 5"
+          "y": "h - th - 5",
+          "shadowx": "2"
         },
         "topRight": {
           "x": "w - tw - 5",
-          "y": "h - h/7.5"
+          "y": "h - h/7.5",
+          "shadowx": "2"
         }
       },
       "displayDuration": 3,
