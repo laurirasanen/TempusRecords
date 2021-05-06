@@ -4,9 +4,28 @@ const ffmpeg = require("fluent-ffmpeg"),
   config = require("./data/config.json"),
   fullbright = require("./data/fullbright_maps.json");
 
+const ffmpegLogger = {
+  debug: (msg) => {
+    logger("debug", msg);
+  },
+  info: (msg) => {
+    logger("info", msg);
+  },
+  warn: (msg) => {
+    logger("warn", msg);
+  },
+  error: (msg) => {
+    logger("error", msg);
+  },
+};
+
+function logger(severity, msg) {
+  console.log(`ffmpeg ${severity}: ${msg}`);
+}
+
 function getDuration(file) {
   return new Promise((resolve, reject) => {
-    ffmpeg(file).ffprobe((err, data) => {
+    ffmpeg(file, { logger: ffmpegLogger }).ffprobe((err, data) => {
       if (err) {
         reject(err);
         return;
@@ -239,7 +258,7 @@ async function compress(video, audio, run, cb) {
     }
   );
 
-  ffmpeg()
+  ffmpeg({ logger: ffmpegLogger })
     .input(video)
     .input(audio)
     .videoFilters(videoFilters)
@@ -318,7 +337,7 @@ async function concatCollection(cb) {
   let frameCount = duration * 60;
   let prevProgress = 0;
   let completed = false;
-  let ff = ffmpeg();
+  let ff = ffmpeg({ logger: ffmpegLogger });
 
   let targetFile = config.svr.recordingFolder + "/collection.mp4";
   if (collectionRuns[0].zone.type == "course") {
