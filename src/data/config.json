@@ -63,6 +63,7 @@
         "font": "Segoe UI Light",
         "fontsize": "h/15",
         "fontcolor": "#FFFFFF",
+        "shadowcolor": "#1E1E1E",
         "shadowy": 2
       },
       "position": {
