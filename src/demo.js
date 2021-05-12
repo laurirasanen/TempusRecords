@@ -201,13 +201,9 @@ function recordRun(run) {
           youtube.upload(name, run);
         }
       }
-
-      // Let's wait until we're done in case we're compressing a bunch
-      // of existing files. Spawning too many ffmpeg processes means trouble.
-      // TODO: add a proper queue for compressions
-      skip();
     });
 
+    skip();
     return;
   }
 

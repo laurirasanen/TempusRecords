@@ -13,6 +13,33 @@
 let hasTokens = false;
 let initialized = false;
 
+const uploadQueue = [];
+
+/**
+ * Add run to upload queue
+ * @returns queue length
+ */
+function addToQueue(obj) {
+  if (!uploadQueue.find((u) => u.file === obj.file)) {
+    console.log("Adding run to upload queue, position: " + uploadQueue.length);
+    uploadQueue.push(obj);
+  }
+  return uploadQueue.length;
+}
+
+/**
+ * Upload next run in queue
+ */
+function uploadNext() {
+  if (uploadQueue.length > 0) {
+    uploadQueue.splice(0, 1);
+  }
+
+  if (uploadQueue.length > 0) {
+    upload(uploadQueue[0].file, uploadQueue[0].run);
+  }
+}
+
 function init() {
   if (initialized) return;
   initialized = true;
@@ -67,6 +94,11 @@ async function upload(file, run) {
     setTimeout(() => {
       upload(file, run);
     }, 5000);
+    return;
+  }
+
+  if (addToQueue(file, run) > 1) {
+    // Already uploading something else
     return;
   }
 
@@ -152,6 +184,8 @@ async function upload(file, run) {
       },
     },
     (err, response) => {
+      uploadNext();
+
       if (err) {
         console.log("Failed to upload video");
         console.log(err);

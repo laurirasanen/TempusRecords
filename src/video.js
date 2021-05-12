@@ -4,6 +4,33 @@ const ffmpeg = require("fluent-ffmpeg"),
   config = require("./data/config.json"),
   fullbright = require("./data/fullbright_maps.json");
 
+const compressQueue = [];
+
+/**
+ * Add run to compress queue
+ * @returns queue length
+ */
+function addToQueue(obj) {
+  if (!compressQueue.find((c) => c.video === obj.video)) {
+    console.log("Adding run to compress queue, position: " + compressQueue.length);
+    compressQueue.push(obj);
+  }
+  return compressQueue.length;
+}
+
+/**
+ * Compress next run
+ */
+function compressNext() {
+  if (compressQueue.length > 0) {
+    compressQueue.splice(0, 1);
+  }
+
+  if (compressQueue.length > 0) {
+    compress(compressQueue[0].video, compressQueue[0].audio, compressQueue[0].run, compressQueue[0].cb);
+  }
+}
+
 const ffmpegLogger = {
   debug: (msg) => {
     logger("debug", msg);
@@ -41,6 +68,11 @@ function getDuration(file) {
 
 async function compress(video, audio, run, cb) {
   if (!cb || typeof cb !== "function") throw "callback is not a function";
+
+  if (addToQueue({ video: video, audio: audio, run: run, cb: cb }) > 1) {
+    // Already compressing something else
+    return;
+  }
 
   const output = video.split(".mp4")[0] + "_comp.mp4";
   let prevProgress = 0;
@@ -301,11 +333,14 @@ async function compress(video, audio, run, cb) {
         });
       }
 
+      compressNext();
       return cb(true, output);
     })
     .on("error", (err) => {
       console.log(`Failed to process ${video}`);
       console.log(err.message);
+
+      compressNext();
       return cb(false, null);
     })
     .save(output);
