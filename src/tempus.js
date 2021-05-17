@@ -4,6 +4,7 @@ const { writeJSONSync } = require("fs-extra");
 const nicknames = require("./data/nicknames.json");
 const blacklist = require("./data/blacklist.json");
 const config = require("./data/config.json");
+const trickConfig = require("./data/trick.json");
 const readlineSync = require("readline-sync");
 
 async function getMapWRs(mapList, filter = true) {
@@ -75,9 +76,25 @@ async function getExtraWRs(mapList, zoneType, filter = true) {
   for (const map of mapList) {
     let zones = await getTypeZones(map.name, zoneType);
 
+    let alternate = true;
     if (zoneType == "course") {
-      // courses
-      // don't alternate between classes for each zone
+      alternate = false;
+    } else if (zoneType == "trick" && trickConfig[map.name]?.disableAlternation) {
+      alternate = false;
+    }
+
+    if (alternate) {
+      for (const zone of zones) {
+        let swr = await getZoneWR(map.name, zoneType.toUpperCase(), zone.zoneindex, "SOLDIER");
+        let dwr = await getZoneWR(map.name, zoneType.toUpperCase(), zone.zoneindex, "DEMOMAN");
+        if (shouldUploadExtra(swr) || !filter) {
+          wrs.push(swr);
+        }
+        if (shouldUploadExtra(dwr) || !filter) {
+          wrs.push(dwr);
+        }
+      }
+    } else {
       for (const zone of zones) {
         let swr = await getZoneWR(map.name, zoneType.toUpperCase(), zone.zoneindex, "SOLDIER");
         if (shouldUploadExtra(swr) || !filter) {
@@ -90,7 +107,9 @@ async function getExtraWRs(mapList, zoneType, filter = true) {
           wrs.push(dwr);
         }
       }
+    }
 
+    if (zoneType == "course") {
       if (wrs.length > 0 && filter) {
         if (!config.video.allowMissingCourses && wrs.length < zones.length) {
           // No demo for all courses or already uploaded some, skip map
@@ -102,18 +121,6 @@ async function getExtraWRs(mapList, zoneType, filter = true) {
         break;
       }
     } else {
-      // bonuses and tricks
-      for (const zone of zones) {
-        let swr = await getZoneWR(map.name, zoneType.toUpperCase(), zone.zoneindex, "SOLDIER");
-        let dwr = await getZoneWR(map.name, zoneType.toUpperCase(), zone.zoneindex, "DEMOMAN");
-        if (shouldUploadExtra(swr) || !filter) {
-          wrs.push(swr);
-        }
-        if (shouldUploadExtra(dwr) || !filter) {
-          wrs.push(dwr);
-        }
-      }
-
       if (!noUpload && filter) {
         // Check for max number of runs,
         // this may be off by 1 since we add 2 at a time.
