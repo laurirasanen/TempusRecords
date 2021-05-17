@@ -136,6 +136,12 @@ async function upload(file, run) {
     description += line + "\n";
   });
 
+  // description max size is 5000 bytes,
+  // I assume that includes null terminator.
+  if (description.length > 4999) {
+    description = description.substr(0, 4999);
+  }
+
   // Common tags for all videos
   var tags = ["Team Fortress 2", "TF2", "rocketjump", "speedrun", "tempus", "record"];
 
@@ -315,6 +321,12 @@ async function uploadCollection() {
     line = line.replace("$DATETIME", date.toUTCString());
     description += line + "\n";
   });
+
+  // description max size is 5000 bytes,
+  // I assume that includes null terminator.
+  if (description.length > 4999) {
+    description = description.substr(0, 4999);
+  }
 
   // Common tags for all videos
   var tags = [
