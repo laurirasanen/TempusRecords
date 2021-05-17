@@ -355,6 +355,7 @@ async function concatCollection(cb) {
 
   for (let i = collectionRuns.length - 1; i >= 0; i--) {
     if (!fs.existsSync(collectionRuns[i].outputFile)) {
+      console.log(`WARN: Run in collection but missing file ${collectionRuns[i].outputFile}`);
       collectionRuns.splice(i, 1);
     }
   }
