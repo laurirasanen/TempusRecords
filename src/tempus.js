@@ -3,6 +3,7 @@ const { schema } = require("tempus-api-graphql");
 const { writeJSONSync } = require("fs-extra");
 const nicknames = require("./data/nicknames.json");
 const blacklist = require("./data/blacklist.json");
+const serverBlacklist = require("./data/server_blacklist.json");
 const config = require("./data/config.json");
 const trickConfig = require("./data/trick.json");
 const readlineSync = require("readline-sync");
@@ -43,7 +44,10 @@ async function getMapWR(mapName, className, filter = true) {
           player {
             name
             steamId
-          }                
+          }
+          server {
+            id
+          }
           splits {
             type
             zoneindex
@@ -184,6 +188,9 @@ async function getZoneWR(mapName, zoneType, zoneId, className) {
             name
             steamId
           }
+          server {
+            id
+          }
           zone {
             id
             type
@@ -314,6 +321,13 @@ function filterRuns(runs) {
       }
     }
     if (cont) continue;
+
+    // Remove blacklisted servers
+    if (serverBlacklist.includes(runs[i].server.id)) {
+      console.log(`Removing blacklisted server: ${runs[i].map.name} (${runs[i].class})`);
+      runs.splice(i, 1);
+      continue;
+    }
   }
 
   replaceNames(runs);
