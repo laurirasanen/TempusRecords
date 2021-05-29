@@ -34,7 +34,7 @@
     "deleteCompressed": false,
     "deleteUncompressed": false,
     "maxRunsInCollection": 35,
-    "mapMaxDuration": 90,
+    "mapMaxDuration": 30,
     "extraMaxDuration": 1,
     "extraMinAge": 0,
     "mapMinAge": 7,
