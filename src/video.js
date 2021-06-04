@@ -69,7 +69,8 @@ function getDuration(file) {
 async function compress(video, audio, run, cb) {
   if (!cb || typeof cb !== "function") throw "callback is not a function";
 
-  if (addToQueue({ video: video, audio: audio, run: run, cb: cb }) > 1) {
+  addToQueue({ video: video, audio: audio, run: run, cb: cb });
+  if (compressQueue[0].video !== video) {
     // Already compressing something else
     return;
   }
