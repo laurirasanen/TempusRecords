@@ -52,15 +52,41 @@
     }
   },
   {
-    "name": "jump_depression_a11",
+    "name": "jump_empusa_final",
     "SOLDIER": {
-      "map": true,
-      "courses": [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11],
+      "map": false,
+      "courses": [],
       "bonuses": []
     },
     "DEMOMAN": {
       "map": true,
-      "courses": [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11],
+      "courses": [],
+      "bonuses": []
+    }
+  },
+  {
+    "name": "jump_deep_final",
+    "SOLDIER": {
+      "map": false,
+      "courses": [],
+      "bonuses": []
+    },
+    "DEMOMAN": {
+      "map": true,
+      "courses": [],
+      "bonuses": []
+    }
+  },
+  {
+    "name": "jump_omega3_jam_tf2",
+    "SOLDIER": {
+      "map": false,
+      "courses": [],
+      "bonuses": []
+    },
+    "DEMOMAN": {
+      "map": true,
+      "courses": [],
       "bonuses": []
     }
   }
