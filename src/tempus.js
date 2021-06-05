@@ -115,9 +115,9 @@ async function getExtraWRs(mapList, zoneType, filter = true) {
 
     if (zoneType == "course") {
       if (wrs.length > 0 && filter) {
-        if (!config.video.allowMissingCourses && wrs.length < zones.length) {
+        if (!config.video.allowMissingCourses && wrs.length < zones.length * 2) {
           // No demo for all courses or already uploaded some, skip map
-          console.log(`Skipping ${map.name} (${wrs.length}/${zones.length} courses)`);
+          console.log(`Skipping ${map.name} (${wrs.length}/${zones.length * 2} courses)`);
           wrs = [];
           continue;
         }
