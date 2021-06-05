@@ -97,7 +97,7 @@ async function upload(file, run) {
     return;
   }
 
-  addToQueue(file, run);
+  addToQueue({ file, run });
   if (uploadQueue[0].file !== file) {
     // Already uploading something else
     return;
