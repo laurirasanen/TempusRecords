@@ -244,9 +244,9 @@ async function upload(file, run) {
 
           console.log("Updated uploaded list");
 
-          // Continue with courses if last run
+          // Continue with bonus if last run
           if (demo.isLastRun(run)) {
-            demo.init(false, null, null, true, false, false, !noUpload);
+            demo.init(false, null, null, false, true, false, !noUpload);
           }
         });
 
