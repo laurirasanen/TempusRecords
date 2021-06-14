@@ -66,6 +66,7 @@ async function getMapWR(mapName, className, filter = true) {
 
   const result = await graphql(schema, query);
   if (result.errors) {
+    console.log(`tempus.getMapWr(${mapName}, ${className}, ${filter}):`);
     throw result.errors[0];
   }
   if (filter) {
@@ -157,6 +158,7 @@ async function getTypeZones(mapName, zoneType) {
 
   const result = await graphql(schema, query);
   if (result.errors) {
+    console.log(`tempus.getTypeZones(${mapName}, ${zoneType}):`);
     throw result.errors[0];
   }
   return result.data.map.zones[zoneType];
@@ -203,6 +205,7 @@ async function getZoneWR(mapName, zoneType, zoneId, className) {
 
   const result = await graphql(schema, query);
   if (result.errors) {
+    console.log(`tempus.getZoneWR(${mapName}, ${zoneType}, ${zoneId}, ${className}):`);
     throw result.errors[0];
   }
   if (!result.data.map.records.length) {
@@ -234,6 +237,7 @@ async function getMapList() {
 
   const result = await graphql(schema, query);
   if (result.errors) {
+    console.log(`tempus.getMapList():`);
     throw result.errors[0];
   }
   return result.data.maps;
@@ -254,6 +258,7 @@ async function getRecentMapWRs() {
 
   const result = await graphql(schema, query);
   if (result.errors) {
+    console.log(`tempus.getRecentMapWRs():`);
     throw result.errors[0];
   }
 
@@ -422,6 +427,7 @@ async function getRecordMap(recordId) {
 
   const result = await graphql(schema, query);
   if (result.errors) {
+    console.log(`tempus.getRecordMap(${recordId}):`);
     throw result.errors[0];
   }
 
