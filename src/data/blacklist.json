@@ -102,18 +102,5 @@
       "courses": [],
       "bonuses": []
     }
-  },
-  {
-    "name": "jump_fear_redo",
-    "SOLDIER": {
-      "map": true,
-      "courses": [],
-      "bonuses": []
-    },
-    "DEMOMAN": {
-      "map": false,
-      "courses": [],
-      "bonuses": []
-    }
   }
 ]
