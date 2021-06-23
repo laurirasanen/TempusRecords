@@ -51,7 +51,20 @@ async function init(recent, mapName, className, course, bonus, trick, upload = t
 
     if (bonus) {
       // continue from where we left off last collection
-      let lastMap = await tempus.getRecordMap(uploaded.bonuses[uploaded.bonuses.length - 1]);
+      let lastMap;
+
+      for (let i = uploaded.bonuses.length - 1; i >= 0; i--) {
+        try {
+          lastMap = await tempus.getRecordMap(uploaded.bonuses[i]);
+          break;
+        } catch (err) {
+          // no-op on 404, this can happen if the last uploaded bonus was wiped,
+          // or if the map doesn't exist anymore, etc...
+          
+          // TODO: check if really 404, how to do in graphql??
+        }
+      }
+
       let lastIndex = mapList.findIndex((m) => m.id === lastMap.id);
       if (lastIndex >= 0) {
         let tmp = mapList.splice(0, lastIndex + 1);
