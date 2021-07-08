@@ -76,5 +76,18 @@
       "courses": [],
       "bonuses": []
     }
+  },
+  {
+    "name": "jump_waltz_rc6",
+    "SOLDIER": {
+      "map": false,
+      "courses": [],
+      "bonuses": []
+    },
+    "DEMOMAN": {
+      "map": true,
+      "courses": [],
+      "bonuses": []
+    }
   }
 ]
