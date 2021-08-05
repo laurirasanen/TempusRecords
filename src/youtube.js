@@ -196,6 +196,7 @@ async function upload(file, run) {
       if (err) {
         console.log("Failed to upload video");
         console.log(err);
+        console.dir(response);
         return;
       } else {
         console.log("Done uploading");
@@ -219,6 +220,7 @@ async function upload(file, run) {
           if (err) {
             console.log("Failed to add video to playlist");
             console.log(err);
+            console.dir(response);
           } else {
             console.log("Video added to playlist");
           }
@@ -405,6 +407,7 @@ async function uploadCollection() {
       if (err) {
         console.log("Failed to upload video");
         console.log(err);
+        console.dir(response);
       } else {
         console.log("Done uploading");
       }
@@ -441,6 +444,7 @@ async function uploadCollection() {
           if (err) {
             console.log("Failed to add video to playlist");
             console.log(err);
+            console.dir(response);
           } else {
             console.log("Video added to playlist");
           }
