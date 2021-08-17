@@ -359,7 +359,7 @@ function replaceNames(runs) {
           `Add nickname for player ${runs[i].player.name} (${runs[i].player.steamId}) or null to skip: `
         );
 
-        if (answer == null || answer == "null") {
+        if (answer == null || answer == "null" || answer.length === 0) {
           break;
         }
 
