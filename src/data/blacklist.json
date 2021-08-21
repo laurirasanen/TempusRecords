@@ -39,19 +39,6 @@
     }
   },
   {
-    "name": "jump_empusa_final",
-    "SOLDIER": {
-      "map": false,
-      "courses": [],
-      "bonuses": []
-    },
-    "DEMOMAN": {
-      "map": true,
-      "courses": [],
-      "bonuses": []
-    }
-  },
-  {
     "name": "jump_omega3_jam_tf2",
     "SOLDIER": {
       "map": false,
