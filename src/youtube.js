@@ -246,9 +246,10 @@ async function upload(file, run) {
 
           console.log("Updated uploaded list");
 
-          // Continue with course if last run
+          // Continue with collection if last run
           if (demo.isLastRun(run)) {
-            demo.init(false, null, null, true, false, false, !noUpload);
+            let type = new Date(Date.now()).getDay() % 3;
+            demo.init(false, null, null, type == 0, type == 1, type == 2, !noUpload);
           }
         });
 
