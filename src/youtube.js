@@ -12,7 +12,7 @@
 
 let hasTokens = false;
 let initialized = false;
-
+let uploadCount = 0;
 const uploadQueue = [];
 
 /**
@@ -178,6 +178,9 @@ async function upload(file, run) {
       // This is for the callback function
       part: "snippet,status",
 
+      // Only notify on first upload to not spam people
+      notifySubscribers: uploadCount === 0,
+
       // Create the readable stream to upload the video
       media: {
         body: fs.createReadStream(file).on("data", (chunk) => {
@@ -226,6 +229,8 @@ async function upload(file, run) {
           }
         }
       );
+
+      uploadCount++;
 
       // Add to uploaded runs
       utils.readJson("./data/uploaded.json", (err, uploaded) => {
@@ -392,6 +397,9 @@ async function uploadCollection() {
       // This is for the callback function
       part: "snippet,status",
 
+      // Only notify on first upload to not spam people
+      notifySubscribers: uploadCount === 0,
+
       // Create the readable stream to upload the video
       media: {
         body: fs.createReadStream(file).on("data", (chunk) => {
@@ -451,6 +459,8 @@ async function uploadCollection() {
           }
         }
       );
+
+      uploadCount++;
 
       // Add to uploaded runs
       utils.readJson("./data/uploaded.json", (err, uploaded) => {
