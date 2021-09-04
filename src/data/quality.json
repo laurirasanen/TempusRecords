@@ -16,7 +16,7 @@
   {
     "minDuration": 20,
     "fps": 60,
-    "sampling": 8,
+    "sampling": 4,
     "recordingRes": "1280x720",
     "outputRes": "1920x1080"
   },
