@@ -194,8 +194,6 @@ async function upload(file, run) {
       },
     },
     (err, response) => {
-      uploadNext();
-
       if (err) {
         console.log("Failed to upload video");
         console.log(err);
@@ -204,6 +202,10 @@ async function upload(file, run) {
       } else {
         console.log("Done uploading");
       }
+
+      uploadCount++;
+      uploadNext();
+
       // Add video to class playlist
       youtube_api.playlistItems.insert(
         {
@@ -229,8 +231,6 @@ async function upload(file, run) {
           }
         }
       );
-
-      uploadCount++;
 
       // Add to uploaded runs
       utils.readJson("./data/uploaded.json", (err, uploaded) => {
