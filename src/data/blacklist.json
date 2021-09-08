@@ -102,5 +102,18 @@
       "courses": [],
       "bonuses": []
     }
+  },
+  {
+    "name": "jump_minecraftia_a2_t",
+    "SOLDIER": {
+      "map": false,
+      "courses": [],
+      "bonuses": []
+    },
+    "DEMOMAN": {
+      "map": false,
+      "courses": [],
+      "bonuses": [2]
+    }
   }
 ]
