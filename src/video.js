@@ -3,6 +3,7 @@ const ffmpeg = require("fluent-ffmpeg"),
   utils = require("./utils.js"),
   config = require("./data/config.json"),
   fullbright = require("./data/fullbright_maps.json");
+const { makeFilterStrings } = require("fluent-ffmpeg/lib/utils");
 
 const compressQueue = [];
 
@@ -95,6 +96,14 @@ async function compress(video, audio, run, cb) {
   }
 
   let videoFilters = [
+    // Resolution
+    {
+      filter: "scale",
+      options: {
+        w: run.quality.outputRes.split("x")[0],
+        h: run.quality.outputRes.split("x")[1],
+      },
+    },
     // Add a slight vignette
     {
       filter: "vignette",
@@ -275,12 +284,18 @@ async function compress(video, audio, run, cb) {
 
   // Add audio fade in/out
   // + stretching to match video length
-  console.log(`audio/video ratio: ${audioDuration / duration}`);
-  audioFilters.push(
-    {
+  let avRatio = audioDuration / duration;
+  console.log(`audio/video ratio: ${avRatio}`);
+  // Don't stretch if lengths are too different,
+  // audio seems to sometimes stop recording after a few hours.
+  if (Math.abs(1 - avRatio) < 0.05) {
+    audioFilters.push({
       filter: "atempo",
-      options: `${audioDuration / duration}`,
-    },
+      options: `${avRatio}`,
+    });
+  }
+
+  audioFilters.push(
     {
       filter: "afade",
       options: `in:st=0:d=${config.audio.fadeInDuration}`,
@@ -291,14 +306,25 @@ async function compress(video, audio, run, cb) {
     }
   );
 
+  // Write video filters to a file so we can use
+  // -filter_script:v instead of -filter:v and
+  // avoid hitting command length limits.
+  vfs = makeFilterStrings(videoFilters);
+  fs.writeFileSync(`${config.svr.recordingFolder}/videofilters.txt`, vfs.join(","));
+
+  let outputOptions = [
+    `-filter_script:v ${config.svr.recordingFolder}/videofilters.txt`,
+    ...config.video.ffmpegOptions,
+  ];
+
   ffmpeg({ logger: ffmpegLogger })
     .input(video)
     .input(audio)
-    .videoFilters(videoFilters)
+    //.videoFilters(videoFilters)
     .audioFilters(audioFilters)
     .fps(run.quality.fps)
-    .size(run.quality.outputRes)
-    .outputOptions(config.video.ffmpegOptions)
+    //.size(run.quality.outputRes)
+    .outputOptions(outputOptions)
     .on("start", () => {
       console.log(`Started compressing ${video}`);
     })
