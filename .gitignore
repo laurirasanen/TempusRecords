@@ -1,11 +1,11 @@
 # svr
 svr/*
+!svr/svr_launch_params.ini
 !svr/data/
 svr/data/*
-!svr/data/launcher-config.json
 !svr/data/profiles/
 svr/data/profiles/*
-!svr/data/profiles/tempus.json
+!svr/data/profiles/tempus.ini
 !svr/configs
 svr/configs/*
 !svr/configs/tempusrecords

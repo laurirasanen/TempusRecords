@@ -274,7 +274,7 @@ async function getRecentMapWRs() {
 }
 
 function filterRuns(runs) {
-  var wasArray = true;
+  let wasArray = true;
   if (!Array.isArray(runs)) {
     runs = [runs];
     wasArray = false;
@@ -285,7 +285,7 @@ function filterRuns(runs) {
   // Sanity check
   runs = runs.filter((run) => run != null);
 
-  for (var i = runs.length - 1; i >= 0; i--) {
+  for (let i = runs.length - 1; i >= 0; i--) {
     // Remove already uploaded runs
     if (uploaded.maps.includes(runs[i].id)) {
       runs.splice(i, 1);
@@ -317,7 +317,7 @@ function filterRuns(runs) {
 
     // Remove blacklisted runs
     let cont = false;
-    for (var j = 0; j < blacklist.length; j++) {
+    for (let j = 0; j < blacklist.length; j++) {
       if (blacklist[j].name === runs[i].map.name && blacklist[j][runs[i].class].map) {
         console.log(`Removing blacklisted: ${runs[i].map.name} (${runs[i].class})`);
         runs.splice(i, 1);
@@ -348,7 +348,7 @@ function filterRuns(runs) {
 
 function replaceNames(runs) {
   for (let i = 0; i < runs.length; i++) {
-    for (var j = 0; j < nicknames.length; j++) {
+    for (let j = 0; j < nicknames.length; j++) {
       if (runs[i].player.steamId === nicknames[j].steamId) {
         runs[i].player.name = nicknames[j].name;
         break;
@@ -404,7 +404,7 @@ function shouldUploadExtra(run) {
     }
   }
 
-  for (var j = 0; j < blacklist.length; j++) {
+  for (let j = 0; j < blacklist.length; j++) {
     if (blacklist[j].name === run.map.name && blacklist[j][run.class][accessor].includes(run.zone.zoneindex)) {
       console.log(`Removing blacklisted: ${run.map.name} ${run.zone.type} ${run.zone.zoneindex} (${run.class})`);
       return false;

@@ -105,10 +105,10 @@ async function upload(file, run) {
 
   console.log(`Uploading ${file}`);
 
-  var description = "";
-  var stats = fs.statSync(file);
-  var fileSize = stats.size;
-  var bytes = 0;
+  let description = "";
+  let stats = fs.statSync(file);
+  let fileSize = stats.size;
+  let bytes = 0;
 
   let wrSplit = null;
   for (const split of run.splits) {
@@ -121,8 +121,8 @@ async function upload(file, run) {
   }
 
   config.youtube.description.forEach((line) => {
-    var d = new Date();
-    var demo_date = new Date(run.demo.date * 1000);
+    let d = new Date();
+    let demo_date = new Date(run.demo.date * 1000);
     line = line
       .replace("$MAP_URL", "https://tempus.xyz/maps/" + run.map.name)
       .replace("$MAP", run.map.name)
@@ -144,22 +144,22 @@ async function upload(file, run) {
   }
 
   // Common tags for all videos
-  var tags = ["Team Fortress 2", "TF2", "rocketjump", "speedrun", "tempus", "record"];
+  let tags = ["Team Fortress 2", "TF2", "rocketjump", "speedrun", "tempus", "record"];
 
   // Video specific tags
-  var mapParts = run.map.name.split("_");
+  let mapParts = run.map.name.split("_");
   tags.push(...mapParts);
   if (mapParts.length > 1) tags.push(`${mapParts[0]}_${mapParts[1]}`);
   tags.push(run.class === "SOLDIER" ? ["soldier", "solly"] : ["demoman", "demo"]);
 
   // Commas in player name will break youtube tags
-  var playerName = run.player.name;
+  let playerName = run.player.name;
   playerName = playerName.replace(",", "");
   tags.push(playerName);
 
   let previousProgress = 0;
 
-  var req = youtube_api.videos.insert(
+  let req = youtube_api.videos.insert(
     {
       resource: {
         snippet: {
@@ -289,15 +289,15 @@ async function uploadCollection() {
 
   console.log(`Uploading collection`);
 
-  var file = config.svr.recordingFolder + "/collection.mp4";
+  let file = config.svr.recordingFolder + "/collection.mp4";
   if (isCourse) {
     file = config.svr.recordingFolder + `/${collectionRuns[0].map.name}_collection.mp4`;
   }
 
-  var description = "";
-  var stats = fs.statSync(file);
-  var fileSize = stats.size;
-  var bytes = 0;
+  let description = "";
+  let stats = fs.statSync(file);
+  let fileSize = stats.size;
+  let bytes = 0;
 
   let date = new Date();
 
@@ -338,7 +338,7 @@ async function uploadCollection() {
   }
 
   // Common tags for all videos
-  var tags = [
+  let tags = [
     "Team Fortress 2",
     "TF2",
     "rocketjump",
@@ -381,7 +381,7 @@ async function uploadCollection() {
   title = title.replace("$NUMBER", isBonus ? uploaded.bonusCollections + 1 : uploaded.trickCollections + 1);
   title = title.replace("$MAP", collectionRuns[0].map.name);
 
-  var req = youtube_api.videos.insert(
+  let req = youtube_api.videos.insert(
     {
       resource: {
         snippet: {

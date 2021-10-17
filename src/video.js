@@ -85,10 +85,8 @@ async function compress(video, audio, run, cb) {
   }
 
   let duration = 0;
-  let audioDuration = 0;
   try {
     duration = await getDuration(video);
-    audioDuration = await getDuration(audio);
   } catch (err) {
     console.log(`Failed to get the duration of ${video}`);
     console.log(err);
@@ -126,23 +124,7 @@ async function compress(video, audio, run, cb) {
 
   let audioFilters = [];
 
-  // Get timestamps for text fading
-  let fadeInStart =
-    duration -
-    config.video.text.endPadding -
-    config.video.text.fadeOutDuration -
-    config.video.text.displayDuration -
-    config.video.text.fadeInDuration;
-
-  // Modify alpha to fade text in and out
-  let alphaTimeSplit = utils.getAlphaFade(
-    fadeInStart,
-    config.video.text.displayDuration,
-    config.video.text.fadeInDuration,
-    config.video.text.fadeOutDuration,
-    config.video.text.maxAlpha
-  );
-
+  // Fade timestamps
   for (const split of wrSplits) {
     if (split.duration) {
       let alpha = utils.getAlphaFade(
@@ -282,19 +264,15 @@ async function compress(video, audio, run, cb) {
     }
   );
 
-  // Add audio fade in/out
-  // + stretching to match video length
-  let avRatio = audioDuration / duration;
-  console.log(`audio/video ratio: ${avRatio}`);
-  // Don't stretch if lengths are too different,
-  // audio seems to sometimes stop recording after a few hours.
-  if (Math.abs(1 - avRatio) < 0.05) {
-    audioFilters.push({
-      filter: "atempo",
-      options: `${avRatio}`,
-    });
-  }
+  // Adjust audio volume, SVR no longer respects volume arg in-game.
+  audioFilters.push({
+    filter: "volume",
+    options: {
+      volume: 0.1,
+    },
+  });
 
+  // Add audio fade in/out
   audioFilters.push(
     {
       filter: "afade",
@@ -320,10 +298,8 @@ async function compress(video, audio, run, cb) {
   ffmpeg({ logger: ffmpegLogger })
     .input(video)
     .input(audio)
-    //.videoFilters(videoFilters)
     .audioFilters(audioFilters)
     .fps(run.quality.fps)
-    //.size(run.quality.outputRes)
     .outputOptions(outputOptions)
     .on("start", () => {
       console.log(`Started compressing ${video}`);

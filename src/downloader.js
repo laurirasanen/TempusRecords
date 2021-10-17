@@ -1,4 +1,4 @@
-﻿var http = require("http"),
+﻿let http = require("http"),
   fs = require("fs"),
   unzipper = require("unzipper"),
   bz2 = require("unbzip2-stream"),
@@ -13,7 +13,7 @@ function getDemoFile(run, cb) {
     return cb(null);
   }
 
-  var dest = config.tf2.path + run.demo.filename + ".dem";
+  let dest = config.tf2.path + run.demo.filename + ".dem";
 
   fs.open(dest, "wx", (err, fd) => {
     if (fd) {
@@ -35,7 +35,7 @@ function getDemoFile(run, cb) {
         return cb(null);
       }
     } else {
-      var stream = fs.createWriteStream(dest);
+      let stream = fs.createWriteStream(dest);
 
       download(run.demo.url, run, (resp, run) => {
         resp
@@ -85,7 +85,7 @@ function getDemoFile(run, cb) {
 function getMap(mapName, cb) {
   if (!cb || typeof cb !== "function") throw "callback is not a function";
 
-  var dest = config.tf2.path + `download/maps/${mapName}.bsp`;
+  let dest = config.tf2.path + `download/maps/${mapName}.bsp`;
 
   fs.open(dest, "wx", (err, fd) => {
     if (fd) {
@@ -107,8 +107,8 @@ function getMap(mapName, cb) {
         return cb(null);
       }
     } else {
-      var stream = fs.createWriteStream(config.tf2.path + `download/maps/${mapName}.bsp`);
-      var mapUrl = `http://tempus.site.nfoservers.com/server/maps/${mapName}.bsp.bz2`;
+      let stream = fs.createWriteStream(config.tf2.path + `download/maps/${mapName}.bsp`);
+      let mapUrl = `http://tempus.site.nfoservers.com/server/maps/${mapName}.bsp.bz2`;
 
       download(mapUrl, currentRun, (resp, run) => {
         resp

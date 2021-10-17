@@ -3,7 +3,6 @@
   fs = require("fs-extra"),
   config = require("./data/config.json");
 
-global.tf2Proc = null;
 global.svrProc = null;
 
 function launchSVR() {
@@ -18,22 +17,6 @@ function launchSVR() {
   });
 }
 
-function launchTF2(args) {
-  console.log("Launching TF2");
-
-  let launchCmd = `"${config.tf2.launch}" ${config.tf2.args} ${args}`;
-
-  tf2Proc = exec(launchCmd, (err) => {
-    if (err && !err.killed) {
-      console.log(err);
-      // For some reason this fails occasionally for no obvious reason, retry
-      setTimeout(() => {
-        launchTF2(args);
-      }, 5000);
-    }
-  });
-}
-
 function killSVR() {
   console.log(`Killing svr`);
   if (svrProc) {
@@ -44,13 +27,7 @@ function killSVR() {
 
 function killTF2() {
   console.log(`Killing tf2`);
-  if (tf2Proc) {
-    // kill() will only kill the parent cmd.exe process.
-    tf2Proc.kill();
-    tf2Proc = null;
-  }
-  // Killing just hl2.exe would work too, but then
-  // the parent cmd.exe process would spew errors in launchTF2.
+
   tasklist().then((tasks) => {
     tasks.forEach((task) => {
       if (task.imageName == "hl2.exe") {
@@ -61,7 +38,7 @@ function killTF2() {
 }
 
 function secondsToTimeStamp(seconds, showPlusSign = false) {
-  var sign = "";
+  let sign = "";
   if (seconds < 0) {
     sign = "-";
   } else if (showPlusSign) {
@@ -69,12 +46,12 @@ function secondsToTimeStamp(seconds, showPlusSign = false) {
   }
   seconds = Math.abs(seconds);
 
-  var hours = Math.floor(seconds / 3600);
-  var minutes = Math.floor((seconds % 3600) / 60);
-  var milliseconds = Math.floor((seconds - Math.floor(seconds)) * 1000);
+  let hours = Math.floor(seconds / 3600);
+  let minutes = Math.floor((seconds % 3600) / 60);
+  let milliseconds = Math.floor((seconds - Math.floor(seconds)) * 1000);
   seconds = Math.floor(seconds % 60);
 
-  var timeStamp = sign;
+  let timeStamp = sign;
 
   if (hours > 0) {
     if (hours >= 10) timeStamp += hours + ":";
@@ -108,43 +85,47 @@ function writeJson(path, data, cb) {
   });
 }
 
-function writeSVRConfigs(quality, cb) {
+function writeSVRConfigs(quality, demofile, cb) {
   writeSVRProfile(quality, () => {
-    writeSVRLauncherConfig(quality, cb);
+    writeSVRLauncherConfig(quality, demofile, cb);
   });
 }
 
 function writeSVRProfile(quality, cb) {
-  const profilePath = config.svr.path + "/data/profiles/tempus.json";
-  readJson(profilePath, (err, data) => {
+  const profilePath = config.svr.path + "/data/profiles/tempus.ini";
+  fs.readFile(profilePath, "utf8", (err, data) => {
     if (err) {
       cb(err);
       return;
     }
-    data["movie"]["video-fps"] = quality.fps;
-    data["motion-blur"]["fps-mult"] = quality.sampling;
-    writeJson(profilePath, data, cb);
+
+    // Replace fps and motion blur sampling
+    const re1 = /video_fps = [0-9]+/g;
+    const re2 = /motion_blur_fps_mult = [0-9]+/g;
+    data.replace(re1, `video_fps = ${quality.fps}`);
+    data.replace(re2, `motion_blur_fps_mult = ${quality.sampling}`);
+
+    fs.writeFile(profilePath, data, cb);
   });
 }
 
-function writeSVRLauncherConfig(quality, cb) {
-  const configPath = config.svr.path + "/data/launcher-config.json";
-  readJson(configPath, (err, data) => {
+function writeSVRLauncherConfig(quality, demofile, cb) {
+  const configPath = config.svr.path + "/svr_launch_params.ini";
+  fs.readFile(configPath, "utf8", (err, data) => {
     if (err) {
       cb(err);
       return;
     }
 
-    const index = data.games.findIndex((game) => game.id === "tf2-win");
-    if (index < 0) {
-      throw `Could not find tf2-win in ${configPath}`;
-    }
+    // Replace -w and -h
+    const re1 = /-w [0-9]+ -h [0-9]+/g;
+    data = data.replace(re1, `-w ${quality.recordingRes.split("x")[0]} -h ${quality.recordingRes.split("x")[1]}`);
 
-    data.games[index].args = data.games[index].args.split(/-w [0-9]/g)[0];
-    data.games[index].args += "-w " + quality.recordingRes.split("x")[0];
-    data.games[index].args += " -h " + quality.recordingRes.split("x")[1];
+    // Replace playdemo command
+    const re2 = /\+playdemo .+\.dem/g;
+    data = data.replace(re2, `+playdemo ${demofile}`);
 
-    writeJson(configPath, data, cb);
+    fs.writeFile(configPath, data, cb);
   });
 }
 
@@ -261,7 +242,7 @@ function capitalizeFirst(str) {
   return str[0].toUpperCase() + str.substr(1);
 }
 
-function recordingFilename(run, audio = false, compressed = false) {
+function recordingFilename(run, compressed = false) {
   let filename = "";
 
   if (config.video.filenameIds) {
@@ -276,7 +257,7 @@ function recordingFilename(run, audio = false, compressed = false) {
     filename += "_comp";
   }
 
-  filename += audio ? ".wav" : ".mp4";
+  filename += ".mp4";
 
   return filename;
 }
@@ -294,9 +275,7 @@ function removeMapPrefix(mapName) {
 }
 
 module.exports.launchSVR = launchSVR;
-module.exports.launchTF2 = launchTF2;
 module.exports.killSVR = killSVR;
-module.exports.killTF2 = killTF2;
 module.exports.secondsToTimeStamp = secondsToTimeStamp;
 module.exports.readJson = readJson;
 module.exports.writeJson = writeJson;

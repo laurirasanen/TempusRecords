@@ -60,7 +60,6 @@ async function init(recent, mapName, className, course, bonus, trick, upload = t
         } catch (err) {
           // no-op on 404, this can happen if the last uploaded bonus was wiped,
           // or if the map doesn't exist anymore, etc...
-          
           // TODO: check if really 404, how to do in graphql??
         }
       }
@@ -83,7 +82,7 @@ async function init(recent, mapName, className, course, bonus, trick, upload = t
 
     for (let i = 0; i < runs.length; i++) {
       // This is used for concatenating video files before upload
-      runs[i].outputFile = `${config.svr.recordingFolder}/${utils.recordingFilename(runs[i], false, true)}`;
+      runs[i].outputFile = `${config.svr.recordingFolder}/${utils.recordingFilename(runs[i], true)}`;
       collectionRuns.push(runs[i]);
     }
 
@@ -138,7 +137,7 @@ async function recordCourses() {
 
   for (let i = 0; i < runs.length; i++) {
     // This is used for concatenating video files before upload
-    runs[i].outputFile = `${config.svr.recordingFolder}/${utils.recordingFilename(runs[i], false, true)}`;
+    runs[i].outputFile = `${config.svr.recordingFolder}/${utils.recordingFilename(runs[i], true)}`;
     collectionRuns.push(runs[i]);
   }
 
@@ -146,7 +145,7 @@ async function recordCourses() {
 }
 
 function skip() {
-  for (var i = 0; i < runs.length - 1; i++) {
+  for (let i = 0; i < runs.length - 1; i++) {
     if (runs[i] === currentRun || currentRun === null) {
       currentRun = runs[i + 1];
       return recordRun(runs[i + 1]);
@@ -185,11 +184,11 @@ function recordRun(run) {
   }
 
   // Check for existing video if we crashed before, etc
-  var video = `${config.svr.recordingFolder}/${utils.recordingFilename(run)}`;
-  var audio = `${config.svr.recordingFolder}/${utils.recordingFilename(run, true)}`;
+  let video = `${config.svr.recordingFolder}/${utils.recordingFilename(run)}`;
+  let audio = `${config.svr.recordingFolder}/${utils.recordingFilename(run).split(".mp4")[0]}.wav`;
 
   // Check for already compressed version
-  let compressed = `${config.svr.recordingFolder}/${utils.recordingFilename(run, false, true)}`;
+  let compressed = `${config.svr.recordingFolder}/${utils.recordingFilename(run, true)}`;
   if (fs.existsSync(compressed)) {
     if (!isCollection || isLastRun(run)) {
       console.log(`WARNING: Uploading existing video '${compressed}'`);
@@ -201,7 +200,7 @@ function recordRun(run) {
     return;
   }
 
-  // Check for video and audio
+  // Check for video
   if (fs.existsSync(video) && fs.existsSync(audio)) {
     console.log(`WARNING: Using existing video '${video}'`);
     console.log(`Make sure to delete existing videos if they're corrupted, etc.`);
@@ -233,8 +232,9 @@ function recordRun(run) {
           console.log(`[DL] Demo file ${run.demo.filename} exists already!`);
         }
 
-        // Modify tempus profile for SVR
-        utils.writeSVRConfigs(run.quality, (err) => {
+        // Modify tempus profile for SVR and
+        // tf2 launch params in 'svr_launch_params.ini'.
+        utils.writeSVRConfigs(run.quality, run.demo.filename, (err) => {
           if (err) {
             console.log(err);
             console.log("skipping");
@@ -262,19 +262,15 @@ function startDemo(run) {
       return;
     }
 
-    let commands = getPlayCommands(run, false);
+    let commands = getPlayCommands(run);
 
     // Write the play commands
     savePlayCommands(run.demo.filename, commands, (success) => {
       if (success) {
         currentRun = run;
-
-        // Record audio without SVR
-        utils.launchTF2(`+playdemo ${run.demo.filename}`);
-
-        // Video will be recorded after audio finishes
-        // when rcon.js receives 'tmps_records_run_end' the first time.
-        // The second time, video will be compressed, remuxed together with audio and uploaded.
+        utils.launchSVR();
+        // 'tmps_records_run_end' will be called in rcon.js
+        // after demo recording finishes.
       } else {
         console.log("[FILE] FAILED TO WRITE PLAYCOMMANDS");
         return;
@@ -283,14 +279,14 @@ function startDemo(run) {
   });
 }
 
-function getPlayCommands(run, isVideo = true) {
+function getPlayCommands(run) {
   const startPadding = config.video.startPadding * 67;
   const endPadding = config.video.endPadding * 67;
 
   // Commands used to control the demo playback.
   // Running rcon tmps_records_* commands will trigger events in rcon.js.
-  let filename = utils.recordingFilename(run, !isVideo);
-  var commands = [
+  let filename = utils.recordingFilename(run);
+  let commands = [
     {
       tick: 33,
       commands: `sensitivity 0; m_yaw 0; m_pitch 0; unbindall; fog_override 1; fog_enable 0; rcon tmps_records_demo_load; demo_gototick ${
@@ -299,13 +295,11 @@ function getPlayCommands(run, isVideo = true) {
     },
     {
       tick: run.demoStartTick - startPadding,
-      commands: `exec tmps_records_spec_player; spec_mode 4; demo_resume; ${
-        isVideo ? "" : "volume 0.1;"
-      } rcon tmps_records_run_start; startmovie ${filename}${isVideo ? " tempus" : " wav"}`,
+      commands: `exec tmps_records_spec_player; spec_mode 4; demo_resume; rcon tmps_records_run_start; startmovie ${filename} tempus`,
     },
     { tick: run.demoStartTick, commands: `exec tmps_records_spec_player; spec_mode 4` }, // In case player dead before start_tick
     { tick: run.demoEndTick + endPadding - 33, commands: "rcon tmps_records_run_end" },
-    { tick: run.demoEndTick + endPadding, commands: "volume 0; endmovie" },
+    { tick: run.demoEndTick + endPadding, commands: "endmovie" },
   ];
 
   return commands;
@@ -315,11 +309,11 @@ function getPlayCommands(run, isVideo = true) {
 function savePlayCommands(filename, commands, cb) {
   if (!cb || typeof cb !== "function") throw "callback is not a function";
 
-  var data = `demoactions\n{\n`;
+  let data = `demoactions\n{\n`;
 
   // TODO: .vdm format is basically json without some characters,
   // could make this more legible by stringifying an object.
-  for (var i = 0; i < commands.length; i++) {
+  for (let i = 0; i < commands.length; i++) {
     data +=
       `   "${i + 1}"\n` +
       "   {\n" +
@@ -346,6 +340,4 @@ function savePlayCommands(filename, commands, cb) {
 module.exports.recordRun = recordRun;
 module.exports.init = init;
 module.exports.skip = skip;
-module.exports.getPlayCommands = getPlayCommands;
-module.exports.savePlayCommands = savePlayCommands;
 module.exports.isLastRun = isLastRun;

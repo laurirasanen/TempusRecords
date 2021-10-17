@@ -10,13 +10,13 @@ async function start() {
   // Default to just checking recent WR activity,
   // instead of checking all maps.
   // TODO: this sucks, just use commander or something for args
-  var recent = true;
-  var mapName = null;
-  var className = null;
-  var course = false;
-  var bonus = false;
-  var trick = false;
-  var upload = true;
+  let recent = true;
+  let mapName = null;
+  let className = null;
+  let course = false;
+  let bonus = false;
+  let trick = false;
+  let upload = true;
 
   if (process.argv.length > 2) {
     if (process.argv[2] == "restore") {

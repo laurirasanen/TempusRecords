@@ -112,14 +112,12 @@
     "listenPort": 3002
   },
   "tf2": {
-    "path": "C:/Program Files (x86)/Steam/steamapps/common/Team Fortress 2/tf/",
-    "launch": "C:/Program Files (x86)/Steam/steamapps/common/Team Fortress 2/hl2.exe",
-    "args": "-game tf -dxlevel 98 -novid -windowed -w 1280 -h 720 +exec cinema +volume 0 +stopsound +rcon_address 127.0.0.1:3002 +rcon_password bananaman -nomouse"
+    "path": "C:/Program Files (x86)/Steam/steamapps/common/Team Fortress 2/tf/"
   },
   "svr": {
     "path": "../svr",
-    "launch": "../svr/svr_game_launcher_cli.exe",
-    "args": "tf2-win",
-    "recordingFolder": "../svr/data/movies"
+    "launch": "../svr/svr_launcher.exe",
+    "args": "440",
+    "recordingFolder": "../svr/movies"
   }
 }
