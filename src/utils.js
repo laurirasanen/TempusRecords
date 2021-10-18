@@ -122,7 +122,7 @@ function writeSVRLauncherConfig(quality, demofile, cb) {
     data = data.replace(re1, `-w ${quality.recordingRes.split("x")[0]} -h ${quality.recordingRes.split("x")[1]}`);
 
     // Replace playdemo command
-    const re2 = /\+playdemo .+\.dem/g;
+    const re2 = /\+playdemo [^\s]+/g;
     data = data.replace(re2, `+playdemo ${demofile}`);
 
     fs.writeFile(configPath, data, cb);
