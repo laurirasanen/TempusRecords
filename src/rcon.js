@@ -42,7 +42,10 @@ let srv = net.createServer(function (sock) {
             // Limit number of recordings
             recorded_runs++;
             if (recorded_runs < config.youtube.video_limit || isCollection) {
-              demo.skip();
+              // Wait for previous process to be killed, avoid engine error
+              setTimeout(() => {
+                demo.skip();
+              }, 2000);
             } else {
               console.log(`Finished recording ${config.youtube.video_limit} runs`);
             }
