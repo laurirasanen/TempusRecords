@@ -128,5 +128,18 @@
       "courses": [],
       "bonuses": []
     }
+  },
+  {
+    "name": "jump_quick_b2",
+    "SOLDIER": {
+      "map": false,
+      "courses": [],
+      "bonuses": [2]
+    },
+    "DEMOMAN": {
+      "map": false,
+      "courses": [],
+      "bonuses": []
+    }
   }
 ]
