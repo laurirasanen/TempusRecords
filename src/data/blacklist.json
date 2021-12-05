@@ -1,18 +1,5 @@
 [
   {
-    "name": "jump_strikapult_v11",
-    "SOLDIER": {
-      "map": false,
-      "courses": [],
-      "bonuses": []
-    },
-    "DEMOMAN": {
-      "map": true,
-      "courses": [],
-      "bonuses": []
-    }
-  },
-  {
     "name": "jump_airships_v2",
     "SOLDIER": {
       "map": false,
@@ -39,71 +26,6 @@
     }
   },
   {
-    "name": "jump_omega3_jam_tf2",
-    "SOLDIER": {
-      "map": false,
-      "courses": [],
-      "bonuses": []
-    },
-    "DEMOMAN": {
-      "map": true,
-      "courses": [],
-      "bonuses": []
-    }
-  },
-  {
-    "name": "jump_forest_rc4",
-    "SOLDIER": {
-      "map": false,
-      "courses": [],
-      "bonuses": []
-    },
-    "DEMOMAN": {
-      "map": true,
-      "courses": [],
-      "bonuses": []
-    }
-  },
-  {
-    "name": "jump_waltz_rc6",
-    "SOLDIER": {
-      "map": false,
-      "courses": [],
-      "bonuses": []
-    },
-    "DEMOMAN": {
-      "map": true,
-      "courses": [],
-      "bonuses": []
-    }
-  },
-  {
-    "name": "jump_core_b1_zip",
-    "SOLDIER": {
-      "map": false,
-      "courses": [],
-      "bonuses": []
-    },
-    "DEMOMAN": {
-      "map": true,
-      "courses": [],
-      "bonuses": []
-    }
-  },
-  {
-    "name": "jump_cubic_zip",
-    "SOLDIER": {
-      "map": false,
-      "courses": [],
-      "bonuses": []
-    },
-    "DEMOMAN": {
-      "map": true,
-      "courses": [],
-      "bonuses": []
-    }
-  },
-  {
     "name": "jump_minecraftia_a2_t",
     "SOLDIER": {
       "map": false,
@@ -114,19 +36,6 @@
       "map": false,
       "courses": [],
       "bonuses": [2]
-    }
-  },
-  {
-    "name": "jump_cavern_final",
-    "SOLDIER": {
-      "map": false,
-      "courses": [],
-      "bonuses": []
-    },
-    "DEMOMAN": {
-      "map": true,
-      "courses": [],
-      "bonuses": []
     }
   },
   {
