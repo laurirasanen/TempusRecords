@@ -50,31 +50,5 @@
       "courses": [],
       "bonuses": []
     }
-  },
-  {
-    "name": "jump_beryllium_v3_fix",
-    "SOLDIER": {
-      "map": true,
-      "courses": [],
-      "bonuses": []
-    },
-    "DEMOMAN": {
-      "map": true,
-      "courses": [],
-      "bonuses": []
-    }
-  },
-  {
-    "name": "jump_relicta_rc1",
-    "SOLDIER": {
-      "map": true,
-      "courses": [],
-      "bonuses": []
-    },
-    "DEMOMAN": {
-      "map": true,
-      "courses": [],
-      "bonuses": []
-    }
   }
 ]
