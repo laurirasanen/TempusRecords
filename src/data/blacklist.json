@@ -50,5 +50,34 @@
       "courses": [],
       "bonuses": []
     }
+  },
+  {
+    "name": "jump_hydrogen_rc1_bmv",
+    "SOLDIER": {
+      "map": false,
+      "courses": [],
+      "bonuses": [],
+      "tricks": [1, 4]
+    },
+    "DEMOMAN": {
+      "map": false,
+      "courses": [],
+      "bonuses": []
+    }
+  },
+  {
+    "name": "jump_aando_b1_tmps",
+    "SOLDIER": {
+      "map": false,
+      "courses": [],
+      "bonuses": [],
+      "tricks": []
+    },
+    "DEMOMAN": {
+      "map": false,
+      "courses": [],
+      "bonuses": [],
+      "tricks": [1]
+    }
   }
 ]
