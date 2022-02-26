@@ -4,6 +4,7 @@ const { writeJSONSync } = require("fs-extra");
 const nicknames = require("./data/nicknames.json");
 const blacklist = require("./data/blacklist.json");
 const serverBlacklist = require("./data/server_blacklist.json");
+const playerBans = require("./data/bans.json");
 const config = require("./data/config.json");
 const trickConfig = require("./data/trick.json");
 const readlineSync = require("readline-sync");
@@ -330,6 +331,15 @@ function filterRuns(runs) {
     // Remove blacklisted servers
     if (serverBlacklist.includes(runs[i].server.id)) {
       console.log(`Removing blacklisted server: ${runs[i].map.name} (${runs[i].class})`);
+      runs.splice(i, 1);
+      continue;
+    }
+
+    // Player bans
+    if (playerBans.includes(runs[i].player.steamId)) {
+      console.log(
+        `Removing run from banned player: ${runs[i].map.name} (${runs[i].class}) | ${runs[i].player.name} (${runs[i].player.steamId})`
+      );
       runs.splice(i, 1);
       continue;
     }
