@@ -43,7 +43,7 @@
     "ffmpegOptions": [
       "-movflags faststart",
       "-c:v libx264",
-      "-crf 20",
+      "-crf 18",
       "-profile:v high",
       "-level:v 4.2",
       "-preset:v veryfast",
