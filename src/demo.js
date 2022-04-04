@@ -193,6 +193,7 @@ function recordRun(run) {
     if (!isCollection || isLastRun(run)) {
       console.log(`WARNING: Uploading existing video '${compressed}'`);
       console.log(`Make sure to delete existing videos if they're corrupted, etc.`);
+      // TODO: fix last run with multiple ffmpeg instances
       youtube.upload(compressed, run);
     }
 
@@ -210,6 +211,7 @@ function recordRun(run) {
       if (result === true) {
         // Upload final output
         if (result === true && (!isCollection || isLastRun(run))) {
+          // TODO: fix last run with multiple ffmpeg instances
           youtube.upload(name, run);
         }
       }

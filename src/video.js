@@ -6,6 +6,7 @@ const ffmpeg = require("fluent-ffmpeg"),
 const { makeFilterStrings } = require("fluent-ffmpeg/lib/utils");
 
 const compressQueue = [];
+let ffmpegInstances = 0;
 
 /**
  * Add run to compress queue
@@ -26,6 +27,7 @@ function compressNext() {
   if (compressQueue.length > 0) {
     compressQueue.splice(0, 1);
   }
+  ffmpegInstances--;
 
   if (compressQueue.length > 0) {
     compress(compressQueue[0].video, compressQueue[0].audio, compressQueue[0].run, compressQueue[0].cb);
@@ -71,10 +73,11 @@ async function compress(video, audio, run, cb) {
   if (!cb || typeof cb !== "function") throw "callback is not a function";
 
   addToQueue({ video: video, audio: audio, run: run, cb: cb });
-  if (compressQueue[0].video !== video) {
-    // Already compressing something else
+  if (ffmpegInstances >= config.video.ffmpegInstances) {
+    // No ffmpeg instances, wait in queue
     return;
   }
+  ffmpegInstances++;
 
   const output = video.split(".mp4")[0] + "_comp.mp4";
   let prevProgress = 0;

@@ -35,6 +35,7 @@ let srv = net.createServer(function (sock) {
             videojs.compress(filename, filename.split(".mp4")[0] + ".wav", run, (result, name) => {
               // Upload final output
               if (result === true && (!isCollection || demo.isLastRun(run))) {
+                // TODO: fix last run with multiple ffmpeg instances
                 youtube.upload(name, run);
               }
             });

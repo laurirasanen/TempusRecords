@@ -34,7 +34,7 @@
     "deleteCompressed": false,
     "deleteUncompressed": false,
     "maxRunsInCollection": 35,
-    "mapMaxDuration": 30,
+    "mapMaxDuration": 45,
     "extraMaxDuration": 1,
     "extraMinAge": 0,
     "mapMinAge": 7,
@@ -98,7 +98,8 @@
     "fadeInDuration": 0.25,
     "fadeOutDuration": 0.5,
     "allowMissingCourses": false,
-    "filenameIds": false
+    "filenameIds": false,
+    "ffmpegInstances": 1
   },
   "audio": {
     "fadeInDuration": 1,
