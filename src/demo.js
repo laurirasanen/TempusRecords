@@ -5,6 +5,7 @@
   config = require("./data/config.json"),
   youtube = require("./youtube.js"),
   quality = require("./data/quality.json"),
+  fullbright = require("./data/fullbright_maps.json"),
   videojs = require("./video.js");
 
 let runs = [];
@@ -293,7 +294,9 @@ function getPlayCommands(run) {
       tick: 33,
       commands: `sensitivity 0; m_yaw 0; m_pitch 0; unbindall; fog_override 1; fog_enable 0; rcon tmps_records_demo_load; demo_gototick ${
         run.demoStartTick - startPadding
-      }; demo_setendtick ${run.demoEndTick + endPadding + 66}`,
+      }; demo_setendtick ${run.demoEndTick + endPadding + 66}; mat_fullbright ${
+        fullbright.includes(run.map.name) ? 1 : 0
+      }`,
     },
     {
       tick: run.demoStartTick - startPadding,
