@@ -15,7 +15,9 @@ let srv = net.createServer(function (sock) {
       // Skipped via rcon
       if (data.toString().includes("tmps_records_skip")) {
         utils.killSVR();
-        demo.skip();
+        setTimeout(() => {
+          demo.skip();
+        }, 2000);
         return;
       }
 
