@@ -170,7 +170,7 @@ function recordRun(run) {
     youtube.init();
   }
 
-  if (run.zone.type === "course") {
+  if (["course", "bonus", "trick"].includes(run.zone.type)) {
     // default to max to avoid ffmpeg issues
     // with different sized frames during concat.
     run.quality = quality[0];
