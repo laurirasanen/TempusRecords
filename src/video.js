@@ -386,12 +386,6 @@ async function concatCollection(cb) {
     targetFile = config.svr.recordingFolder + `/${collectionRuns[0].map.name}_collection.mp4`;
   }
 
-  if (fs.existsSync(targetFile)) {
-    console.log("WARN: Using existing " + targetFile);
-    cb();
-    return;
-  }
-
   let fileList = "";
   for (let i = 0; i < collectionRuns.length; i++) {
     let parts = collectionRuns[i].outputFile.split("/");
