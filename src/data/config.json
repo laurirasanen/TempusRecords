@@ -11,7 +11,7 @@
       "Map download: $MAP_URL",
       "Demo download: $DEMO_URL",
       "",
-      "This video was automatically generated on $DATETIME",
+      "This video was recorded on $DATETIME",
       "https://github.com/laurirasanen/tempusrecords",
       "",
       "Recorded with Source Video Render by crashfort",
@@ -21,7 +21,7 @@
     "bonusCollectionTitle": "$ZONETYPE collection #$NUMBER [$INITIALS]",
     "courseCollectionTitle": "$MAP course collection",
     "collectionDescription": [
-      "This video was automatically generated on $DATETIME",
+      "This video was recorded on $DATETIME",
       "https://github.com/laurirasanen/tempusrecords",
       "",
       "Recorded with Source Video Render by crashfort",
