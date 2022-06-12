@@ -7,6 +7,8 @@
 
 // Download demo file from AWS
 function getDemoFile(run, cb) {
+  console.log(`getDemoFile ${run.demo.filename}`);
+
   if (!cb || typeof cb !== "function") throw "callback is not a function";
 
   if (!run.demo.url) {
@@ -83,6 +85,8 @@ function getDemoFile(run, cb) {
 
 // Download map file from http://tempus.site.nfoservers.com/server/maps/
 function getMap(mapName, cb) {
+  console.log(`getMap ${mapName}`);
+
   if (!cb || typeof cb !== "function") throw "callback is not a function";
 
   let dest = config.tf2.path + `download/maps/${mapName}.bsp`;
