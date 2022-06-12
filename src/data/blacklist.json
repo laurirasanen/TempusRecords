@@ -94,5 +94,50 @@
       "bonuses": [],
       "tricks": []
     }
+  },
+  {
+    "name": "jump_omega3_jam_tf2",
+    "SOLDIER": {
+      "map": false,
+      "courses": [],
+      "bonuses": [],
+      "tricks": []
+    },
+    "DEMOMAN": {
+      "map": true,
+      "courses": [],
+      "bonuses": [],
+      "tricks": []
+    }
+  },
+  {
+    "name": "jump_forest_rc4",
+    "SOLDIER": {
+      "map": false,
+      "courses": [],
+      "bonuses": [],
+      "tricks": []
+    },
+    "DEMOMAN": {
+      "map": true,
+      "courses": [],
+      "bonuses": [],
+      "tricks": []
+    }
+  },
+  {
+    "name": "jump_cavern_final",
+    "SOLDIER": {
+      "map": false,
+      "courses": [],
+      "bonuses": [],
+      "tricks": []
+    },
+    "DEMOMAN": {
+      "map": true,
+      "courses": [],
+      "bonuses": [],
+      "tricks": []
+    }
   }
 ]
