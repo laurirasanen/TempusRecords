@@ -82,11 +82,17 @@ function fillDescription(template, run, wrSplit = null) {
   template.forEach((line) => {
     let d = new Date();
     let demo_date = new Date(run.demo.date * 1000);
+    let class_tier = run.map.tiers[run.class.toLowerCase()];
     line = line
       .replace("$MAP_URL", "https://tempus.xyz/maps/" + run.map.name)
       .replace("$MAP_AUTHORS", run.map.authors.map((a) => a.name).join(", "))
-      .replace("$MAP_TIER", run.map.tiers[run.class.toLowerCase()])
-      .replace("$MAP_BOTH_TIERS", `${run.map.tiers.soldier} (S) | ${run.map.tiers.demoman} (D)`)
+      .replace("$MAP_TIER", `${class_tier} (${config.tiers[class_tier]})`)
+      .replace(
+        "$MAP_BOTH_TIERS",
+        `${run.map.tiers.soldier} (${config.tiers[run.map.tiers.soldier]}) [S] | ${run.map.tiers.demoman} (${
+          config.tiers[run.map.tiers.demoman]
+        }) [D]`
+      )
       .replace("$MAP", run.map.name)
       .replace("$NAME", run.player.name)
       .replace("$TIME", utils.secondsToTimeStamp(run.duration))

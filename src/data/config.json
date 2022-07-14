@@ -134,5 +134,14 @@
     "launch": "../svr/svr_launcher.exe",
     "args": "440",
     "recordingFolder": "../svr/movies"
-  }
+  },
+  "tiers": [
+    "impossible",
+    "very easy",
+    "easy",
+    "medium",
+    "hard",
+    "very hard",
+    "insane"
+  ]
 }
