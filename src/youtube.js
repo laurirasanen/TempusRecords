@@ -77,6 +77,37 @@ function init() {
   });
 }
 
+function fillDescription(template, run, wrSplit = null) {
+  desc = "";
+  template.forEach((line) => {
+    let d = new Date();
+    let demo_date = new Date(run.demo.date * 1000);
+    line = line
+      .replace("$MAP_URL", "https://tempus.xyz/maps/" + run.map.name)
+      .replace("$MAP_AUTHORS", run.map.authors.map((a) => a.name).join(", "))
+      .replace("$MAP_TIER", run.map.tiers[run.class.toLowerCase()])
+      .replace("$MAP_BOTH_TIERS", `${run.map.tiers.soldier} (S) | ${run.map.tiers.demoman} (D)`)
+      .replace("$MAP", run.map.name)
+      .replace("$NAME", run.player.name)
+      .replace("$TIME", utils.secondsToTimeStamp(run.duration))
+      .replace("$SPLIT", wrSplit ? `(${wrSplit})` : "")
+      .replace("$CLASS", `${run.class === "SOLDIER" ? "Soldier" : "Demoman"}`)
+      .replace("$DATETIME", d.toUTCString())
+      .replace("$DATE", demo_date.toUTCString())
+      .replace("$DEMO_URL", "https://tempus.xyz/demos/" + run.demo.id);
+
+    desc += line + "\n";
+  });
+
+  // description max size is 5000 bytes,
+  // I assume that includes null terminator.
+  if (desc.length > 4999) {
+    desc = desc.substr(0, 4999);
+  }
+
+  return desc;
+}
+
 async function upload(file, run) {
   if (noUpload) {
     return;
@@ -105,7 +136,6 @@ async function upload(file, run) {
 
   console.log(`Uploading ${file}`);
 
-  let description = "";
   let stats = fs.statSync(file);
   let fileSize = stats.size;
   let bytes = 0;
@@ -120,28 +150,7 @@ async function upload(file, run) {
     }
   }
 
-  config.youtube.description.forEach((line) => {
-    let d = new Date();
-    let demo_date = new Date(run.demo.date * 1000);
-    line = line
-      .replace("$MAP_URL", "https://tempus.xyz/maps/" + run.map.name)
-      .replace("$MAP", run.map.name)
-      .replace("$NAME", run.player.name)
-      .replace("$TIME", utils.secondsToTimeStamp(run.duration))
-      .replace("$SPLIT", wrSplit ? `(${wrSplit})` : "")
-      .replace("$CLASS", `${run.class === "SOLDIER" ? "Soldier" : "Demoman"}`)
-      .replace("$DATETIME", d.toUTCString())
-      .replace("$DATE", demo_date.toUTCString())
-      .replace("$DEMO_URL", "https://tempus.xyz/demos/" + run.demo.id);
-
-    description += line + "\n";
-  });
-
-  // description max size is 5000 bytes,
-  // I assume that includes null terminator.
-  if (description.length > 4999) {
-    description = description.substr(0, 4999);
-  }
+  let description = fillDescription(config.youtube.description, run, wrSplit);
 
   // Common tags for all videos
   let tags = ["Team Fortress 2", "TF2", "rocketjump", "speedrun", "tempus", "record"];
@@ -299,8 +308,6 @@ async function uploadCollection() {
   let fileSize = stats.size;
   let bytes = 0;
 
-  let date = new Date();
-
   let useTimestamps = true;
   let seconds = 0;
   description = "Runs:\n";
@@ -326,16 +333,10 @@ async function uploadCollection() {
   }
   description += "\n";
 
-  config.youtube.collectionDescription.forEach((line) => {
-    line = line.replace("$DATETIME", date.toUTCString());
-    description += line + "\n";
-  });
-
-  // description max size is 5000 bytes,
-  // I assume that includes null terminator.
-  if (description.length > 4999) {
-    description = description.substr(0, 4999);
-  }
+  description += fillDescription(
+    isCourse ? config.youtube.courseCollectionDescription : config.youtube.collectionDescription,
+    run
+  );
 
   // Common tags for all videos
   let tags = [

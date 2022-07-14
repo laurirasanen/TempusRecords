@@ -3,11 +3,13 @@
     "title": "$NAME on $MAP - $TIME",
     "description": [
       "Player: $NAME",
-      "Map: $MAP",
       "Class: $CLASS",
       "Time: $TIME $SPLIT",
       "Date: $DATE",
       "",
+      "Map: $MAP",
+      "Map tier: $MAP_TIER",
+      "Map author(s): $MAP_AUTHORS",
       "Map download: $MAP_URL",
       "Demo download: $DEMO_URL",
       "",
@@ -21,6 +23,18 @@
     "bonusCollectionTitle": "$ZONETYPE collection #$NUMBER [$INITIALS]",
     "courseCollectionTitle": "$MAP course collection",
     "collectionDescription": [
+      "This video was recorded on $DATETIME",
+      "https://github.com/laurirasanen/tempusrecords",
+      "",
+      "Recorded with Source Video Render by crashfort",
+      "https://github.com/crashfort/SourceDemoRender"
+    ],
+    "courseCollectionDescription": [
+      "Map: $MAP",
+      "Map tiers: $MAP_BOTH_TIERS",
+      "Map author(s): $MAP_AUTHORS",
+      "Map download: $MAP_URL",
+      "",
       "This video was recorded on $DATETIME",
       "https://github.com/laurirasanen/tempusrecords",
       "",

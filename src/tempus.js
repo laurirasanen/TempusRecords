@@ -41,6 +41,13 @@ async function getMapWR(mapName, className, filter = true) {
           }
           map {
             name
+            tiers {
+              soldier
+              demoman
+            }
+            authors {
+              name
+            }
           }
           player {
             name
@@ -186,6 +193,13 @@ async function getZoneWR(mapName, zoneType, zoneId, className) {
           }
           map {
             name
+            tiers {
+              soldier
+              demoman
+            }
+            authors {
+              name
+            }
           }
           player {
             name
@@ -252,6 +266,13 @@ async function getRecentMapWRs() {
           class
           map {
             name
+            tiers {
+              soldier
+              demoman
+            }
+            authors {
+              name
+            }
           }
         }
       }
@@ -431,6 +452,13 @@ async function getRecordMap(recordId) {
         map {
           id
           name
+          tiers {
+            soldier
+            demoman
+          }
+          authors {
+            name
+          }
         }
       }
     }`;
