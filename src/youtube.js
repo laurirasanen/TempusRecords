@@ -341,7 +341,7 @@ async function uploadCollection() {
 
   description += fillDescription(
     isCourse ? config.youtube.courseCollectionDescription : config.youtube.collectionDescription,
-    run
+    collectionRuns[0]
   );
 
   // Common tags for all videos
