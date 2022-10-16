@@ -112,7 +112,8 @@ function getMap(mapName, cb) {
       }
     } else {
       let stream = fs.createWriteStream(config.tf2.path + `download/maps/${mapName}.bsp`);
-      let mapUrl = `http://tempus.site.nfoservers.com/server/maps/${mapName}.bsp.bz2`;
+      // let mapUrl = `http://tempus.site.nfoservers.com/server/maps/${mapName}.bsp.bz2`;
+      let mapUrl = `http://tempus2.xyz/tempus/server/maps/${mapName}.bsp.bz2`;
 
       download(mapUrl, currentRun, (resp, run) => {
         resp
@@ -123,8 +124,8 @@ function getMap(mapName, cb) {
 
               stream.close(() => {
                 fs.unlink(dest, (err) => {
-                  if (err) console.log(`Failed to unlink bad demo ${dest}`);
-                  else console.log(`Unlinked bad demo ${dest}`);
+                  if (err) console.log(`Failed to unlink bad map ${dest}`);
+                  else console.log(`Unlinked bad map ${dest}`);
                 });
               });
 
@@ -145,8 +146,8 @@ function getMap(mapName, cb) {
 
             stream.close(() => {
               fs.unlink(dest, (err) => {
-                if (err) console.log(`Failed to unlink bad demo ${dest}`);
-                else console.log(`Unlinked bad demo ${dest}`);
+                if (err) console.log(`Failed to unlink bad map ${dest}`);
+                else console.log(`Unlinked bad map ${dest}`);
               });
             });
 
