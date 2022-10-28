@@ -172,7 +172,7 @@ async function getTypeZones(mapName, zoneType) {
   return result.data.map.zones[zoneType];
 }
 
-async function getZoneWR(mapName, zoneType, zoneId, className) {
+async function getZoneWR(mapName, zoneType, zoneId, className, retryDelay = 0) {
   // TODO: a lot of repeated code with map wrs,
   // probably a better way to do this with graphql
   const query = `
@@ -220,8 +220,12 @@ async function getZoneWR(mapName, zoneType, zoneId, className) {
 
   const result = await graphql(schema, query);
   if (result.errors) {
-    console.log(`tempus.getZoneWR(${mapName}, ${zoneType}, ${zoneId}, ${className}):`);
-    throw result.errors[0];
+    retryDelay = retryDelay === 0 ? 5 : retryDelay * 2;
+    console.log(`tempus.getZoneWR(${mapName}, ${zoneType}, ${zoneId}, ${className}) failed:`);
+    console.log(result.errors[0]);
+    console.log(`retrying in ${retryDelay} seconds`);
+    await sleep(retryDelay * 1000);
+    return await getZoneWR(mapName, zoneType, zoneId, className, retryDelay);
   }
   if (!result.data.map.records.length) {
     return null;
