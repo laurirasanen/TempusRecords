@@ -344,7 +344,7 @@ function filterRuns(runs) {
     // Remove blacklisted runs
     let cont = false;
     for (let j = 0; j < blacklist.length; j++) {
-      if (blacklist[j].name === runs[i].map.name && blacklist[j][runs[i].class].map) {
+      if (blacklist[j].name === runs[i].map.name && blacklist[j][runs[i].class]?.map) {
         console.log(`Removing blacklisted: ${runs[i].map.name} (${runs[i].class})`);
         runs.splice(i, 1);
         cont = true;
@@ -421,7 +421,7 @@ function shouldUploadExtra(run) {
   // "courses", "bonuses", "tricks"
   const accessor = run.zone.type.endsWith("s") ? run.zone.type + "es" : run.zone.type + "s";
 
-  if (uploaded[accessor].includes(run.id)) {
+  if (uploaded[accessor]?.includes(run.id)) {
     return false;
   }
 
@@ -440,7 +440,7 @@ function shouldUploadExtra(run) {
   }
 
   for (let j = 0; j < blacklist.length; j++) {
-    if (blacklist[j].name === run.map.name && blacklist[j][run.class][accessor].includes(run.zone.zoneindex)) {
+    if (blacklist[j].name === run.map.name && blacklist[j][run.class]?.[accessor]?.includes(run.zone.zoneindex)) {
       console.log(`Removing blacklisted: ${run.map.name} ${run.zone.type} ${run.zone.zoneindex} (${run.class})`);
       return false;
     }
