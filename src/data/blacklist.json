@@ -2,142 +2,61 @@
   {
     "name": "jump_airships_v2",
     "SOLDIER": {
-      "map": false,
-      "courses": [],
       "bonuses": [1]
-    },
-    "DEMOMAN": {
-      "map": false,
-      "courses": [],
-      "bonuses": []
     }
   },
   {
     "name": "jump_when_b2_fix",
-    "SOLDIER": {
-      "map": false,
-      "courses": [],
-      "bonuses": []
-    },
     "DEMOMAN": {
-      "map": false,
-      "courses": [],
       "bonuses": [8]
     }
   },
   {
     "name": "jump_minecraftia_a2_t",
-    "SOLDIER": {
-      "map": false,
-      "courses": [],
-      "bonuses": []
-    },
     "DEMOMAN": {
-      "map": false,
-      "courses": [],
       "bonuses": [2]
     }
   },
   {
     "name": "jump_quick_b2",
     "SOLDIER": {
-      "map": false,
-      "courses": [],
       "bonuses": [2]
-    },
-    "DEMOMAN": {
-      "map": false,
-      "courses": [],
-      "bonuses": []
     }
   },
   {
     "name": "jump_hydrogen_rc1_bmv",
     "SOLDIER": {
-      "map": false,
-      "courses": [],
-      "bonuses": [],
       "tricks": [1, 2, 4]
-    },
-    "DEMOMAN": {
-      "map": false,
-      "courses": [],
-      "bonuses": []
     }
   },
   {
     "name": "jump_aando_b1_tmps",
     "SOLDIER": {
-      "map": false,
-      "courses": [],
-      "bonuses": [],
       "tricks": [1]
-    },
-    "DEMOMAN": {
-      "map": false,
-      "courses": [],
-      "bonuses": [],
-      "tricks": []
     }
   },
   {
     "name": "jump_adventure",
     "SOLDIER": {
-      "map": true,
-      "courses": [],
-      "bonuses": [],
-      "tricks": []
-    },
-    "DEMOMAN": {
-      "map": false,
-      "courses": [],
-      "bonuses": [],
-      "tricks": []
+      "map": true
     }
   },
   {
     "name": "jump_omega3_jam_tf2",
-    "SOLDIER": {
-      "map": false,
-      "courses": [],
-      "bonuses": [],
-      "tricks": []
-    },
     "DEMOMAN": {
-      "map": true,
-      "courses": [],
-      "bonuses": [],
-      "tricks": []
+      "map": true
     }
   },
   {
     "name": "jump_forest_rc4",
-    "SOLDIER": {
-      "map": false,
-      "courses": [],
-      "bonuses": [],
-      "tricks": []
-    },
     "DEMOMAN": {
-      "map": true,
-      "courses": [],
-      "bonuses": [],
-      "tricks": []
+      "map": true
     }
   },
   {
     "name": "jump_cavern_final",
-    "SOLDIER": {
-      "map": false,
-      "courses": [],
-      "bonuses": [],
-      "tricks": []
-    },
     "DEMOMAN": {
-      "map": true,
-      "courses": [],
-      "bonuses": [],
-      "tricks": []
+      "map": true
     }
   }
 ]
