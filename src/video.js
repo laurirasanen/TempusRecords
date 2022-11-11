@@ -137,32 +137,37 @@ async function compress(video, audio, run, cb) {
         config.video.text.fadeOutDuration,
         config.video.text.maxAlpha
       );
-      let zone = "";
+      let zoneTxt = "";
       switch (split.type) {
         case "checkpoint":
-          zone = `CP${split.zoneindex}`;
+          zoneTxt = `CP${split.zoneindex}: `;
           break;
 
         case "course":
-          zone = `Course ${split.zoneindex}`;
+          zoneTxt = `Course ${split.zoneindex}: `;
           break;
 
         case "map":
-          zone = "Map";
+          zoneTxt = "";
           break;
 
         default:
           throw `Unhandled zone type ${split.type}`;
       }
 
-      let text = `${zone}: ${utils.secondsToTimeStamp(split.duration)}`;
+      let text = `${zoneTxt}${utils.secondsToTimeStamp(split.duration)}`;
       text = utils.sanitize(text, true);
+
+      let textCfg = config.video.text.position.topLeft;
+      if (split.type === "map") {
+        textCfg = config.video.text.position.middle;
+      }
 
       videoFilters.push({
         filter: "drawtext",
         options: {
           ...config.video.text.ffmpegOptions,
-          ...config.video.text.position.topLeft,
+          ...textCfg,
           text: text,
           alpha: alpha,
         },
@@ -172,11 +177,16 @@ async function compress(video, audio, run, cb) {
         text = `(${utils.secondsToTimeStamp(split.duration - split.comparedDuration, true)})`;
         text = utils.sanitize(text, true);
 
+        textCfg = config.video.text.position.bottomLeft;
+        if (split.type === "map") {
+          textCfg = config.video.text.position.middleLower;
+        }
+
         videoFilters.push({
           filter: "drawtext",
           options: {
             ...config.video.text.ffmpegOptions,
-            ...config.video.text.position.bottomLeft,
+            ...textCfg,
             text: text,
             alpha: alpha,
           },

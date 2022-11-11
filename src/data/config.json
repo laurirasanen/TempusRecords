@@ -54,7 +54,7 @@
     "deleteCompressed": false,
     "deleteUncompressed": false,
     "maxRunsInCollection": 35,
-    "mapMaxDuration": 45,
+    "mapMaxDuration": 120,
     "extraMaxDuration": 1,
     "extraMinAge": 0,
     "mapMinAge": 7,
@@ -81,31 +81,51 @@
     "text": {
       "ffmpegOptions": {
         "font": "Segoe UI Light",
-        "fontsize": "h/15",
         "fontcolor": "#FFFFFF",
-        "shadowcolor": "#1E1E1E",
-        "shadowy": 2
+        "shadowcolor": "#1E1E1E"
       },
       "position": {
         "bottomLeft": {
+          "fontsize": "h/15",
           "x": "5",
           "y": "h - th - 5",
-          "shadowx": "-2"
+          "shadowx": -2,
+          "shadowy": 2
         },
         "topLeft": {
+          "fontsize": "h/15",
           "x": "5",
           "y": "h - h/7.5",
-          "shadowx": "-2"
+          "shadowx": -2,
+          "shadowy": 2
         },
         "bottomRight": {
+          "fontsize": "h/15",
           "x": "w - tw - 5",
           "y": "h - th - 5",
-          "shadowx": "2"
+          "shadowx": 2,
+          "shadowy": 2
         },
         "topRight": {
+          "fontsize": "h/15",
           "x": "w - tw - 5",
           "y": "h - h/7.5",
-          "shadowx": "2"
+          "shadowx": 2,
+          "shadowy": 2
+        },
+        "middle": {
+          "fontsize": "h/7.5",
+          "x": "w/2 - tw/2",
+          "y": "h/2 - th/2",
+          "shadowx": 4,
+          "shadowy": 4
+        },
+        "middleLower": {
+          "fontsize": "h/15",
+          "x": "w/2 - tw/2",
+          "y": "h/2 + h/7.5 - th/2",
+          "shadowx": 2,
+          "shadowy": 2
         }
       },
       "displayDuration": 3,
