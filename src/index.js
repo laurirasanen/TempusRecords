@@ -35,23 +35,14 @@ async function start() {
     } else if (process.argv[2] == "nameprompt") {
       tempus.promptAllNames();
       return;
-    }
-
-    if (process.argv.length > 3) {
-      if (process.argv[3] == "noupload") {
-        upload = false;
-      } else {
+    } else if (process.argv[2] == "map") {
         recent = false;
-        mapName = process.argv[2];
-        className = process.argv[3];
+        mapName = process.argv[3];
+        className = process.argv[4];
 
         if (!mapName.startsWith("jump_")) {
           mapName = "jump_" + mapName;
         }
-        if (process.argv[4] == "noupload") {
-          upload = false;
-        }
-      }
     }
   }
 
@@ -60,8 +51,14 @@ async function start() {
     process.exit();
   }
 
-  utils.backupConfig();
-  utils.applyConfig();
+  if(process.argv.includes("noupload")) {
+    upload = false;
+  }
+
+  if (!process.argv.includes("nocfg")) {
+    utils.backupConfig();
+    utils.applyConfig();
+  }
 
   rcon.init();
   demo.init(recent, mapName, className, course, bonus, trick, upload);
