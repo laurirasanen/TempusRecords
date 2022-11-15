@@ -82,10 +82,7 @@ async function compress(video, audio, run, cb) {
   const output = video.split(".mp4")[0] + "_comp.mp4";
   let prevProgress = 0;
 
-  let wrSplits = [];
-  if (!isCollection) {
-    wrSplits = run.splits;
-  }
+  let wrSplits = run.splits ?? [];
 
   let duration = 0;
   try {

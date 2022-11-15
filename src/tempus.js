@@ -231,7 +231,18 @@ async function getZoneWR(mapName, zoneType, zoneId, className, retryDelay = 0) {
     return null;
   }
 
-  return result.data.map.records[0];
+  // Add fake "map" split for timer overlay at end
+  let run = result.data.map.records[0];
+  run.splits = [
+    {
+      "type": "map",
+      "zoneindex": 1,
+      "duration": run.duration,
+      "comparedDuration": null,
+    }
+  ];
+
+  return run;
 }
 
 async function getMapList() {
