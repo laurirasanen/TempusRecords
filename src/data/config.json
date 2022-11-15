@@ -126,6 +126,9 @@
           "y": "h/2 + h/7.5 - th/2",
           "shadowx": 2,
           "shadowy": 2
+        },
+        "speedo": {
+          "fontsize": 0.033
         }
       },
       "displayDuration": 3,

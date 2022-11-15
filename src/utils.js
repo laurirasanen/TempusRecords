@@ -100,10 +100,14 @@ function writeSVRProfile(quality, cb) {
     }
 
     // Replace fps and motion blur sampling
-    const re1 = /video_fps = [0-9]+/g;
-    const re2 = /motion_blur_fps_mult = [0-9]+/g;
-    data.replace(re1, `video_fps = ${quality.fps}`);
-    data.replace(re2, `motion_blur_fps_mult = ${quality.sampling}`);
+    const re1 = /video_fps=[0-9]+/g;
+    const re2 = /motion_blur_fps_mult=[0-9]+/g;
+    data.replace(re1, `video_fps=${quality.fps}`);
+    data.replace(re2, `motion_blur_fps_mult=${quality.sampling}`);
+
+    const re3 = /velo_font_size=[0-9]+/g;
+    let height = Number(quality.recordingRes.split('x')[1]) * config.video.text.position.speedo.fontsize;
+    data.replace(re3, `velo_font_size=${height}`);
 
     fs.writeFile(profilePath, data, cb);
   });
