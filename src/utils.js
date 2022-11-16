@@ -86,7 +86,11 @@ function writeJson(path, data, cb) {
 }
 
 function writeSVRConfigs(quality, demofile, cb) {
-  writeSVRProfile(quality, () => {
+  writeSVRProfile(quality, (err) => {
+    if (err) {
+      console.error("Couldn't write SVR profile");
+      console.error(err);
+    }
     writeSVRLauncherConfig(quality, demofile, cb);
   });
 }
@@ -102,12 +106,12 @@ function writeSVRProfile(quality, cb) {
     // Replace fps and motion blur sampling
     const re1 = /video_fps=[0-9]+/g;
     const re2 = /motion_blur_fps_mult=[0-9]+/g;
-    data.replace(re1, `video_fps=${quality.fps}`);
-    data.replace(re2, `motion_blur_fps_mult=${quality.sampling}`);
+    data = data.replace(re1, `video_fps=${quality.fps}`);
+    data = data.replace(re2, `motion_blur_fps_mult=${quality.sampling}`);
 
     const re3 = /velo_font_size=[0-9]+/g;
     let height = Number(quality.recordingRes.split('x')[1]) * config.video.text.position.speedo.fontsize;
-    data.replace(re3, `velo_font_size=${height}`);
+    data = data.replace(re3, `velo_font_size=${height}`);
 
     fs.writeFile(profilePath, data, cb);
   });
