@@ -231,11 +231,14 @@ function isProcessRunning(proc) {
 function sanitize(str, quote = false) {
   const replace = [
     [/:/g, "\\:"],
-    [/'/g, "\\'"],
     [/\[/g, "\\["],
     [/\]/g, "\\]"],
     [/\(/g, "\\("],
     [/\)/g, "\\)"],
+    // single apostrophes cause issues with ffmpeg even when escaped,
+    // (at least with drawtext when used in -filter_script:v file)
+    // use acute accent instead.
+    [/'/g, "´"],
   ];
   replace.forEach((r) => {
     str = str.replace(r[0], r[1]);
