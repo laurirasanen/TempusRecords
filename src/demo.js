@@ -298,12 +298,15 @@ function getPlayCommands(run) {
         fullbright.includes(run.map.name) ? 1 : 0
       }`,
     },
+    // Start in 3rd person
     {
       tick: run.demoStartTick - startPadding,
-      commands: `exec tmps_records_spec_player; spec_mode 4; demo_resume; rcon tmps_records_run_start; startmovie ${filename} tempus`,
+      commands: `exec tmps_records_spec_player; spec_mode 5; cl_yawspeed 25; +left; demo_resume; rcon tmps_records_run_start; startmovie ${filename} tempus`,
     },
+    { tick: run.demoStartTick - 33, commands: `exec tmps_records_spec_player; spec_mode 4` }, // Back to 1st person
     { tick: run.demoStartTick, commands: `exec tmps_records_spec_player; spec_mode 4` }, // In case player dead before start_tick
-    { tick: run.demoEndTick + endPadding - 33, commands: "rcon tmps_records_run_end" },
+    { tick: run.demoEndTick - 33 < run.demoStartTick ? run.demoEndTick : run.demoEndTick - 33, commands: "spec_mode 5" }, // 3rd person
+    { tick: run.demoEndTick + endPadding - 33, commands: "rcon tmps_records_run_end;" },
     { tick: run.demoEndTick + endPadding, commands: "endmovie" },
   ];
 
