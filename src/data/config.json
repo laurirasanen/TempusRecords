@@ -61,7 +61,7 @@
     "startPadding": 3,
     "endPadding": 3,
     "ffmpegOptions": [
-      "-movflags faststart",
+      "-movflags +faststart",
       "-c:v libx264",
       "-crf 18",
       "-profile:v high",
