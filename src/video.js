@@ -297,18 +297,20 @@ async function compress(video, audio, run, cb) {
   // Write video filters to a file so we can use
   // -filter_script:v instead of -filter:v and
   // avoid hitting command length limits.
-  vfs = makeFilterStrings(videoFilters);
+  let vfs = makeFilterStrings(videoFilters);
   fs.writeFileSync(`${config.svr.recordingFolder}/videofilters.txt`, vfs.join(","));
+  let afs = makeFilterStrings(audioFilters);
+  fs.writeFileSync(`${config.svr.recordingFolder}/audiofilters.txt`, afs.join(","));
 
   let outputOptions = [
     `-filter_script:v ${config.svr.recordingFolder}/videofilters.txt`,
+    `-filter_script:a ${config.svr.recordingFolder}/audiofilters.txt`,
     ...config.video.ffmpegOptions,
   ];
 
   ffmpeg({ logger: ffmpegLogger })
     .input(video)
     .input(audio)
-    .audioFilters(audioFilters)
     .fps(run.quality.fps)
     .outputOptions(outputOptions)
     .on("start", () => {
