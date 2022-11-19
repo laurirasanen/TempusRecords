@@ -22,6 +22,7 @@
       "https://github.com/crashfort/SourceDemoRender"
     ],
     "collectionTitle": "$ZONETYPE collection #$NUMBER",
+    "playerCollectionTitle": "$NAME collection",
     "bonusCollectionTitle": "$ZONETYPE collection #$NUMBER [$INITIALS]",
     "courseCollectionTitle": "$MAP course collection",
     "collectionDescription": [
@@ -131,6 +132,7 @@
           "fontsize": 0.05
         }
       },
+      "displayDurationStart": 2,
       "displayDuration": 3,
       "fadeInDuration": 0.5,
       "fadeOutDuration": 0.5,

@@ -301,6 +301,8 @@ async function uploadCollection() {
 
   const isBonus = collectionRuns[0].zone.type === "bonus";
   const isCourse = collectionRuns[0].zone.type === "course";
+  const isTrick = collectionRuns[0].zone.type === "trick";
+  const isPlayer = collectionRuns[0].zone.type === "map";
 
   console.log(`Uploading collection`);
 
@@ -325,16 +327,23 @@ async function uploadCollection() {
       let timestamp = `${timeElapsed.getMinutes()}:${
         timeElapsed.getSeconds() < 10 ? "0" : ""
       }${timeElapsed.getSeconds()}`;
-      description += `${timestamp} ${run.map.name} ${utils.capitalizeFirst(run.zone.type)} ${run.zone.zoneindex}${
-        run.zone.customName ? " (" + run.zone.customName + ")" : ""
-      } by ${run.player.name} (${run.class === "SOLDIER" ? "Soldier" : "Demoman"})\n`;
+      description += `${timestamp} ${run.map.name}`;
+
+      if (isPlayer) {
+        description += ` ${new Date(run.date * 1000).toISOString().split('T')[0]} (${run.class === "SOLDIER" ? "Soldier" : "Demoman"})\n`;
+      } else {
+        description += ` ${utils.capitalizeFirst(run.zone.type)} ${run.zone.zoneindex}${
+          run.zone.customName ? " (" + run.zone.customName + ")" : ""
+        } by ${run.player.name} (${run.class === "SOLDIER" ? "Soldier" : "Demoman"})\n`;
+      }
+
       seconds += duration;
     }
 
     if (!useTimestamps) {
-      description += `${run.map.name} ${utils.capitalizeFirst(run.zone.type)} ${run.zone.zoneindex} by ${
-        run.player.name
-      } (${run.class === "SOLDIER" ? "Soldier" : "Demoman"})\n`;
+      description += `${run.map.name}${!isPlayer ? " " + utils.capitalizeFirst(run.zone.type) : ""} ${
+        run.zone.zoneindex
+      } by ${run.player.name} (${run.class === "SOLDIER" ? "Soldier" : "Demoman"})\n`;
     }
   }
   description += "\n";
@@ -357,6 +366,10 @@ async function uploadCollection() {
     collectionRuns[0].zone.type,
     "collection",
   ];
+
+  if (isPlayer) {
+    tags.push(collectionRuns[0].player.name);
+  }
 
   let previousProgress = 0;
   let uploaded = require("./data/uploaded.json");
@@ -382,6 +395,9 @@ async function uploadCollection() {
     }
 
     title = title.replace("$INITIALS", initialsText);
+  } else if (isPlayer) {
+    title = config.youtube.playerCollectionTitle;
+    title = title.replace("$NAME", collectionRuns[0].player.name);
   }
 
   title = title.replace("$ZONETYPE", utils.capitalizeFirst(collectionRuns[0].zone.type));
@@ -398,7 +414,7 @@ async function uploadCollection() {
         },
         status: {
           privacyStatus: "private",
-          publishAt: new Date(Date.now() + 1000 * 60 * config.youtube.publishDelay).toISOString(), // Allow time for processing before making public
+          publishAt: new Date(Date.now() + 1000 * 60 * (isPlayer ? 4 : 1) * config.youtube.publishDelay).toISOString(), // Allow time for processing before making public
         },
       },
       // This is for the callback function
@@ -441,6 +457,7 @@ async function uploadCollection() {
       let playlist = "PL_D9J2bYWXyJYdkfuv8s0kTvQygJQkW8_"; // trick
       if (isBonus) playlist = "PL_D9J2bYWXyJBc0YvjRpqpFc5hY-ieU-B";
       if (isCourse) playlist = "PL_D9J2bYWXyI-8Kk7tPKp1ApfnstuWMUn";
+      if (isPlayer) playlist = "PL_D9J2bYWXyLYX9QQ2Nnh61VZnoZbv2mK";
 
       // Add video to playlist
       youtube_api.playlistItems.insert(
@@ -466,6 +483,10 @@ async function uploadCollection() {
           }
         }
       );
+
+      if (isPlayer) {
+        return;
+      }
 
       uploadCount++;
 

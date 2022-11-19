@@ -9,6 +9,45 @@ const config = require("./data/config.json");
 const trickConfig = require("./data/trick.json");
 const readlineSync = require("readline-sync");
 
+const RECORD_FIELDS = `\
+  id
+  class
+  rank
+  date
+  duration
+  demoStartTick
+  demoEndTick
+  demo {
+    id
+    date
+    url
+    filename
+  }
+  map {
+    name
+    tiers {
+      soldier
+      demoman
+    }
+    authors {
+      name
+    }
+  }
+  player {
+    name
+    steamId
+  }
+  server {
+    id
+  }
+  zone {
+    id
+    type
+    zoneindex
+    customName
+  }\
+`;
+
 async function getMapWRs(mapList, filter = true) {
   let wrs = [];
   for (const map of mapList) {
@@ -179,41 +218,7 @@ async function getZoneWR(mapName, zoneType, zoneId, className, retryDelay = 0) {
     {
       map(name: "${mapName}") {
         records(zoneType: ${zoneType} zoneId: ${zoneId} limit: 1 class: ${className}) {
-          id
-          class
-          date
-          duration
-          demoStartTick
-          demoEndTick
-          demo {
-            id
-            date
-            url
-            filename
-          }
-          map {
-            name
-            tiers {
-              soldier
-              demoman
-            }
-            authors {
-              name
-            }
-          }
-          player {
-            name
-            steamId
-          }
-          server {
-            id
-          }
-          zone {
-            id
-            type
-            zoneindex
-            customName
-          }
+          ${RECORD_FIELDS}
         }
       }
     }`;
@@ -235,11 +240,11 @@ async function getZoneWR(mapName, zoneType, zoneId, className, retryDelay = 0) {
   let run = result.data.map.records[0];
   run.splits = [
     {
-      "type": "map",
-      "zoneindex": 1,
-      "duration": run.duration,
-      "comparedDuration": null,
-    }
+      type: "map",
+      zoneindex: 1,
+      duration: run.duration,
+      comparedDuration: null,
+    },
   ];
 
   return run;
@@ -525,6 +530,32 @@ async function promptAllNames() {
   replaceNames(runs);
 }
 
+async function getPlayerRecords(playerId, mapList, className) {
+  const query = `
+    {
+      player(id: ${playerId}) {
+        id
+        steamId
+        name
+        ${mapList.map(
+          (m) => `
+            ${m.name}: record(mapId: ${m.id}, class: ${className}) {
+              ${RECORD_FIELDS}
+            }
+          `
+        )}
+      }
+    }`;
+
+  const result = await graphql(schema, query);
+  if (result.errors) {
+    console.log(`tempus.getPlayerRecords(${playerId}, [${mapList.length}], ${className}):`);
+    throw result.errors[0];
+  }
+
+  return result.data.player;
+}
+
 exports.getMapWRs = getMapWRs;
 exports.getMapWR = getMapWR;
 exports.getExtraWRs = getExtraWRs;
@@ -532,3 +563,5 @@ exports.getMapList = getMapList;
 exports.getRecentMapWRs = getRecentMapWRs;
 exports.getRecordMap = getRecordMap;
 exports.promptAllNames = promptAllNames;
+exports.getPlayerRecords = getPlayerRecords;
+exports.replaceNames = replaceNames;

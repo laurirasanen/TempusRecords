@@ -16,6 +16,8 @@ async function start() {
   let course = false;
   let bonus = false;
   let trick = false;
+  let playerId = null;
+  let rankLimit = 10;
   let upload = true;
 
   if (process.argv.length > 2) {
@@ -43,6 +45,12 @@ async function start() {
         if (!mapName.startsWith("jump_")) {
           mapName = "jump_" + mapName;
         }
+    } else if (process.argv[2] == "player") {
+      recent = false;
+      playerId = process.argv[3];
+      if (process.argv.length > 4) {
+        rankLimit = Number(process.argv[4]);
+      }      
     }
   }
 
@@ -61,7 +69,7 @@ async function start() {
   }
 
   rcon.init();
-  demo.init(recent, mapName, className, course, bonus, trick, upload);
+  demo.init(recent, mapName, className, course, bonus, trick, playerId, rankLimit, upload);
 }
 
 start();

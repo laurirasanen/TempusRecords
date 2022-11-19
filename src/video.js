@@ -79,6 +79,8 @@ async function compress(video, audio, run, cb) {
   }
   ffmpegInstances++;
 
+  const isPlayerCollection = run.zone.type === "map";
+
   const output = video.split(".mp4")[0] + "_comp.mp4";
   let prevProgress = 0;
 
@@ -192,6 +194,35 @@ async function compress(video, audio, run, cb) {
     }
   }
 
+  // Draw map name and date at start for player collections
+  if (isPlayerCollection) {
+    let alpha = utils.getAlphaFade(
+      0,
+      config.video.text.displayDurationStart,
+      config.video.text.fadeInDuration,
+      config.video.text.fadeOutDuration,
+      config.video.text.maxAlpha
+    );
+    videoFilters.push({
+      filter: "drawtext",
+      options: {
+        ...config.video.text.ffmpegOptions,
+        ...config.video.text.position.middle,
+        text: run.map.name,
+        alpha: alpha,
+      },
+    });
+    videoFilters.push({
+      filter: "drawtext",
+      options: {
+        ...config.video.text.ffmpegOptions,
+        ...config.video.text.position.middleLower,
+        text: new Date(run.date * 1000).toISOString().split('T')[0],
+        alpha: alpha,
+      },
+    });
+  }
+
   if (isCollection) {
     // Add map name, zone, and player name to video
     let displayDuration =
@@ -226,39 +257,41 @@ async function compress(video, audio, run, cb) {
       },
     });
 
-    if (run.zone.customName) {
-      // Custom name in bottom right
-      videoFilters.push({
-        filter: "drawtext",
-        options: {
-          ...config.video.text.ffmpegOptions,
-          ...config.video.text.position.bottomRight,
-          text: utils.sanitize(run.zone.customName),
-          alpha: alphaName,
-        },
-      });
+    if (!isPlayerCollection) {
+      if (run.zone.customName) {
+        // Custom name in bottom right
+        videoFilters.push({
+          filter: "drawtext",
+          options: {
+            ...config.video.text.ffmpegOptions,
+            ...config.video.text.position.bottomRight,
+            text: utils.sanitize(run.zone.customName),
+            alpha: alphaName,
+          },
+        });
 
-      // Move zone above name
-      videoFilters.push({
-        filter: "drawtext",
-        options: {
-          ...config.video.text.ffmpegOptions,
-          ...config.video.text.position.topRight,
-          text: utils.sanitize(run.zone.type + " " + run.zone.zoneindex),
-          alpha: alphaName,
-        },
-      });
-    } else {
-      // Zone in bottom right
-      videoFilters.push({
-        filter: "drawtext",
-        options: {
-          ...config.video.text.ffmpegOptions,
-          ...config.video.text.position.bottomRight,
-          text: utils.sanitize(run.zone.type + " " + run.zone.zoneindex),
-          alpha: alphaName,
-        },
-      });
+        // Move zone above name
+        videoFilters.push({
+          filter: "drawtext",
+          options: {
+            ...config.video.text.ffmpegOptions,
+            ...config.video.text.position.topRight,
+            text: utils.sanitize(run.zone.type + " " + run.zone.zoneindex),
+            alpha: alphaName,
+          },
+        });
+      } else {
+        // Zone in bottom right
+        videoFilters.push({
+          filter: "drawtext",
+          options: {
+            ...config.video.text.ffmpegOptions,
+            ...config.video.text.position.bottomRight,
+            text: utils.sanitize(run.zone.type + " " + run.zone.zoneindex),
+            alpha: alphaName,
+          },
+        });
+      }
     }
   }
 

@@ -15,7 +15,7 @@ global.isCollection = false;
 global.collectionRuns = [];
 global.noUpload = false;
 
-async function init(recent, mapName, className, course, bonus, trick, upload = true) {
+async function init(recent, mapName, className, course, bonus, trick, playerId, rankLimit = 10, upload = true) {
   noUpload = !upload;
   runs = [];
   collectionRuns = [];
@@ -87,6 +87,84 @@ async function init(recent, mapName, className, course, bonus, trick, upload = t
       collectionRuns.push(runs[i]);
     }
 
+    recordRun(runs[0]);
+    return;
+  }
+
+  if (playerId) {
+    isCollection = true;
+
+    // cache these things as they take a lot of api requests
+    // in case not recording eveything in one go.
+    let mapListPath = `${config.svr.recordingFolder}/maplist.json`;
+    let mapList = [];
+    if (fs.existsSync(mapListPath)) {
+      console.log("Loading map list from json");
+      mapList = require(mapListPath);
+    } else {
+      console.log("Getting map list");
+      mapList = await tempus.getMapList();
+      fs.writeFileSync(mapListPath, JSON.stringify(mapList, null, 2));
+    }    
+
+    let soldierPath = `${config.svr.recordingFolder}/soldier.json`;
+    let soldierRuns = {};
+    if (fs.existsSync(soldierPath)) {
+      console.log("Loading soldier runs from json");
+      soldierRuns = require(soldierPath);
+    } else {
+      console.log("Getting soldier runs");
+      soldierRuns = await tempus.getPlayerRecords(playerId, mapList, "SOLDIER");
+      fs.writeFileSync(soldierPath, JSON.stringify(soldierRuns, null, 2));
+    }
+
+    let demoPath = `${config.svr.recordingFolder}/demoman.json`;
+    let demoRuns = {};
+    if (fs.existsSync(demoPath)) {
+      console.log("Loading demoman runs from json");
+      demoRuns = require(demoPath);
+    } else {
+      console.log("Getting demoman runs");
+      demoRuns = await tempus.getPlayerRecords(playerId, mapList, "DEMOMAN");
+      fs.writeFileSync(demoPath, JSON.stringify(demoRuns, null, 2));
+    }
+
+    function checkPlayerRun(run) {
+      if (!run) return;
+
+      let hasDemo = run.demo && run.demo.url && run.demo.filename;
+      if (!hasDemo || run.rank > rankLimit) {
+        console.log(`skipping ${run.map.name}(${run.class}) - rank: ${run.rank}/${rankLimit}, demo: ${hasDemo}`);
+        return;
+      }
+
+      run.outputFile = `${config.svr.recordingFolder}/${utils.recordingFilename(run, true)}`;
+      runs.push(run);
+    }
+
+    for (const m of mapList) {
+      checkPlayerRun(soldierRuns[m.name]);
+      checkPlayerRun(demoRuns[m.name]);
+    }
+
+    runs.sort((a, b) => a.date - b.date);
+
+    tempus.replaceNames(runs);
+    for (let i = 0; i < runs.length; i++) {
+      // Add fake "map" split for timer overlay at end
+      runs[i].splits = [
+        {
+          type: "map",
+          zoneindex: 1,
+          duration: runs[i].duration,
+          comparedDuration: null,
+        },
+      ];
+
+      collectionRuns.push(runs[i]);
+    }
+
+    console.log(`Recording ${runs.length} runs for collection`);
     recordRun(runs[0]);
     return;
   }
@@ -209,12 +287,10 @@ function recordRun(run) {
 
     // Compress
     videojs.compress(video, audio, run, (result, name) => {
-      if (result === true) {
-        // Upload final output
-        if (result === true && (!isCollection || isLastRun(run))) {
-          // TODO: fix last run with multiple ffmpeg instances
-          youtube.upload(name, run);
-        }
+      // Upload final output
+      if (result === true && (!isCollection || isLastRun(run))) {
+        // TODO: fix last run with multiple ffmpeg instances
+        youtube.upload(name, run);
       }
     });
 
@@ -305,7 +381,10 @@ function getPlayCommands(run) {
     },
     { tick: run.demoStartTick - 33, commands: `exec tmps_records_spec_player; spec_mode 4` }, // Back to 1st person
     { tick: run.demoStartTick, commands: `exec tmps_records_spec_player; spec_mode 4` }, // In case player dead before start_tick
-    { tick: run.demoEndTick - 33 < run.demoStartTick ? run.demoEndTick : run.demoEndTick - 33, commands: "spec_mode 5" }, // 3rd person
+    {
+      tick: run.demoEndTick - 33 < run.demoStartTick ? run.demoEndTick : run.demoEndTick - 33,
+      commands: "spec_mode 5",
+    }, // 3rd person
     { tick: run.demoEndTick + endPadding - 33, commands: "rcon tmps_records_run_end;" },
     { tick: run.demoEndTick + endPadding, commands: "endmovie" },
   ];
