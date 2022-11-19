@@ -105,7 +105,7 @@ async function init(recent, mapName, className, course, bonus, trick, playerId, 
       console.log("Getting map list");
       mapList = await tempus.getMapList();
       fs.writeFileSync(mapListPath, JSON.stringify(mapList, null, 2));
-    }    
+    }
 
     let soldierPath = `${config.svr.recordingFolder}/soldier.json`;
     let soldierRuns = {};
@@ -362,6 +362,9 @@ function getPlayCommands(run) {
   const startPadding = config.video.startPadding * 67;
   const endPadding = config.video.endPadding * 67;
 
+  const spin0 = Math.random() > 0.5 ? "+right; -left" : "+left; -right";
+  const spin1 = Math.random() > 0.5 ? "+right; -left" : "+left; -right";
+
   // Commands used to control the demo playback.
   // Running rcon tmps_records_* commands will trigger events in rcon.js.
   let filename = utils.recordingFilename(run);
@@ -377,13 +380,13 @@ function getPlayCommands(run) {
     // Start in 3rd person
     {
       tick: run.demoStartTick - startPadding,
-      commands: `exec tmps_records_spec_player; spec_mode 5; cl_yawspeed 25; +left; demo_resume; rcon tmps_records_run_start; startmovie ${filename} tempus`,
+      commands: `exec tmps_records_spec_player; spec_mode 5; cl_yawspeed 25; ${spin0}; demo_resume; rcon tmps_records_run_start; startmovie ${filename} tempus`,
     },
     { tick: run.demoStartTick - 33, commands: `exec tmps_records_spec_player; spec_mode 4` }, // Back to 1st person
     { tick: run.demoStartTick, commands: `exec tmps_records_spec_player; spec_mode 4` }, // In case player dead before start_tick
     {
       tick: run.demoEndTick - 33 < run.demoStartTick ? run.demoEndTick : run.demoEndTick - 33,
-      commands: "spec_mode 5",
+      commands: `spec_mode 5; ${spin1}`,
     }, // 3rd person
     { tick: run.demoEndTick + endPadding - 33, commands: "rcon tmps_records_run_end;" },
     { tick: run.demoEndTick + endPadding, commands: "endmovie" },
