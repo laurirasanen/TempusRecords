@@ -79,7 +79,8 @@ async function compress(video, audio, run, cb) {
   }
   ffmpegInstances++;
 
-  const isPlayerCollection = run.zone.type === "map";
+  const isMapRun = run.zone.type === "map";
+  const isPlayerCollection = isCollection && isMapRun;
 
   const output = video.split(".mp4")[0] + "_comp.mp4";
   let prevProgress = 0;
@@ -194,8 +195,9 @@ async function compress(video, audio, run, cb) {
     }
   }
 
-  // Draw map name and date at start for player collections
-  if (isPlayerCollection) {
+  // Draw map and player name at start,
+  // or date for player collections
+  if (isMapRun) {
     let alpha = utils.getAlphaFade(
       0,
       config.video.text.displayDurationStart,
@@ -217,7 +219,7 @@ async function compress(video, audio, run, cb) {
       options: {
         ...config.video.text.ffmpegOptions,
         ...config.video.text.position.middleLower,
-        text: new Date(run.date * 1000).toISOString().split('T')[0],
+        text: isPlayerCollection ? new Date(run.date * 1000).toISOString().split('T')[0] : run.player.name,
         alpha: alpha,
       },
     });
