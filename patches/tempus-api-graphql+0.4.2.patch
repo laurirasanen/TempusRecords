@@ -1,0 +1,26 @@
+diff --git a/node_modules/tempus-api-graphql/dist/models/record.js b/node_modules/tempus-api-graphql/dist/models/record.js
+index 45f47f3..62202a2 100644
+--- a/node_modules/tempus-api-graphql/dist/models/record.js
++++ b/node_modules/tempus-api-graphql/dist/models/record.js
+@@ -125,10 +125,17 @@ var Record = /*#__PURE__*/function (_BaseModel) {
+   }, {
+     key: "demo",
+     value: function demo() {
+-      if (this.attrs.demo_info) return new _demo["default"](this.attrs.demo_info);
+-      return this.access("demo", function (r) {
+-        return r.demo_info && new _demo["default"](r.demo_info);
+-      });
++      try {
++        if (this.attrs.demo_info && !this.attrs.demo_info.id) {
++          console.log("Got info but null demo id for record " + this.attrs.id);
++        }
++        if (this.attrs.demo_info?.id) return new _demo["default"](this.attrs.demo_info);
++        return this.access("demo", function (r) {
++          return r.demo_info?.id && new _demo["default"](r.demo_info);
++        });
++      } catch(err) {
++        console.log("FAILED Getting demo for record " + this.attrs.id);
++      }
+     }
+   }, {
+     key: "zone",

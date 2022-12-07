@@ -16,6 +16,7 @@
     "lien": "^3.3.0",
     "net": "^1.0.2",
     "opn": "^6.0.0",
+    "patch-package": "^6.5.0",
     "pretty-bytes": "^5.3.0",
     "readline-sync": "^1.4.10",
     "request": "^2.88.2",
@@ -26,6 +27,7 @@
     "youtube-api": "^3.0.1"
   },
   "scripts": {
+    "postinstall": "patch-package",
     "prettier": "prettier --write src/.",
     "start": "cd src && node index.js",
     "upload": "npm run start",
