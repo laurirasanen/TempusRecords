@@ -71,6 +71,30 @@ function secondsToTimeStamp(seconds, showPlusSign = false) {
   return timeStamp;
 }
 
+function secondsToYoutubeChapter(seconds) {
+  let timeElapsed = new Date(0);
+  timeElapsed.setSeconds(Math.floor(seconds));
+  let timestamp = "";
+
+  if (timeElapsed.getUTCHours() > 0) {
+    timestamp += timeElapsed.getUTCHours() + ":";
+  }
+
+  if (timeElapsed.getUTCMinutes() < 10 && timeElapsed.getUTCHours() > 0) {
+    timestamp += "0";
+  }
+
+  timestamp += timeElapsed.getUTCMinutes() + ":";
+
+  if (timeElapsed.getUTCSeconds() < 10) {
+    timestamp += "0";
+  }
+
+  timestamp += timeElapsed.getUTCSeconds();
+
+  return timestamp;
+}
+
 function readJson(path, cb) {
   fs.readFile(path, (err, data) => {
     if (err) cb(err);
@@ -110,7 +134,7 @@ function writeSVRProfile(quality, cb) {
     data = data.replace(re2, `motion_blur_fps_mult=${quality.sampling}`);
 
     const re3 = /velo_font_size=[0-9]+/g;
-    let height = Number(quality.recordingRes.split('x')[1]) * config.video.text.position.speedo.fontsize;
+    let height = Number(quality.recordingRes.split("x")[1]) * config.video.text.position.speedo.fontsize;
     data = data.replace(re3, `velo_font_size=${height}`);
 
     fs.writeFile(profilePath, data, cb);
@@ -288,6 +312,7 @@ function removeMapPrefix(mapName) {
 module.exports.launchSVR = launchSVR;
 module.exports.killSVR = killSVR;
 module.exports.secondsToTimeStamp = secondsToTimeStamp;
+module.exports.secondsToYoutubeChapter = secondsToYoutubeChapter;
 module.exports.readJson = readJson;
 module.exports.writeJson = writeJson;
 module.exports.writeSVRConfigs = writeSVRConfigs;

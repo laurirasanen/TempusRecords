@@ -322,11 +322,7 @@ async function uploadCollection() {
   for (let run of collectionRuns) {
     if (useTimestamps) {
       let duration = await videojs.getDuration(run.outputFile);
-      let timeElapsed = new Date(0);
-      timeElapsed.setSeconds(Math.floor(seconds));
-      let timestamp = `${timeElapsed.getMinutes()}:${
-        timeElapsed.getSeconds() < 10 ? "0" : ""
-      }${timeElapsed.getSeconds()}`;
+      let timestamp = utils.secondsToYoutubeChapter(seconds);
       description += `${timestamp} ${run.map.name}`;
 
       if (isPlayer) {
@@ -414,7 +410,7 @@ async function uploadCollection() {
         },
         status: {
           privacyStatus: "private",
-          publishAt: new Date(Date.now() + 1000 * 60 * (isPlayer ? 4 : 1) * config.youtube.publishDelay).toISOString(), // Allow time for processing before making public
+          publishAt: isPlayer ? null : new Date(Date.now() + 1000 * 60 * config.youtube.publishDelay).toISOString(), // Allow time for processing before making public
         },
       },
       // This is for the callback function
