@@ -174,87 +174,102 @@ async function upload(file, run) {
 
   let previousProgress = 0;
 
-  let req = youtube_api.videos.insert(
-    {
-      resource: {
-        snippet: {
-          title: config.youtube.title
-            .replace("$NAME", run.player.name)
-            .replace("$MAP", run.map.name)
-            .replace("$TIME", utils.secondsToTimeStamp(run.duration)),
-          description: description,
-          tags: tags,
+  // Add to uploaded runs
+  utils.readJson("./data/uploaded.json", (err, uploaded) => {
+    if (err !== null) {
+      console.log("Failed to read last uploaded");
+      console.log(err);
+      return;
+    }
+
+    let now = Date.now();
+    let publishAt = uploaded.last_publish > now ? uploaded.last_publish : now;
+    let publishDate = new Date(publishAt);
+
+    publishDate.setUTCHours(config.youtube.publishAt.hour);
+    publishDate.setUTCMinutes(config.youtube.publishAt.minute);
+    publishDate.setUTCSeconds(config.youtube.publishAt.second);
+    publishDate.setUTCMilliseconds(config.youtube.publishAt.millisecond);
+
+    while (publishDate.getTime() <= publishAt) {
+      publishDate.setTime(publishDate.getTime() + 24 * 60 * 60 * 1000);
+    }
+    console.log(`publishDate: ${publishDate.toISOString()}`);
+
+    let req = youtube_api.videos.insert(
+      {
+        resource: {
+          snippet: {
+            title: config.youtube.title
+              .replace("$NAME", run.player.name)
+              .replace("$MAP", run.map.name)
+              .replace("$TIME", utils.secondsToTimeStamp(run.duration)),
+            description: description,
+            tags: tags,
+          },
+          status: {
+            privacyStatus: "private",
+            publishAt: publishDate.toISOString(),
+          },
         },
-        status: {
-          privacyStatus: "private",
-          publishAt: new Date(Date.now() + 1000 * 60 * config.youtube.publishDelay).toISOString(),
+        // This is for the callback function
+        part: "snippet,status",
+
+        // Only notify on first upload to not spam people
+        notifySubscribers: uploadCount === 0,
+
+        // Create the readable stream to upload the video
+        media: {
+          body: fs.createReadStream(file).on("data", (chunk) => {
+            bytes += chunk.length;
+            let percentage = (100 * bytes) / fileSize;
+            if (percentage > previousProgress + 5) {
+              console.log(`${file}: ${prettyBytes(bytes)} (${Math.round(percentage - (percentage % 5))}%) uploaded.`);
+              previousProgress += 5;
+            }
+          }),
         },
       },
-      // This is for the callback function
-      part: "snippet,status",
+      (err, response) => {
+        if (err) {
+          console.log("Failed to upload video");
+          console.log(err);
+          console.dir(response);
+          return;
+        } else {
+          console.log("Done uploading");
+        }
 
-      // Only notify on first upload to not spam people
-      notifySubscribers: uploadCount === 0,
+        uploadCount++;
+        uploadNext();
 
-      // Create the readable stream to upload the video
-      media: {
-        body: fs.createReadStream(file).on("data", (chunk) => {
-          bytes += chunk.length;
-          let percentage = (100 * bytes) / fileSize;
-          if (percentage > previousProgress + 5) {
-            console.log(`${file}: ${prettyBytes(bytes)} (${Math.round(percentage - (percentage % 5))}%) uploaded.`);
-            previousProgress += 5;
-          }
-        }),
-      },
-    },
-    (err, response) => {
-      if (err) {
-        console.log("Failed to upload video");
-        console.log(err);
-        console.dir(response);
-        return;
-      } else {
-        console.log("Done uploading");
-      }
-
-      uploadCount++;
-      uploadNext();
-
-      // Add video to class playlist
-      youtube_api.playlistItems.insert(
-        {
-          resource: {
-            snippet: {
-              playlistId:
-                run.class === "SOLDIER" ? "PL_D9J2bYWXyLFs5OJcTugl_70HqzDN9nv" : "PL_D9J2bYWXyIeRkUq099oCV8wf5Omf9Fe",
-              resourceId: {
-                kind: "youtube#video",
-                videoId: response.data.id,
+        // Add video to class playlist
+        youtube_api.playlistItems.insert(
+          {
+            resource: {
+              snippet: {
+                playlistId:
+                  run.class === "SOLDIER" ? "PL_D9J2bYWXyLFs5OJcTugl_70HqzDN9nv" : "PL_D9J2bYWXyIeRkUq099oCV8wf5Omf9Fe",
+                resourceId: {
+                  kind: "youtube#video",
+                  videoId: response.data.id,
+                },
               },
             },
+            part: "snippet",
           },
-          part: "snippet",
-        },
-        (err, response) => {
-          if (err) {
-            console.log("Failed to add video to playlist");
-            console.log(err);
-            console.dir(response);
-          } else {
-            console.log("Video added to playlist");
+          (err, response) => {
+            if (err) {
+              console.log("Failed to add video to playlist");
+              console.log(err);
+              console.dir(response);
+            } else {
+              console.log("Video added to playlist");
+            }
           }
-        }
-      );
+        );
 
-      // Add to uploaded runs
-      utils.readJson("./data/uploaded.json", (err, uploaded) => {
-        if (err !== null) {
-          console.log("Failed to read last uploaded");
-          console.log(err);
-          return;
-        }
-
+        uploaded.last_publish = publishDate.getTime();
         if (!uploaded.maps.includes(run.id)) uploaded.maps.push(run.id);
 
         utils.writeJson("./data/uploaded.json", uploaded, (err) => {
@@ -285,9 +300,9 @@ async function upload(file, run) {
             console.log("Unlinked uploaded video");
           });
         }
-      });
-    }
-  );
+      }
+    );
+  });
 }
 
 async function uploadCollection() {
@@ -326,7 +341,9 @@ async function uploadCollection() {
       description += `${timestamp} ${run.map.name}`;
 
       if (isPlayer) {
-        description += ` ${new Date(run.date * 1000).toISOString().split('T')[0]} (${run.class === "SOLDIER" ? "Soldier" : "Demoman"})\n`;
+        description += ` ${new Date(run.date * 1000).toISOString().split("T")[0]} (${
+          run.class === "SOLDIER" ? "Soldier" : "Demoman"
+        })\n`;
       } else {
         description += ` ${utils.capitalizeFirst(run.zone.type)} ${run.zone.zoneindex}${
           run.zone.customName ? " (" + run.zone.customName + ")" : ""
