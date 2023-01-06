@@ -14,6 +14,7 @@ global.currentRun = null;
 global.isCollection = false;
 global.collectionRuns = [];
 global.noUpload = false;
+global.backlog = 0;
 
 async function init(recent, mapName, className, course, bonus, trick, playerId, rankLimit = 10, upload = true) {
   noUpload = !upload;
@@ -188,6 +189,7 @@ async function init(recent, mapName, className, course, bonus, trick, playerId, 
     return;
   }
 
+  backlog = runs.length;
   recordRun(runs[0]);
 }
 

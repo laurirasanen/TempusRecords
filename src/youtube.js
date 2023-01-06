@@ -13,6 +13,7 @@
 let hasTokens = false;
 let initialized = false;
 let uploadCount = 0;
+let dailyCount = 0;
 const uploadQueue = [];
 
 /**
@@ -194,7 +195,20 @@ async function upload(file, run) {
     while (publishDate.getTime() <= publishAt) {
       publishDate.setTime(publishDate.getTime() + 24 * 60 * 60 * 1000);
     }
-    console.log(`publishDate: ${publishDate.toISOString()}`);
+
+    let maxDaily = Math.ceil(backlog / config.youtube.bufferDays);
+    let lastForTheDay = false;
+    if (dailyCount >= maxDaily) {
+      dailyCount = 1;
+    } else {
+      dailyCount++;
+    }
+
+    if (dailyCount >= maxDaily || demo.isLastRun(run)) {
+      lastForTheDay = true;
+    }
+
+    console.log(`publishDate: ${publishDate.toISOString()}, dailyCount: ${dailyCount}, maxDaily: ${maxDaily}, backlog: ${backlog}, last: ${lastForTheDay}`);
 
     let req = youtube_api.videos.insert(
       {
@@ -216,7 +230,7 @@ async function upload(file, run) {
         part: "snippet,status",
 
         // Only notify on first upload to not spam people
-        notifySubscribers: uploadCount === 0,
+        notifySubscribers: dailyCount === 1,
 
         // Create the readable stream to upload the video
         media: {
@@ -269,7 +283,10 @@ async function upload(file, run) {
           }
         );
 
-        uploaded.last_publish = publishDate.getTime();
+        if (lastForTheDay) {
+          uploaded.last_publish = publishDate.getTime();
+        }
+        
         if (!uploaded.maps.includes(run.id)) uploaded.maps.push(run.id);
 
         utils.writeJson("./data/uploaded.json", uploaded, (err) => {
