@@ -238,7 +238,7 @@ async function upload(file, run) {
             bytes += chunk.length;
             let percentage = (100 * bytes) / fileSize;
             if (percentage > previousProgress + 5) {
-              console.log(`${file}: ${prettyBytes(bytes)} (${Math.round(percentage - (percentage % 5))}%) uploaded.`);
+              console.log(`Upload: ${Math.round(percentage - (percentage % 5))}%, ${prettyBytes(bytes)} (${file})`);
               previousProgress += 5;
             }
           }),
@@ -459,7 +459,7 @@ async function uploadCollection() {
           bytes += chunk.length;
           let percentage = (100 * bytes) / fileSize;
           if (percentage > previousProgress + 5) {
-            console.log(`${file}: ${prettyBytes(bytes)} (${Math.round(percentage - (percentage % 5))}%) uploaded.`);
+            console.log(`Upload: ${Math.round(percentage - (percentage % 5))}%, ${prettyBytes(bytes)} (${file})`);
             previousProgress += 5;
           }
         }),

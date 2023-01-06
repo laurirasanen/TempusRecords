@@ -359,7 +359,7 @@ async function compress(video, audio, run, cb) {
 
       if (percentage > prevProgress + 5) {
         let eta = utils.secondsToTimeStamp((frameCount - progress.frames) / progress.currentFps);
-        console.log(`Progress: ${Math.round(percentage - (percentage % 5))}%, ETA: ${eta} (${video})`);
+        console.log(`Compress: ${Math.round(percentage - (percentage % 5))}%, ETA: ${eta} (${video})`);
         prevProgress += 5;
       }
     })
