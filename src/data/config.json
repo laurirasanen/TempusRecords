@@ -56,7 +56,7 @@
       "second": 0,
       "millisecond": 0
     },
-    "bufferDays": 14
+    "bufferDays": 7
   },
   "video": {
     "deleteCompressed": false,
