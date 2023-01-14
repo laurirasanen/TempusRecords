@@ -210,6 +210,8 @@ async function upload(file, run) {
 
     console.log(`publishDate: ${publishDate.toISOString()}, dailyCount: ${dailyCount}, maxDaily: ${maxDaily}, backlog: ${backlog}, last: ${lastForTheDay}`);
 
+    backlog--;
+
     let req = youtube_api.videos.insert(
       {
         resource: {
