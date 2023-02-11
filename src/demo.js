@@ -6,6 +6,7 @@
   youtube = require("./youtube.js"),
   quality = require("./data/quality.json"),
   fullbright = require("./data/fullbright_maps.json"),
+  voiceEnable = require("./data/voice_enable.json"),
   videojs = require("./video.js");
 
 let runs = [];
@@ -377,7 +378,7 @@ function getPlayCommands(run) {
         run.demoStartTick - startPadding
       }; demo_setendtick ${run.demoEndTick + endPadding + 66}; mat_fullbright ${
         fullbright.includes(run.map.name) ? 1 : 0
-      }`,
+      }; voice_enable ${voiceEnable.includes(run.id) ? 1 : 0}`,
     },
     // Start in 3rd person
     {
