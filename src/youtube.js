@@ -196,7 +196,9 @@ async function upload(file, run) {
       publishDate.setTime(publishDate.getTime() + 24 * 60 * 60 * 1000);
     }
 
-    let maxDaily = Math.ceil(backlog / config.youtube.bufferDays);
+    let maxDaily = Math.ceil(backlog / bufferDays);
+    // don't spam too much even if behind
+    maxDaily = Math.min(maxDaily, config.youtube.maxVideosPerDay);
     let lastForTheDay = false;
     if (dailyCount >= maxDaily) {
       dailyCount = 1;

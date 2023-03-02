@@ -56,12 +56,13 @@
       "second": 0,
       "millisecond": 0
     },
-    "bufferDays": 7
+    "bufferDays": 7,
+    "maxVideosPerDay": 6
   },
   "video": {
     "deleteCompressed": false,
     "deleteUncompressed": false,
-    "maxRunsInCollection": 35,
+    "maxRunsInCollection": 30,
     "mapMaxDuration": 120,
     "extraMaxDuration": 1,
     "extraMinAge": 0,

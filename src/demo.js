@@ -16,6 +16,7 @@ global.isCollection = false;
 global.collectionRuns = [];
 global.noUpload = false;
 global.backlog = 0;
+global.bufferDays = config.youtube.bufferDays;
 
 async function init(recent, mapName, className, course, bonus, trick, playerId, rankLimit = 10, upload = true) {
   noUpload = !upload;
@@ -191,6 +192,16 @@ async function init(recent, mapName, className, course, bonus, trick, playerId, 
   }
 
   backlog = runs.length;
+  // We don't keep track of all uploaded dates,
+  // fudge backlog to be longer based on
+  // days of queued videos on youtube.
+  let daysBehind = Math.ceil((uploaded.last_publish - Date.now()) / (1000 * 60 * 60 * 24));
+  if (daysBehind > 0) {
+    console.log(`Removing ${daysBehind} from buffer based on last upload date`);
+    bufferDays -= daysBehind;
+    bufferDays = Math.max(bufferDays, 1);
+  }
+
   recordRun(runs[0]);
 }
 
