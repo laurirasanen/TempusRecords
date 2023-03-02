@@ -436,6 +436,18 @@ async function uploadCollection() {
   title = title.replace("$NUMBER", isBonus ? uploaded.bonusCollections + 1 : uploaded.trickCollections + 1);
   title = title.replace("$MAP", collectionRuns[0].map.name);
 
+  let now = Date.now();
+  let publishDate = new Date(now);
+
+  publishDate.setUTCHours(config.youtube.publishAt.hour);
+  publishDate.setUTCMinutes(config.youtube.publishAt.minute);
+  publishDate.setUTCSeconds(config.youtube.publishAt.second);
+  publishDate.setUTCMilliseconds(config.youtube.publishAt.millisecond);
+
+  while (publishDate.getTime() <= now) {
+    publishDate.setTime(publishDate.getTime() + 24 * 60 * 60 * 1000);
+  }
+
   let req = youtube_api.videos.insert(
     {
       resource: {
@@ -446,14 +458,13 @@ async function uploadCollection() {
         },
         status: {
           privacyStatus: "private",
-          publishAt: isPlayer ? null : new Date(Date.now() + 1000 * 60 * config.youtube.publishDelay).toISOString(), // Allow time for processing before making public
+          publishAt: isPlayer ? null : publishDate.toISOString(),
         },
       },
       // This is for the callback function
       part: "snippet,status",
 
-      // Only notify on first upload to not spam people
-      notifySubscribers: uploadCount === 0,
+      notifySubscribers: false,
 
       // Create the readable stream to upload the video
       media: {
