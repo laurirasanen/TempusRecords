@@ -373,11 +373,37 @@ function startDemo(run) {
 }
 
 function getPlayCommands(run) {
-  const startPadding = config.video.startPadding * 67;
+  let startPadding = config.video.startPadding * 67;
   const endPadding = config.video.endPadding * 67;
 
-  const spin0 = Math.random() > 0.5 ? "+right; -left" : "+left; -right";
-  const spin1 = Math.random() > 0.5 ? "+right; -left" : "+left; -right";
+  // Some people want to see these strats.
+  // 0 = both spins
+  // 1 = no start spin
+  // 2 = no spins
+  let ratPotential = 0;
+  if (run.class === "DEMOMAN") {
+    ratPotential += 1;
+  }
+  if (["course", "bonus", "trick"].includes(run.zone.type)) {
+    ratPotential += 1;
+  }
+
+  let spin0 = "spec_mode 4";
+  let spin1 = "spec_mode 4";
+
+  if (ratPotential == 0) {
+    spin0 = "spec_mode 5; " + (Math.random() > 0.5 ? "+right; -left" : "+left; -right");
+  }
+  if (ratPotential <= 1) {
+    spin1 = "spec_mode 5; " + (Math.random() > 0.5 ? "+right; -left" : "+left; -right");
+  }
+
+  // Show more of the starting strat
+  startPadding += ratPotential * 0.5 * 67;
+
+  const paddedStartTick = Math.max(run.demoStartTick - startPadding, 0);
+  // const paddedEndTick = Math.min(run.demoEndTick + endPadding, run.demoLength);
+  const paddedEndTick = run.demoEndTick + endPadding;
 
   // Commands used to control the demo playback.
   // Running rcon tmps_records_* commands will trigger events in rcon.js.
@@ -386,24 +412,24 @@ function getPlayCommands(run) {
     {
       tick: 33,
       commands: `sensitivity 0; m_yaw 0; m_pitch 0; unbindall; fog_override 1; fog_enable 0; rcon tmps_records_demo_load; demo_gototick ${
-        run.demoStartTick - startPadding
-      }; demo_setendtick ${run.demoEndTick + endPadding + 66}; mat_fullbright ${
+        paddedStartTick
+      }; demo_setendtick ${paddedEndTick}; mat_fullbright ${
         fullbright.includes(run.map.name) ? 1 : 0
       }; voice_enable ${voiceEnable.includes(run.id) ? 1 : 0}`,
     },
     // Start in 3rd person
     {
       tick: run.demoStartTick - startPadding,
-      commands: `exec tmps_records_spec_player; spec_mode 5; cl_yawspeed 25; ${spin0}; demo_resume; rcon tmps_records_run_start; startmovie ${filename} tempus`,
+      commands: `exec tmps_records_spec_player; cl_yawspeed 25; ${spin0}; demo_resume; rcon tmps_records_run_start; startmovie ${filename} tempus`,
     },
     { tick: run.demoStartTick - 33, commands: `exec tmps_records_spec_player; spec_mode 4` }, // Back to 1st person
     { tick: run.demoStartTick, commands: `exec tmps_records_spec_player; spec_mode 4` }, // In case player dead before start_tick
     {
       tick: run.demoEndTick - 33 < run.demoStartTick ? run.demoEndTick : run.demoEndTick - 33,
-      commands: `spec_mode 5; ${spin1}`,
+      commands: `${spin1};`,
     }, // 3rd person
-    { tick: run.demoEndTick + endPadding - 33, commands: "rcon tmps_records_run_end;" },
-    { tick: run.demoEndTick + endPadding, commands: "endmovie" },
+    { tick: paddedEndTick - 33, commands: "rcon tmps_records_run_end;" },
+    { tick: paddedEndTick, commands: "endmovie" },
   ];
 
   return commands;
