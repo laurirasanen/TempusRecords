@@ -57,7 +57,7 @@
       "millisecond": 0
     },
     "bufferDays": 7,
-    "maxVideosPerDay": 6
+    "maxVideosPerDay": 5
   },
   "video": {
     "deleteCompressed": false,
