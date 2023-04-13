@@ -1,4 +1,5 @@
 ﻿let http = require("http"),
+  https = require("https"),
   fs = require("fs"),
   unzipper = require("unzipper"),
   bz2 = require("unbzip2-stream"),
@@ -159,7 +160,9 @@ function getMap(mapName, cb) {
 }
 
 function download(url, run, callback) {
-  http
+  let protocol = url.startsWith("https") ? https : http;
+
+  protocol
     .get(url, (response) => {
       callback(response, run);
     })
