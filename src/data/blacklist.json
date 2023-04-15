@@ -33,12 +33,6 @@
     }
   },
   {
-    "name": "jump_adventure",
-    "SOLDIER": {
-      "map": true
-    }
-  },
-  {
     "name": "jump_omega3_jam_tf2",
     "DEMOMAN": {
       "map": true
