@@ -305,7 +305,7 @@ async function upload(file, run) {
           // Continue with collection if last run
           if (demo.isLastRun(run)) {
             let type = new Date(Date.now()).getDay() % 3;
-            demo.init(false, null, null, type == 0, type == 1, type == 2, !noUpload);
+            demo.init(false, null, null, type == 0, type == 1, type == 2, null, null, !noUpload);
           }
         });
 
@@ -566,7 +566,7 @@ async function uploadCollection() {
 
           console.log("Updated uploaded list");
 
-          demo.init(false, null, null, isCourse, isBonus, !isCourse && !isBonus, true);
+          demo.init(false, null, null, isCourse, isBonus, !isCourse && !isBonus, null, null, true);
         });
       });
     }
