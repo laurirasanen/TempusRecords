@@ -539,7 +539,7 @@ async function getPlayerRecords(playerId, mapList, className) {
         name
         ${mapList.map(
           (m) => `
-            ${m.name}: record(mapId: ${m.id}, class: ${className}) {
+            ${m.name}: record(mapName: "${m.name}", class: ${className}) {
               ${RECORD_FIELDS}
             }
           `

@@ -1,0 +1,49 @@
+diff --git a/node_modules/tempus-api-graphql/dist/tempus.js b/node_modules/tempus-api-graphql/dist/tempus.js
+index 92776c4..e8c7b80 100644
+--- a/node_modules/tempus-api-graphql/dist/tempus.js
++++ b/node_modules/tempus-api-graphql/dist/tempus.js
+@@ -86,20 +86,25 @@ function newCachedTempusFetcher(fetchResponseByURL) {
+   }());
+   fetcher.mapsById = new _cached_by_key_resource["default"]( /*#__PURE__*/function () {
+     var _ref3 = _asyncToGenerator( /*#__PURE__*/regeneratorRuntime.mark(function _callee3(id) {
+-      var r;
++      var tmp, r;
+       return regeneratorRuntime.wrap(function _callee3$(_context3) {
+         while (1) {
+           switch (_context3.prev = _context3.next) {
+             case 0:
+               _context3.next = 2;
+-              return fetchResponseByURL("maps/id/".concat(id, "/fullOverview2"));
++              return fetchResponseByURL("maps/id/".concat(id, "/fullOverview"));
+ 
+             case 2:
++              tmp = _context3.sent;
++              _context3.next = 5;
++              return fetchResponseByURL("maps/name/".concat(tmp.map_info.name, "/fullOverview2"));
++
++            case 5:
+               r = _context3.sent;
+               fetcher.mapsByName.set(r.map_info.name, r);
+               return _context3.abrupt("return", r);
+ 
+-            case 5:
++            case 8:
+             case "end":
+               return _context3.stop();
+           }
+diff --git a/node_modules/tempus-api-graphql/dist/utils/fetch_response_by_url.js b/node_modules/tempus-api-graphql/dist/utils/fetch_response_by_url.js
+index 3fb298e..0310c75 100644
+--- a/node_modules/tempus-api-graphql/dist/utils/fetch_response_by_url.js
++++ b/node_modules/tempus-api-graphql/dist/utils/fetch_response_by_url.js
+@@ -13,9 +13,9 @@ var BASE_URL = "https://tempus2.xyz/api/v0/";
+ 
+ function fetchResponseByURL(relativeURL) {
+   /* eslint-disable no-console */
+-  // console.log(`Fetching ${BASE_URL}${relativeURL}`);
+-
++  console.log("Fetching ".concat(BASE_URL).concat(relativeURL));
+   /* eslint-enable no-console */
++
+   return _axios["default"].get("".concat(BASE_URL).concat(relativeURL)).then(function (res) {
+     var j = res.data;
+     return j.error ? null : j;
