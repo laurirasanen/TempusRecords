@@ -45,6 +45,10 @@ function init() {
   if (initialized) return;
   initialized = true;
 
+  if (noUpload) {
+    return;
+  }
+
   let server = new Lien({
     host: "localhost",
     port: "5000",
@@ -106,6 +110,7 @@ function fillDescription(template, run, wrSplit = null) {
     desc += line + "\n";
   });
 
+  // FIXME: this is not the only place we add stuff to the desc!
   // description max size is 5000 bytes,
   // I assume that includes null terminator.
   if (desc.length > 4999) {
@@ -116,10 +121,6 @@ function fillDescription(template, run, wrSplit = null) {
 }
 
 async function upload(file, run) {
-  if (noUpload) {
-    return;
-  }
-
   if (isCollection) {
     videojs.concatCollection(() => {
       uploadCollection();
@@ -127,7 +128,7 @@ async function upload(file, run) {
     return;
   }
 
-  if (!hasTokens) {
+  if (!hasTokens && !noUpload) {
     console.log("Awaiting tokens");
     setTimeout(() => {
       upload(file, run);
@@ -174,6 +175,13 @@ async function upload(file, run) {
   tags.push(playerName);
 
   let previousProgress = 0;
+
+  console.log(description);
+  fs.writeFileSync(`${config.svr.recordingFolder}/description.txt`, description);
+
+  if (noUpload) {
+    return;
+  }
 
   // Add to uploaded runs
   utils.readJson("./data/uploaded.json", (err, uploaded) => {
@@ -327,7 +335,7 @@ async function upload(file, run) {
 }
 
 async function uploadCollection() {
-  if (!hasTokens) {
+  if (!hasTokens && !noUpload) {
     console.log("Awaiting tokens");
     setTimeout(() => {
       uploadCollection();
@@ -448,6 +456,13 @@ async function uploadCollection() {
 
   while (publishDate.getTime() <= now) {
     publishDate.setTime(publishDate.getTime() + 24 * 60 * 60 * 1000);
+  }
+
+  console.log(description);
+  fs.writeFileSync(`${config.svr.recordingFolder}/description.txt`, description);
+
+  if (noUpload) {
+    return;
   }
 
   let req = youtube_api.videos.insert(
