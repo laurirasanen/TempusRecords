@@ -415,7 +415,7 @@ function getPlayCommands(run) {
         paddedStartTick
       }; demo_setendtick ${paddedEndTick}; mat_fullbright ${
         fullbright.includes(run.map.name) ? 1 : 0
-      }; ${chatEnable.includes(run.id) ? "exec chat_enable;" : ""}`,
+      }; ${chatEnable.includes(run.id) ? "exec chat_enable;" : "exec chat_disable;"}`,
     },
     // Start in 3rd person
     {
