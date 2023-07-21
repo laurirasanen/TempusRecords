@@ -48,7 +48,7 @@
       "Recorded with Source Video Render by crashfort",
       "https://github.com/crashfort/SourceDemoRender"
     ],
-    "video_limit": 65,
+    "video_limit": 60,
     "publishDelay": 30,
     "publishAt": {
       "hour": 17,
