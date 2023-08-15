@@ -41,50 +41,76 @@ function getDemoFile(run, cb) {
       let stream = fs.createWriteStream(dest);
 
       download(run.demo.url, run, (resp, run) => {
-        resp
-          .pipe(unzipper.Parse())
-          .on("entry", (entry) => {
-            entry.pipe(stream);
-            stream
-              .on("finish", () => {
-                stream.close(() => {
-                  console.log(`[DL] Downloaded demo ${run.demo.filename}`);
-                  return cb(true);
-                });
-              })
-              .on("error", (err) => {
-                console.log("[DL] Piping to file failed!");
-                console.log(err);
-
-                stream.close(() => {
-                  fs.unlink(dest, (err) => {
-                    if (err) console.log(`Failed to unlink bad demo ${dest}`);
-                    else console.log(`Unlinked bad demo ${dest}`);
+        if (run.demo.url.endsWith(".zip")) {
+          // unzip and save to file
+          resp
+            .pipe(unzipper.Parse())
+            .on("entry", (entry) => {
+              entry.pipe(stream);
+              stream
+                .on("finish", () => {
+                  stream.close(() => {
+                    console.log(`[DL] Downloaded demo ${run.demo.filename}`);
+                    return cb(true);
                   });
+                })
+                .on("error", (err) => {
+                  console.log("[DL] Piping to file failed!");
+                  console.log(err);
+
+                  stream.close(() => {
+                    fs.unlink(dest, (err) => {
+                      if (err) console.log(`Failed to unlink bad demo ${dest}`);
+                      else console.log(`Unlinked bad demo ${dest}`);
+                    });
+                  });
+
+                  return cb(null);
                 });
+            })
+            .on("error", (err) => {
+              console.log(`[DL] unzip failed!`);
+              console.log(err);
 
-                return cb(null);
+              stream.close(() => {
+                fs.unlink(dest, (err) => {
+                  if (err) console.log(`Failed to unlink bad demo ${dest}`);
+                  else console.log(`Unlinked bad demo ${dest}`);
+                });
               });
-          })
-          .on("error", (err) => {
-            console.log(`[DL] unzip failed!`);
-            console.log(err);
 
-            stream.close(() => {
-              fs.unlink(dest, (err) => {
-                if (err) console.log(`Failed to unlink bad demo ${dest}`);
-                else console.log(`Unlinked bad demo ${dest}`);
-              });
+              return cb(null);
             });
+        } else {
+          // save to file
+          resp.pipe(stream);
 
-            return cb(null);
-          });
+          stream
+            .on("finish", () => {
+              stream.close(() => {
+                console.log(`[DL] Downloaded demo ${run.demo.filename}`);
+                return cb(true);
+              });
+            })
+            .on("error", (err) => {
+              console.log("[DL] Piping to file failed!");
+              console.log(err);
+
+              stream.close(() => {
+                fs.unlink(dest, (err) => {
+                  if (err) console.log(`Failed to unlink bad demo ${dest}`);
+                  else console.log(`Unlinked bad demo ${dest}`);
+                });
+              });
+
+              return cb(null);
+            });
+        }
       });
     }
   });
 }
 
-// Download map file from http://tempus.site.nfoservers.com/server/maps/
 function getMap(mapName, cb) {
   console.log(`getMap ${mapName}`);
 
@@ -120,7 +146,7 @@ function getMap(mapName, cb) {
         resp
           .pipe(
             bz2().on("error", (err) => {
-              console.log("[TEMPUS] bz2 failed");
+              console.log("[DL] bz2 failed");
               console.log(err);
 
               stream.close(() => {
