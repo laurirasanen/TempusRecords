@@ -1,7 +1,8 @@
 ﻿const exec = require("child_process").exec,
   tasklist = require("tasklist"),
   fs = require("fs-extra"),
-  config = require("./data/config.json");
+  config = require("./data/config.json"),
+  boofooka = require("./data/boofooka.json");
 
 global.svrProc = null;
 
@@ -224,8 +225,20 @@ function restoreConfig() {
   copyConfig(srcFolder, dstFolder);
 }
 
+function applyPlayerConfig(playerId) {
+  const srcFolder = config.tf2.path + "/conditional/boofomet";
+  const dstFolder = config.tf2.path + "/custom/boofomet";
+  if (boofooka.includes(playerId)) {
+    fs.copySync(srcFolder, dstFolder);
+  } else {
+    if (fs.existsSync(dstFolder)) {
+      fs.rmSync(dstFolder, { recursive: true });
+    }
+  }
+}
+
 function copyConfig(srcFolder, dstFolder) {
-  const folders = ["cfg", "custom"];
+  const folders = ["cfg", "custom", "conditional"];
 
   folders.forEach((f) => {
     const from = srcFolder + "/" + f;
@@ -321,6 +334,7 @@ module.exports.getAlphaFade = getAlphaFade;
 module.exports.backupConfig = backupConfig;
 module.exports.restoreConfig = restoreConfig;
 module.exports.applyConfig = applyConfig;
+module.exports.applyPlayerConfig = applyPlayerConfig;
 module.exports.isProcessRunning = isProcessRunning;
 module.exports.sanitize = sanitize;
 module.exports.capitalizeFirst = capitalizeFirst;

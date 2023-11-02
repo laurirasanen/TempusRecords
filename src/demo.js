@@ -342,6 +342,9 @@ function recordRun(run) {
 }
 
 function startDemo(run) {
+  // Copy player specific custom files
+  utils.applyPlayerConfig(run.player.id);
+
   // Create a tmps_records_spec_player.cfg, which will get executed when the demo loads.
   // The config just contains a 'spec_player "STEAMID"' command.
   // This cannot be done via rcon because the steamId needs quotes around it and source does not like that.
