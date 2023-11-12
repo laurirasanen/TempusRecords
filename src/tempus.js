@@ -34,6 +34,7 @@ const RECORD_FIELDS = `\
     }
   }
   player {
+    id
     name
     steamId
   }
@@ -66,46 +67,12 @@ async function getMapWR(mapName, className, filter = true) {
     {
       map(name: "${mapName}") {
         wr(class: ${className}) {
-          id
-          class
-          date
-          duration
-          demoStartTick
-          demoEndTick
-          demo {
-            id
-            date
-            url
-            filename
-          }
-          map {
-            name
-            tiers {
-              soldier
-              demoman
-            }
-            authors {
-              name
-            }
-          }
-          player {
-            name
-            steamId
-          }
-          server {
-            id
-          }
+          ${RECORD_FIELDS}
           splits {
             type
             zoneindex
             duration
             comparedDuration
-          }
-          zone {
-            id
-            type
-            zoneindex
-            customName
           }
         }
       }
