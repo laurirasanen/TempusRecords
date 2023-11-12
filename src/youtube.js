@@ -89,7 +89,7 @@ function fillDescription(template, run, wrSplit = null) {
     let demo_date = new Date(run.demo.date * 1000);
     let class_tier = run.map.tiers[run.class.toLowerCase()];
     line = line
-      .replace("$MAP_URL", "https://tempus.xyz/maps/" + run.map.name)
+      .replace("$MAP_URL", "https://tempus2.xyz/maps/" + run.map.name)
       .replace("$MAP_AUTHORS", run.map.authors.map((a) => a.name).join(", "))
       .replace("$MAP_TIER", `${class_tier} (${config.tiers[class_tier]})`)
       .replace(
@@ -105,7 +105,7 @@ function fillDescription(template, run, wrSplit = null) {
       .replace("$CLASS", `${run.class === "SOLDIER" ? "Soldier" : "Demoman"}`)
       .replace("$DATETIME", d.toUTCString())
       .replace("$DATE", demo_date.toUTCString())
-      .replace("$DEMO_URL", "https://tempus.xyz/demos/" + run.demo.id);
+      .replace("$DEMO_URL", "https://tempus2.xyz/demos/" + run.demo.id);
 
     desc += line + "\n";
   });
