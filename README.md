@@ -1,7 +1,7 @@
 ﻿# Tempus Records
 
 The Node.js app behind [Tempus Records](https://www.youtube.com/tempusrecords/) YouTube channel.  
-Renders Team Fortress 2 world record rocketjump and stickyjump runs from [Tempus Jump Network](https://tempus.xyz/) and uploads them to YouTube.
+Renders Team Fortress 2 world record rocketjump and stickyjump runs from [Tempus Jump Network](https://tempus2.xyz/) and uploads them to YouTube.
 
 # Requirements
 * [FFmpeg](https://ffmpeg.org)
@@ -15,6 +15,6 @@ This project is made much simpler and the output quality increased thanks to sev
   * A high quality, performant video renderer for Source engine games.
 
 * [tempus-api-graphql](https://github.com/arispoloway/tempus-api-graphql) by [Aris Poloway](https://github.com/arispoloway)
-  * A GraphQL wrapper for the tempus.xyz API.
+  * A GraphQL wrapper for the tempus2.xyz API.
 
 Special thanks to [William Seligmann](https://github.com/jsza) for creating the Tempus Jump Network, and everyone who gets world records runs on it.
