@@ -1,4 +1,6 @@
-﻿# Tempus Records
+This project is archived. You might be interested in https://github.com/ultralaser1986/TempusArchive (https://www.youtube.com/@tempusarchive) instead.
+ 
+# Tempus Records
 
 The Node.js app behind [Tempus Records](https://www.youtube.com/tempusrecords/) YouTube channel.  
 Renders Team Fortress 2 world record rocketjump and stickyjump runs from [Tempus Jump Network](https://tempus2.xyz/) and uploads them to YouTube.
